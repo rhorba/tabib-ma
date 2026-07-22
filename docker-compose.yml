@@ -1,0 +1,39 @@
+# Host-side ports default to the standard 8080/5432 but are overridable via
+# BACKEND_HOST_PORT / DB_HOST_PORT in .env — useful when another project on the
+# same machine already occupies the default port.
+services:
+  backend:
+    build: ./backend
+    ports: ["${BACKEND_HOST_PORT:-8080}:8080"]
+    env_file: .env
+    environment:
+      # Override the host-facing values from .env — inside the compose network,
+      # containers reach each other by service name, not localhost.
+      DATABASE_URL: jdbc:postgresql://db:5432/tabibma
+      REDIS_URL: redis://redis:6379
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: tabibma
+      POSTGRES_USER: tabibma
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
+    ports: ["${DB_HOST_PORT:-5432}:5432"]
+    volumes: ["pgdata:/var/lib/postgresql/data"]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U tabibma"]
+      interval: 5s
+  redis:
+    image: redis:7-alpine
+    volumes: ["redisdata:/data"]
+
+volumes:
+  pgdata:
+  redisdata:
+
+# frontend service intentionally not added yet — no frontend/ or its Dockerfile exist
+# (see docs/devops-tabib-ma.md Section 5 for the full v1 design once that lands).
