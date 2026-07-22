@@ -1,0 +1,27 @@
+# Backend (Gradle / Java)
+backend/build/
+backend/.gradle/
+backend/out/
+!backend/gradle/wrapper/gradle-wrapper.jar
+
+# Frontend (Node)
+frontend/node_modules/
+frontend/dist/
+frontend/build/
+
+# Env / secrets — never commit real values, only .env.example
+.env
+.env.local
+.env.*.local
+
+# IDE
+.idea/
+*.iml
+.vscode/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Crash dumps / scratch
+*.stackdump

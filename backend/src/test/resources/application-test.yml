@@ -1,0 +1,13 @@
+spring:
+  jpa:
+    hibernate:
+      ddl-auto: validate
+
+app:
+  jwt:
+    # No private/public key properties here — TestJwtKeyConfig provides the PrivateKey/PublicKey
+    # beans directly (ephemeral keypair per test run), see that class for why.
+    access-token-expiration-ms: 900000
+    refresh-token-expiration-ms: 2592000000
+  cors:
+    allowed-origins: http://localhost:3000
