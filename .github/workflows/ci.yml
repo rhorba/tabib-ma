@@ -1,0 +1,56 @@
+name: ci
+on: [push, pull_request]
+
+permissions:
+  contents: read
+
+jobs:
+  backend-build-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: actions/setup-java@03ad4de0992f5dab5e18fcb136590ce7c4a0ac95 # v5
+        with: { java-version: '21', distribution: 'temurin' }
+      - uses: gradle/actions/setup-gradle@3f131e8634966bd73d06cc69884922b02e6faf92 # v6
+      - name: Build & test (coverage gate enforced via jacocoTestCoverageVerification)
+        working-directory: backend
+        run: ./gradlew check
+      - name: Upload coverage report
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: jacoco-report
+          path: backend/build/reports/jacoco/test/html
+          retention-days: 14
+
+  security:
+    runs-on: ubuntu-latest
+    permissions:
+      security-events: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          fetch-depth: 0
+      - name: SAST (Semgrep)
+        run: |
+          pip install semgrep
+          semgrep --config p/owasp-top-ten --config p/security-audit --error .
+      # KNOWN GAP: Trivy's fs scanner does not resolve Gradle dependencies without a
+      # gradle.lockfile (verified locally — it found 0 manifests to check against
+      # backend/build.gradle). This currently only catches secrets/non-Gradle files.
+      # Fast-follow: enable Gradle dependency locking (or a CycloneDX SBOM) so this
+      # step actually covers backend dependency CVEs. Tracked in .logs/decisions.md.
+      - name: SCA (Trivy filesystem scan)
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+        with:
+          scan-type: fs
+          severity: CRITICAL,HIGH
+          exit-code: 1
+      - name: Secrets scan (Gitleaks)
+        uses: gitleaks/gitleaks-action@e0c47f4f8be36e29cdc102c57e68cb5cbf0e8d1e # v3
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+# Not yet added — land alongside the piece of work that makes them meaningful:
+#   frontend-lint-test: once frontend/ exists (React + Vite + Tailwind, per docs/devops-tabib-ma.md)
+#   build-images:       once backend/Dockerfile and frontend/Dockerfile exist
