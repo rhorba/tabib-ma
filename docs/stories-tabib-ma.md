@@ -91,6 +91,28 @@ And a request for another clinic's data returns 403
 
 ---
 
+### Story 1.5: TOTP MFA for Platform Admin
+**Priority**: Must (pre-launch gate, not Sprint 2) | **Size**: M | **Specialist**: Backend Dev + Frontend Dev
+
+**Description**: As a platform admin, I want mandatory TOTP MFA on login, so a compromised password alone can't grant admin access.
+
+**Acceptance Criteria**:
+```gherkin
+Given a Platform Admin has enrolled a TOTP authenticator
+When they log in with a correct password but no/incorrect TOTP code
+Then access is denied until a valid TOTP code is provided
+
+Given a Platform Admin has not yet enrolled MFA
+When they attempt to log in
+Then they are forced through MFA enrollment before reaching any admin endpoint
+```
+
+**Technical Notes**: `identity` module. Traces to Security doc Section 3 ("MFA... mandatory for Platform Admin role") and Section 4 STRIDE Elevation-of-Privilege mitigation ("admin routes also require MFA-verified session flag"). Deferred out of the Sprint 2 Epic 1 batch (2026-07-22) — not a Sprint 2 blocker, but must land before Epic 10 (Platform Admin dispute/health tooling) ships to production, since that's the role this protects.
+
+**Dependencies**: 1.1, 1.4.
+
+---
+
 ## Epic 2: Doctor & Clinic Onboarding / Verification
 Doctors and clinics join the platform through a credential-verification workflow before appearing in search.
 
@@ -566,6 +588,7 @@ Then current values for each metric are displayed
 | Sprint 4 | 4.1, 4.2, 4.3, 5.1, 5.2 | Booking + double-booking guard + CMI payment (highest risk — most time) |
 | Sprint 5 | 4.4, 4.5, 6.1, 6.2, 6.3 | Reschedule/cancel/reminders + video consultation |
 | Sprint 6 | 7.1, 7.2, 9.1, 8.1 | Prescription + reviews + clinic dashboard → **MVP Ready** (per PRD Timeline) |
+| Pre-launch gate | 1.5 | TOTP MFA for Platform Admin — must land before Epic 10 (Platform Admin tooling) goes to production, not a Sprint 2 blocker |
 | Sprint 7+ (post-MVP) | 8.2, 10.1, 10.2, 10.3 | Clinic resource management + platform admin disputes/health |
 
 **MVP definition** (Sprint 6 target, per PRD §9): search → book → pay (CMI) → video consult → e-prescription, with RBAC and doctor verification, is the critical path. Clinic resource management and platform admin tooling beyond the dispute queue are explicitly sequenced after MVP — consistent with PRD YAGNI scope guidance.
