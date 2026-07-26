@@ -1,0 +1,106 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+/* Design tokens — docs/ui-tabib-ma.md Section 2 */
+:root {
+  --radius: 0.5rem;
+
+  --background: #ffffff;
+  --foreground: #111827;
+  --surface: #f4f7f6;
+  --muted: #f4f7f6;
+  --muted-foreground: #6b7280;
+  --border: #e2e8e6;
+  --input: #e2e8e6;
+  --ring: #0f766e;
+
+  --primary: #0f766e;
+  --primary-dark: #0c5f58;
+  --primary-foreground: #ffffff;
+  --secondary: #f59e0b;
+  --secondary-foreground: #111827;
+
+  --success: #16a34a;
+  --warning: #f59e0b;
+  --error: #dc2626;
+  --destructive: #dc2626;
+  --destructive-foreground: #ffffff;
+  --info: #2563eb;
+
+  --card: #ffffff;
+  --card-foreground: #111827;
+  --popover: #ffffff;
+  --popover-foreground: #111827;
+  --accent: #f4f7f6;
+  --accent-foreground: #111827;
+}
+
+.dark {
+  --background: #0f1417;
+  --foreground: #f0f0f0;
+  --surface: #1a2226;
+  --muted: #1a2226;
+  --muted-foreground: #9aa5ac;
+  --border: #2c363b;
+  --input: #2c363b;
+
+  --card: #1a2226;
+  --card-foreground: #f0f0f0;
+  --popover: #1a2226;
+  --popover-foreground: #f0f0f0;
+  --accent: #1a2226;
+  --accent-foreground: #f0f0f0;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-surface: var(--surface);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --color-primary: var(--primary);
+  --color-primary-dark: var(--primary-dark);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-error: var(--error);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-info: var(--info);
+
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+
+  --font-sans: "Inter", "Noto Sans Arabic", system-ui, sans-serif;
+}
+
+@layer base {
+  * {
+    border-color: var(--border);
+    outline-color: var(--ring);
+  }
+  body {
+    background: var(--background);
+    color: var(--foreground);
+    font-family: var(--font-sans);
+    font-size: 16px;
+  }
+}
