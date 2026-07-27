@@ -35,7 +35,7 @@ dependencies {
     runtimeOnly "io.jsonwebtoken:jjwt-impl:${jjwtVersion}"
     runtimeOnly "io.jsonwebtoken:jjwt-jackson:${jjwtVersion}"
 
-    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.6.0'
+    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.9'
 
     // Required by Spring Security's Argon2PasswordEncoder (docs/security-tabib-ma.md Section 3).
     runtimeOnly 'org.bouncycastle:bcprov-jdk18on:1.78.1'
