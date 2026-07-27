@@ -4,7 +4,9 @@
   },
   "nav": {
     "login": "تسجيل الدخول",
-    "register": "إنشاء حساب"
+    "register": "إنشاء حساب",
+    "logout": "تسجيل الخروج",
+    "greeting": "مرحبًا، {{name}}"
   },
   "home": {
     "title": "Tabib.ma",
@@ -14,5 +16,43 @@
     "label": "اللغة",
     "fr": "Français",
     "ar": "العربية"
+  },
+  "auth": {
+    "login": {
+      "title": "تسجيل الدخول",
+      "emailLabel": "البريد الإلكتروني",
+      "passwordLabel": "كلمة المرور",
+      "submit": "تسجيل الدخول",
+      "submitting": "جارٍ تسجيل الدخول…",
+      "noAccount": "ليس لديك حساب؟",
+      "registerLink": "إنشاء حساب"
+    },
+    "register": {
+      "title": "إنشاء حساب",
+      "firstNameLabel": "الاسم الشخصي",
+      "lastNameLabel": "الاسم العائلي",
+      "emailLabel": "البريد الإلكتروني",
+      "passwordLabel": "كلمة المرور",
+      "roleLabel": "أنا…",
+      "rolePatient": "مريض",
+      "roleDoctor": "طبيب",
+      "submit": "إنشاء الحساب",
+      "submitting": "جارٍ الإنشاء…",
+      "haveAccount": "لديك حساب بالفعل؟",
+      "loginLink": "تسجيل الدخول"
+    },
+    "validation": {
+      "emailInvalid": "بريد إلكتروني غير صالح.",
+      "passwordRequired": "كلمة المرور مطلوبة.",
+      "passwordMinLength": "يجب أن تتكون كلمة المرور من 8 أحرف على الأقل.",
+      "firstNameRequired": "الاسم الشخصي مطلوب.",
+      "lastNameRequired": "الاسم العائلي مطلوب.",
+      "roleRequired": "يرجى اختيار الدور."
+    },
+    "errors": {
+      "invalidCredentials": "البريد الإلكتروني أو كلمة المرور غير صحيحة.",
+      "emailTaken": "يوجد حساب بهذا البريد الإلكتروني بالفعل.",
+      "generic": "حدث خطأ ما. يرجى المحاولة مرة أخرى."
+    }
   }
 }

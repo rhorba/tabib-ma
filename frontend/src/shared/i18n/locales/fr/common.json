@@ -4,7 +4,9 @@
   },
   "nav": {
     "login": "Connexion",
-    "register": "Créer un compte"
+    "register": "Créer un compte",
+    "logout": "Déconnexion",
+    "greeting": "Bonjour, {{name}}"
   },
   "home": {
     "title": "Tabib.ma",
@@ -14,5 +16,43 @@
     "label": "Langue",
     "fr": "Français",
     "ar": "العربية"
+  },
+  "auth": {
+    "login": {
+      "title": "Connexion",
+      "emailLabel": "Adresse e-mail",
+      "passwordLabel": "Mot de passe",
+      "submit": "Se connecter",
+      "submitting": "Connexion en cours…",
+      "noAccount": "Vous n'avez pas de compte ?",
+      "registerLink": "Créer un compte"
+    },
+    "register": {
+      "title": "Créer un compte",
+      "firstNameLabel": "Prénom",
+      "lastNameLabel": "Nom",
+      "emailLabel": "Adresse e-mail",
+      "passwordLabel": "Mot de passe",
+      "roleLabel": "Je suis…",
+      "rolePatient": "Patient",
+      "roleDoctor": "Médecin",
+      "submit": "Créer mon compte",
+      "submitting": "Création en cours…",
+      "haveAccount": "Vous avez déjà un compte ?",
+      "loginLink": "Se connecter"
+    },
+    "validation": {
+      "emailInvalid": "Adresse e-mail invalide.",
+      "passwordRequired": "Le mot de passe est requis.",
+      "passwordMinLength": "Le mot de passe doit contenir au moins 8 caractères.",
+      "firstNameRequired": "Le prénom est requis.",
+      "lastNameRequired": "Le nom est requis.",
+      "roleRequired": "Veuillez choisir un rôle."
+    },
+    "errors": {
+      "invalidCredentials": "E-mail ou mot de passe incorrect.",
+      "emailTaken": "Un compte existe déjà avec cette adresse e-mail.",
+      "generic": "Une erreur est survenue. Veuillez réessayer."
+    }
   }
 }
