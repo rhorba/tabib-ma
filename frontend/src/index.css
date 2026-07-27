@@ -102,5 +102,11 @@
     color: var(--foreground);
     font-family: var(--font-sans);
     font-size: 16px;
+    line-height: 1.5;
+  }
+  /* Arabic script needs slightly taller line-height for ligature legibility
+     — docs/ui-tabib-ma.md Section 2. */
+  html[lang="ar"] body {
+    line-height: 1.6;
   }
 }

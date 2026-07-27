@@ -1,0 +1,18 @@
+{
+  "app": {
+    "name": "Tabib.ma"
+  },
+  "nav": {
+    "login": "تسجيل الدخول",
+    "register": "إنشاء حساب"
+  },
+  "home": {
+    "title": "Tabib.ma",
+    "subtitle": "ابحث عن طبيب واحجز موعد استشارتك."
+  },
+  "language": {
+    "label": "اللغة",
+    "fr": "Français",
+    "ar": "العربية"
+  }
+}

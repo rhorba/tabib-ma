@@ -1,0 +1,18 @@
+{
+  "app": {
+    "name": "Tabib.ma"
+  },
+  "nav": {
+    "login": "Connexion",
+    "register": "Créer un compte"
+  },
+  "home": {
+    "title": "Tabib.ma",
+    "subtitle": "Trouvez un médecin et prenez rendez-vous."
+  },
+  "language": {
+    "label": "Langue",
+    "fr": "Français",
+    "ar": "العربية"
+  }
+}
