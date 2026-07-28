@@ -17,7 +17,9 @@ export function LoginPage() {
     <div className="mx-auto flex w-full max-w-sm flex-1 items-center px-4 py-12">
       <Card className="w-full">
         <CardHeader>
-          <CardTitle className="text-xl">{t('auth.login.title')}</CardTitle>
+          <CardTitle className="text-xl" role="heading" aria-level={1}>
+            {t('auth.login.title')}
+          </CardTitle>
           <CardDescription>
             {t('auth.login.noAccount')}{' '}
             <Link to="/register" className="text-primary underline-offset-4 hover:underline">
