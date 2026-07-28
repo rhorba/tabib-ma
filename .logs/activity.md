@@ -112,3 +112,14 @@ Found and fixed a real bug while wiring MSW: openapi-fetch captures globalThis.f
 tsc/build/lint clean with test files included in the typecheck.
 Not committed yet — committing after this log entry.
 Remaining: Batch 6 (verify+ship — Playwright e2e smoke + video recording per rule 9, final combined coverage check, push).
+
+## 2026-07-28 — chore: tracked framework config, skills, and process logs (f97d8ad)
+Resolved the "how to handle .logs/ commits" question that had carried unresolved since 2026-07-22: user chose to commit .claude/, CLAUDE.md, README.md, and .logs/ now, as their own commit, ahead of Batch 6.
+
+## 2026-07-28 — EXECUTE: Story 1.1 frontend, Batch 6 complete (verify+ship) — Sprint 2 Epic 1 CLOSED
+Installed @playwright/test in frontend/ (needed --legacy-peer-deps: pre-existing typescript ~6.0.2 vs openapi-typescript's ^5.x peer conflict, unrelated to this change, not fixed here — flagged as a carry-forward). Ran `npm audit fix` for two non-breaking high-severity transitive advisories (brace-expansion, js-yaml); left the react-router advisory alone since its fix is a breaking downgrade (react-router-dom 7.11.0) — flagged for a user decision, not fixed silently.
+Added frontend/e2e/auth.spec.ts (5 tests, real backend not MSW): register+auto-login, logout+login round-trip, wrong-password rejection, Arabic language switch/RTL, full Arabic register flow. Added tsconfig.e2e.json (excluded from the app/vitest build graph) and excluded e2e/ from vitest's own test discovery (vite.config.ts) after it tried to import Playwright's test.describe.
+First run: 5/5 failed. Two real bugs found: (1) my own getByLabel('Nom') substring-matched 'Prénom' too (Playwright getByLabel is substring-matching by default) — fixed with exact:true; (2) a real accessibility gap — shadcn's CardTitle renders a bare `<div>` with no heading role, so LoginPage/RegisterPage had zero semantic headings anywhere (HomePage does have a real <h1>, these two didn't) — fixed by adding role="heading" aria-level={1} at the two call sites. Re-run: 5/5 passing.
+Video recording (rule 9): Playwright writes one .webm per test; added frontend/scripts/collect-e2e-video.mjs (ffmpeg concat, confirmed ffmpeg already on this machine) to stitch them into .recordings/v0.1.0-2026-07-28.webm (30.6s, all 5 flows). "0.1.0" chosen as the version label since the project has no formal versioning scheme yet — first shippable increment (full-stack auth).
+Final combined coverage check: frontend 85.51%/85.31% (unchanged — JSX-only page edits added no branches), backend re-verified via jacocoTestCoverageVerification at 80.75% instruction / 81.88% line. Both clear the 80% gate (logged to .logs/metrics.md).
+Committed a0747ee. PUSH: `git push origin main` — see next log line for CI result.
