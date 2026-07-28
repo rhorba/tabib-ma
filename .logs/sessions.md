@@ -101,3 +101,20 @@ NOT done: Batch 6 (verify+ship) — Playwright e2e smoke test with video recordi
 Local state: no docker containers running, no dev servers running, working tree clean except .logs/decisions.md (tracked, ~47 lines of this session's decisions appended but never included in a commit — same unresolved "how to handle .logs/ commits" question carried since 2026-07-22, still not decided with the user). .claude/, README.md, CLAUDE.md, and most of .logs/ remain untracked, also still unresolved.
 
 Resume by: confirm whether to commit the pending .logs/decisions.md changes (and decide the broader .logs/ commit question), then run Batch 6 — Playwright setup + e2e smoke (register/login, French and Arabic) with video recording to .recordings/, final coverage check, push origin main.
+
+## SESSION_END — 2026-07-28
+Resumed from 2026-07-27. User resolved both carried-forward questions upfront: commit the untracked process files now (own commit), and proceed straight to Batch 6.
+
+Done this session:
+  - chore commit (f97d8ad): .claude/ skills, CLAUDE.md, README.md, .logs/ now tracked — the "how to handle .logs/ commits" question that had carried since 2026-07-22 is resolved.
+  - Batch 6 (a0747ee): Playwright e2e suite (5 tests: register/login/wrong-password in French, language-switch + full register in Arabic/RTL) against the real backend, not MSW. Found and fixed two real bugs along the way: my own getByLabel('Nom') substring-matching 'Prénom', and a genuine a11y gap — shadcn's CardTitle is a bare div with no heading role, so Login/Register had zero semantic headings (fixed with role="heading" aria-level={1}). Recorded to .recordings/v0.1.0-2026-07-28.webm via a new ffmpeg-concat script (frontend/scripts/collect-e2e-video.mjs). Final coverage: frontend 85.51%/85.31%, backend 80.75%/81.88% — both clear the 80% gate.
+  - PUSH (rule 7) surfaced this sprint's first CI run in weeks, which came back RED: Trivy caught GHSA-qwww-vcr4-c8h2 (react-router CSRF bypass, HIGH) — the same advisory flagged-but-deferred earlier in this batch when `npm audit fix --force` wanted a breaking downgrade. Per rule 11, stopped and fixed it: migrated react-router-dom -> react-router v8 (v8 merged the packages; react-router-dom stops at 7.18.1), plus npm overrides for two more transitive high-severity advisories (js-yaml, brace-expansion) via @redocly/openapi-core. Re-verified everything (tsc/lint/26 vitest/5 e2e/build) still green after the swap. Bundle grew 98KB->189KB gzipped as a side effect — logged as a fast-follow, not blocking.
+  - Final push (f00d39c) confirmed GREEN (run 30358247150).
+
+**Sprint 2 Epic 1 (Identity & Access) is now fully CLOSED** — backend + frontend + CI green + e2e recorded + coverage gates cleared + everything pushed to origin/main.
+
+Local state: no docker containers running, no dev servers running, working tree clean. bash.exe.stackdump still sitting in repo root (gitignored via `*.stackdump`, harmless, never addressed — could delete anytime).
+
+Carried-forward open items (unchanged): CNDP/Loi 09-08 filing (legal, blocks production launch), Story 1.4's full clinic/platform data-scoping (blocked on Epics 2/8/10). New fast-follows: frontend bundle code-splitting (189KB gzipped, one chunk), Trivy Gradle-lockfile gap (documented 2026-07-22, still not resolved).
+
+Resume by: confirm next priority with the user — likely starting Epic 2 (or whichever epic the user picks next from docs/stories-tabib-ma.md), following the same UNDERSTAND -> BRAINSTORM -> PLAN gate sequence as Epic 1.
