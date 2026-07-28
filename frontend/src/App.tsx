@@ -1,6 +1,6 @@
 import { QueryClientProvider } from '@tanstack/react-query'
 import { Direction } from 'radix-ui'
-import { RouterProvider } from 'react-router-dom'
+import { RouterProvider } from 'react-router'
 import { AuthProvider } from './features/auth/AuthContext'
 import { queryClient } from './app/queryClient'
 import { router } from './app/routes'

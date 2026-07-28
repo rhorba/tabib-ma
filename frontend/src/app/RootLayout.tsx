@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next'
-import { Link, Outlet } from 'react-router-dom'
+import { Link, Outlet } from 'react-router'
 import { LanguageSwitcher } from '@/shared/components/LanguageSwitcher'
 import { Button } from '@/shared/components/ui/button'
 import { useAuth } from '@/features/auth/AuthContext'
