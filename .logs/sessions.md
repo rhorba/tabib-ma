@@ -178,3 +178,18 @@ Done this session (commits 2c355b6, e793daa, a4c933a, 5450d5a, 1392bb4):
 Local state: no docker containers running (stopped tabib-ma-db-1/redis-1), no dev servers running, working tree clean. Two backend dev instances were killed this session after outliving their spawning shell command (same "gradle daemon survives TaskStop" pattern noted before) — worth remembering next session rather than assuming a killed task is actually gone.
 
 Resume by: continue Story 2.3 EXECUTE at Batch 5 — write Vitest unit tests for `features/clinic-admin` (CreateClinicForm, InviteDoctorForm, ClinicAdminPage) and `PendingInvitationsList`, extending `clinicHandlers.ts` (src/test/) with clinic/invitation MSW handlers the same way it already covers doctor-profiles/verification-queue, then run the frontend coverage check. After that, Batch 6: Playwright e2e (clinic admin creates clinic -> invites doctor -> doctor accepts), video recording, final backend+frontend coverage re-verification, and `git push origin main`.
+
+## SESSION_END — 2026-07-29 (continued, Story 2.3 Batch 5 done)
+Resumed from the previous carried-forward blocker (Story 2.3 paused after Batch 4/6). Completed Batch 5, then user ended the session before Batch 6 started.
+
+Done this session (commits ad66ca1, ed00653):
+  - Extended `clinicHandlers.ts` (src/test/) with clinic/invitation MSW fakes — create/get-my-clinic, invite/list-invitations, list-my-pending-invitations, accept/decline — mirroring `ClinicOnboardingService`'s and `DoctorOnboardingService`'s ownership/role/conflict rules (403 non-owner, 409 duplicate-pending-invite, 409 accept-without-profile, etc.). Added `seedClinic`/`seedClinicInvitation` test-only helpers (same style as the existing `seedDoctorProfile`). `FakeUser`'s role union gained `CLINIC_ADMIN` (was missing — needed for these tests to log in as a clinic admin at all).
+  - 12 new tests: `CreateClinicForm.test.tsx` (2), `InviteDoctorForm.test.tsx` (3, incl. duplicate-invite conflict), `ClinicAdminPage.test.tsx` (3), `PendingInvitationsList.test.tsx` (4, incl. accept/decline/needs-profile-conflict). Full suite: 63 tests green.
+  - Coverage: 90.18% statements / 90.09% lines (same scope convention as prior batches: src/features/**+src/shared/**) — clears the 80% gate, up from 88.84%/88.7% at Epic 2 close. tsc/oxlint both clean.
+  - Committed ad66ca1 (tests) + ed00653 (logs).
+
+**NOT DONE**: Batch 6 (Playwright e2e for the full clinic-onboarding flow — clinic admin creates clinic, invites a doctor, doctor accepts; the seeded CLINIC_ADMIN is `clinic-admin@tabibma.dev`, password in root `.env`/`.env.example`), video recording (rule 9, next version label would be v0.3.0), final combined backend+frontend coverage re-verification, and the sprint-end `git push origin main` (rule 7 — nothing from Story 2.3 has been pushed yet; origin is still at 16ca678/4966ffb from Epic 2's close, local is 8 commits ahead).
+
+Local state: no docker containers running, no dev servers running, working tree clean. Nothing uncommitted.
+
+Resume by: continue Story 2.3 EXECUTE at Batch 6 exactly as planned — write `frontend/e2e/story-2.3-clinic-onboarding.spec.ts` (or similar name) covering clinic-admin-creates-clinic → invites-doctor → doctor-accepts, run the full e2e suite (should be 9 tests total: 7 existing + 2 new, mirroring Epic 2 Batch 6's pattern of one happy-path + one RBAC/negative test), record video via `scripts/collect-e2e-video.mjs` (RECORDING_VERSION=0.3.0), do the final `jacocoTestCoverageVerification` + `vitest run --coverage` re-check, then commit and `git push origin main` + monitor CI (rule 11) to close out Sprint 2 Story 2.3 / Epic 2's remaining scope.
