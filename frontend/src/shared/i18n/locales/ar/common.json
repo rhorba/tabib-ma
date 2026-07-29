@@ -8,7 +8,8 @@
     "logout": "تسجيل الخروج",
     "greeting": "مرحبًا، {{name}}",
     "doctorOnboarding": "ملفي الطبي",
-    "verificationQueue": "قائمة التحقق"
+    "verificationQueue": "قائمة التحقق",
+    "clinicAdmin": "عيادتي"
   },
   "home": {
     "title": "Tabib.ma",
@@ -110,6 +111,38 @@
     "reject": "الرفض",
     "errors": {
       "alreadyReviewed": "تمت مراجعة هذا الملف بالفعل.",
+      "generic": "حدث خطأ ما. يرجى المحاولة مرة أخرى."
+    }
+  },
+  "clinicAdmin": {
+    "title": "عيادتي",
+    "form": {
+      "nameLabel": "اسم العيادة",
+      "cityLabel": "المدينة",
+      "addressLabel": "العنوان (اختياري)",
+      "submit": "إنشاء عيادتي",
+      "submitting": "جارٍ الإنشاء…"
+    },
+    "validation": {
+      "nameRequired": "اسم العيادة مطلوب.",
+      "cityRequired": "المدينة مطلوبة.",
+      "emailInvalid": "بريد إلكتروني غير صالح."
+    },
+    "invitations": {
+      "title": "دعوة طبيب",
+      "description": "سيرى الطبيب هذه الدعوة في لوحته الخاصة.",
+      "emailLabel": "البريد الإلكتروني للطبيب",
+      "invite": "دعوة",
+      "inviting": "جارٍ الإرسال…",
+      "empty": "لم يتم إرسال أي دعوة بعد.",
+      "status": {
+        "pending": "قيد الانتظار",
+        "accepted": "مقبولة",
+        "declined": "مرفوضة"
+      }
+    },
+    "errors": {
+      "alreadyInvited": "يوجد بالفعل دعوة قيد الانتظار لهذا البريد الإلكتروني.",
       "generic": "حدث خطأ ما. يرجى المحاولة مرة أخرى."
     }
   }

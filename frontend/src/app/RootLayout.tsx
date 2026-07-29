@@ -28,6 +28,11 @@ function AuthNav() {
             {t('nav.verificationQueue')}
           </Link>
         )}
+        {user.role === 'CLINIC_ADMIN' && (
+          <Link to="/clinic-admin" className="text-sm font-medium text-foreground hover:text-primary">
+            {t('nav.clinicAdmin')}
+          </Link>
+        )}
         <span className="text-sm text-muted-foreground">
           {t('nav.greeting', { name: user.firstName })}
         </span>

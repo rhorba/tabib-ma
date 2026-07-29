@@ -4,6 +4,38 @@
  */
 
 export interface paths {
+    "/api/v1/clinic/invitations/{invitationId}/decline": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["decline"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/clinic/invitations/{invitationId}/accept": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["accept"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/clinic/doctor-profiles": {
         parameters: {
             query?: never;
@@ -30,6 +62,38 @@ export interface paths {
         get: operations["listMyDocuments"];
         put?: never;
         post: operations["uploadDocument"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/clinic/clinics": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["createClinic"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/clinic/clinics/{clinicId}/invitations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["listInvitations"];
+        put?: never;
+        post: operations["inviteDoctor"];
         delete?: never;
         options?: never;
         head?: never;
@@ -132,6 +196,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/clinic/invitations/me": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["listMyPendingInvitations"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/clinic/doctor-profiles/me": {
         parameters: {
             query?: never;
@@ -140,6 +220,22 @@ export interface paths {
             cookie?: never;
         };
         get: operations["getMyProfile"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/clinic/clinics/me": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getMyClinic"];
         put?: never;
         post?: never;
         delete?: never;
@@ -216,6 +312,17 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        ClinicInvitationResponse: {
+            /** Format: uuid */
+            id?: string;
+            /** Format: uuid */
+            clinicId?: string;
+            invitedEmail?: string;
+            /** @enum {string} */
+            status?: "PENDING" | "ACCEPTED" | "DECLINED";
+            /** Format: date-time */
+            createdAt?: string;
+        };
         CreateDoctorProfileRequest: {
             specialty: string;
             bio?: string;
@@ -242,6 +349,23 @@ export interface components {
             documentType?: string;
             /** Format: date-time */
             createdAt?: string;
+        };
+        CreateClinicRequest: {
+            name: string;
+            city: string;
+            address?: string;
+        };
+        ClinicResponse: {
+            /** Format: uuid */
+            id?: string;
+            /** Format: uuid */
+            adminUserId?: string;
+            name?: string;
+            city?: string;
+            address?: string;
+        };
+        InviteDoctorRequest: {
+            email: string;
         };
         RegisterRequest: {
             email: string;
@@ -282,6 +406,50 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    decline: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                invitationId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ClinicInvitationResponse"];
+                };
+            };
+        };
+    };
+    accept: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                invitationId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ClinicInvitationResponse"];
+                };
+            };
+        };
+    };
     createProfile: {
         parameters: {
             query?: never;
@@ -355,6 +523,78 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["VerificationDocumentResponse"];
+                };
+            };
+        };
+    };
+    createClinic: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateClinicRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ClinicResponse"];
+                };
+            };
+        };
+    };
+    listInvitations: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                clinicId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ClinicInvitationResponse"][];
+                };
+            };
+        };
+    };
+    inviteDoctor: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                clinicId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["InviteDoctorRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ClinicInvitationResponse"];
                 };
             };
         };
@@ -495,6 +735,26 @@ export interface operations {
             };
         };
     };
+    listMyPendingInvitations: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ClinicInvitationResponse"][];
+                };
+            };
+        };
+    };
     getMyProfile: {
         parameters: {
             query?: never;
@@ -511,6 +771,26 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["DoctorProfileResponse"];
+                };
+            };
+        };
+    };
+    getMyClinic: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ClinicResponse"];
                 };
             };
         };

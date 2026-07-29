@@ -8,7 +8,8 @@
     "logout": "Déconnexion",
     "greeting": "Bonjour, {{name}}",
     "doctorOnboarding": "Mon profil médecin",
-    "verificationQueue": "File de vérification"
+    "verificationQueue": "File de vérification",
+    "clinicAdmin": "Ma clinique"
   },
   "home": {
     "title": "Tabib.ma",
@@ -110,6 +111,38 @@
     "reject": "Rejeter",
     "errors": {
       "alreadyReviewed": "Ce profil a déjà été examiné.",
+      "generic": "Une erreur est survenue. Veuillez réessayer."
+    }
+  },
+  "clinicAdmin": {
+    "title": "Ma clinique",
+    "form": {
+      "nameLabel": "Nom de la clinique",
+      "cityLabel": "Ville",
+      "addressLabel": "Adresse (optionnel)",
+      "submit": "Créer ma clinique",
+      "submitting": "Création en cours…"
+    },
+    "validation": {
+      "nameRequired": "Le nom de la clinique est requis.",
+      "cityRequired": "La ville est requise.",
+      "emailInvalid": "Adresse e-mail invalide."
+    },
+    "invitations": {
+      "title": "Inviter un médecin",
+      "description": "Le médecin verra cette invitation sur son propre tableau de bord.",
+      "emailLabel": "Adresse e-mail du médecin",
+      "invite": "Inviter",
+      "inviting": "Envoi en cours…",
+      "empty": "Aucune invitation envoyée pour le moment.",
+      "status": {
+        "pending": "En attente",
+        "accepted": "Acceptée",
+        "declined": "Refusée"
+      }
+    },
+    "errors": {
+      "alreadyInvited": "Cette adresse e-mail a déjà une invitation en attente.",
       "generic": "Une erreur est survenue. Veuillez réessayer."
     }
   }

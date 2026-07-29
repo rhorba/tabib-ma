@@ -175,3 +175,10 @@ Extended `DoctorOnboardingService` with listMyPendingInvitations/acceptInvitatio
 **Found and fixed a real infrastructure bug**, not just a test-writing one: `JwtTokenProvider` never put an `email` claim in the JWT — `UserContext.email()` had been silently `null` from every real token since Epic 1 (Story 1.1), invisible until now because this is the first feature to ever compare on `principal.email()` rather than `principal.userId()`. My own unit tests for the new methods didn't catch it either, since they construct `UserContext` directly rather than round-tripping through a real JWT like the integration tests do. Fixed by adding the email claim to both encode and decode sides. Logged in .logs/decisions.md.
 11 new tests (7 unit + 4 integration). Full suite: 74 tests green, 85.3% instruction coverage.
 Not yet done: commit Batch 2, continue to Batch 3 (frontend clinic-admin UI).
+
+## 2026-07-29 — EXECUTE: Story 2.3 Batch 2 committed (e793daa), Batch 3 complete (frontend clinic-admin UI)
+Added features/clinic-admin: CreateClinicForm, InviteDoctorForm, ClinicAdminPage (create-clinic form if none exists, else clinic details + invitations list with status badges + invite form). Route at /clinic-admin (CLINIC_ADMIN-only) + conditional nav link. Full fr/ar i18n.
+Verified live in Chrome as the seeded clinic-admin@tabibma.dev: created a clinic, invited dr.bennani@example.com (the doctor account from Epic 2's manual testing), saw it appear with a PENDING badge.
+Browser automation hit two unrelated transient hangs this batch (CDP screenshot timeouts on an existing tab) — resolved both times by opening a fresh tab; not a product bug, just extension/tab flakiness, not investigated further.
+tsc/oxlint/vite build all clean.
+Not yet done: commit Batch 3, continue to Batch 4 (doctor-side pending-invitations UI on DoctorOnboardingPage).
