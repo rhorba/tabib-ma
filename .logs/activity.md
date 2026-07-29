@@ -160,3 +160,5 @@ Added frontend/e2e/clinic-onboarding.spec.ts (2 tests, real backend not MSW): (1
 Video recording (rule 9): `RECORDING_VERSION=0.2.0 node scripts/collect-e2e-video.mjs` -> .recordings/v0.2.0-2026-07-29.webm (47.4s, all 7 flows). "0.2.0" chosen as the next shippable increment after Epic 1's "0.1.0".
 Final re-verification (not just trusting earlier batch numbers): backend `./gradlew test jacocoTestCoverageVerification` green (48 tests, 83.1% instruction coverage); frontend `vitest run --coverage` green (51 tests, 88.84%/88.7% statement/line coverage); `vite build` clean, bundle unchanged at 197KB gzip.
 **Sprint 2 Epic 2 (Doctor & Clinic Onboarding, Stories 2.1+2.2) is now fully CLOSED**: backend + frontend + e2e recorded + both coverage gates cleared. Next: commit, push, monitor CI (rules 7/11).
+
+PUSH (rule 7): `git push origin main` (16ca678, 8 commits ahead of the previous session's HEAD). CI run 30456793712: GREEN on first try (backend-build-test 1m4s, security 43s — Semgrep/Trivy/Gitleaks all clean, no repeat of the react-router-class CVE surprise from Epic 1 since no new frontend dependencies were added this epic).
