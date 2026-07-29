@@ -47,3 +47,9 @@ Instruction coverage: 2284/2677 = 85.3% (393 missed) | Branch coverage: 55/72 = 
 Gate: jacocoTestCoverageVerification (minimum 0.80 instruction) — PASSED
 74 tests total: adds 7 unit tests (DoctorOnboardingServiceTest extended) + 4 integration tests (ClinicInvitationControllerIntegrationTest) to the 62 from Batch 1. Includes the JwtTokenProvider email-claim fix (real bug, not test-only).
 38 tests total (up from 18 at Epic 1 close): AuthServiceTest, AuthControllerIntegrationTest, ArchitectureTest, DoctorOnboardingServiceTest (8 unit), DoctorProfileControllerIntegrationTest (6 integration, incl. cross-doctor IDOR case).
+
+## 2026-07-29 — Story 2.3 Batch 5 (frontend automated tests: clinic-admin + pending invitations) coverage
+Statements: 90.18% (294/326) | Branches: 74.19% (161/217) | Functions: 92.3% (108/117) | Lines: 90.09% (291/323)
+Scope: src/features/**+src/shared/** (same exclusions as prior batches). Up from 88.84%/88.7% at Epic 2 close.
+Gate: ≥ 80% combined — PASSED
+63 tests total (up from 51 at Epic 2 close): 12 new tests — CreateClinicForm (2), InviteDoctorForm (3), ClinicAdminPage (3), PendingInvitationsList (4 incl. accept/decline/needs-profile-conflict cases). Extended clinicHandlers.ts with clinic/invitation MSW fakes + seedClinic/seedClinicInvitation test helpers; FakeUser role type gained CLINIC_ADMIN.

@@ -190,3 +190,10 @@ Verified live end-to-end across the whole Story 2.3 chain: logged in as the seed
 Browser automation hit two more transient CDP hangs this batch (screenshot timeouts) — both resolved on retry, no product impact.
 tsc/oxlint/vite build all clean.
 Not yet done: Batch 5 (automated tests + coverage), Batch 6 (e2e + video + verify+ship).
+
+## 2026-07-29 — EXECUTE: Story 2.3 Batch 4 committed (1392bb4), Batch 5 complete (frontend automated tests + coverage)
+Extended clinicHandlers.ts (src/test/) with clinic/invitation MSW fakes (create/get-my-clinic, invite/list-invitations, list-my-pending-invitations, accept/decline) mirroring ClinicOnboardingService's and DoctorOnboardingService's ownership/role/conflict rules, plus seedClinic/seedClinicInvitation test-only helpers (same style as the existing seedDoctorProfile). FakeUser's role union gained CLINIC_ADMIN.
+12 new tests: CreateClinicForm (validation + successful create), InviteDoctorForm (validation + successful invite + duplicate-pending-invite conflict), ClinicAdminPage (create-form/clinic-details/invitations-list states), PendingInvitationsList (empty state, accept, decline, needs-profile conflict error). Full suite: 63 tests green.
+Coverage: 90.18% statements / 90.09% lines (scope: src/features/**+src/shared/**, same exclusions as prior batches) — clears the 80% gate, up from 88.84%/88.7% at Epic 2 close (logged to .logs/metrics.md).
+tsc/oxlint clean.
+Not yet done: Batch 6 (Playwright e2e for the full clinic-onboarding flow, video recording, final combined coverage re-check, push).
