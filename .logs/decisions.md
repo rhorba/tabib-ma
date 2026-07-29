@@ -117,3 +117,15 @@ Owner: Backend Dev (completing a previously-agreed but dropped scope item, not a
 Found: backend Story 2.1 only exposed `POST /api/v1/clinic/doctor-profiles` (create) and `POST .../{id}/documents` (upload) — nothing to read the caller's own profile or their uploaded documents back. Without it, the frontend can't render onboarding status on a page reload/return visit except by provoking a 409 from a duplicate create attempt, which is a poor UX pattern, not a real read path.
 Decision: Added `GET /api/v1/clinic/doctor-profiles/me` (own profile, 404 if none) and `GET /api/v1/clinic/doctor-profiles/{id}/documents` (own documents, 403 if not owner) to `DoctorOnboardingService`/`DoctorProfileController`. Treated as an implementation-detail completion of the already-agreed Story 2.1 scope, not a new feature — same precedent as the 2026-07-22 JWT spec-conflict resolution (resolved without re-litigating with the user).
 Owner: Backend Dev / Frontend Dev
+
+## 2026-07-29 — Story 2.3 (clinic onboarding + doctor invitation) BRAINSTORM
+Research found this story genuinely under-specified: docs have only one UX sitemap bullet, no email-sending infrastructure exists (no notification module; SMTP_* are untouched placeholders), clinic_staff_memberships has no status/token columns (not built for a pending->accepted flow), and — same gap pattern as PLATFORM_ADMIN before it was fixed this epic — there's no way to provision a CLINIC_ADMIN user or a Clinic record.
+
+Decision 1 (invitation flow): In-app accept, no email infrastructure. Admin invites by entering a doctor's email -> creates a PENDING clinic_invitations row. The doctor sees their own pending invitations (matched by their authenticated email, not a mailed token/link) on their existing onboarding page and accepts/declines. Accept creates the ClinicStaffMembership row. Rejected alternatives: a full mocked-EmailSender+token flow (more work, stands up the notification module a sprint early for a Should-priority story) and a no-accept-step direct-add (drops the AC's core "doctor accepts" semantics).
+Owner: User (BRAINSTORM gate)
+
+Decision 2 (clinic + admin provisioning): CLINIC_ADMIN self-creates their own Clinic via POST, mirroring the DOCTOR self-service profile pattern from Story 2.1 (`clinics` gets a new `admin_user_id` column — it had no owner column before). One dev/test CLINIC_ADMIN seeded via Flyway, same pattern as the PLATFORM_ADMIN seed added earlier this epic. Rejected alternative: seeding a demo Clinic row directly (skips building the create-clinic endpoint, but clinics had no owner FK to seed against anyway, and self-service is more consistent with Story 2.1's precedent).
+Owner: User (BRAINSTORM gate)
+
+## 2026-07-29 — Story 2.3 PLAN confirmed
+User confirmed the 6-batch plan (backend clinic+invite -> backend doctor accept/decline -> frontend clinic-admin -> frontend doctor invitations UI -> tests/coverage -> verify+ship), mirroring Epic 2's rhythm exactly. Proceeding to EXECUTE, Batch 1.

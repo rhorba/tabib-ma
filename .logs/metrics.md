@@ -36,4 +36,9 @@ Statements: 88.84% (223/251) | Branches: 73.54% (114/155) | Functions: 89.88% (8
 Scope: src/features/**+src/shared/** (excludes vendor shadcn UI primitives and generated schema.d.ts — same treatment as Story 1.1). LoginPage/RegisterPage/LanguageSwitcher remain deliberately uncovered per the 2026-07-27 precedent (thin wrappers, manually verified live).
 Gate: ≥ 80% combined — PASSED
 25 new tests added (51 total, up from 26 at Epic 1 close): doctor-onboarding schemas (9), DoctorProfileForm (2), DocumentUploadForm (2), DoctorOnboardingPage (3), platform-admin VerificationQueueItem (2) + VerificationQueuePage (4), RequireRole (3). Added a clinicHandlers.ts MSW fake (mirrors authHandlers.ts's style) covering the doctor-profiles/verification-queue contract.
+
+## 2026-07-29 — Story 2.3 Batch 1 (backend: clinic creation + doctor invitation) coverage
+Instruction coverage: 2108/2531 = 83.3% (423 missed) | Branch coverage: 49/66 = 74.2% (17 missed)
+Gate: jacocoTestCoverageVerification (minimum 0.80 instruction) — PASSED
+62 tests total: adds ClinicOnboardingServiceTest (9 unit) + ClinicControllerIntegrationTest (4 integration) to the 48 from Epic 2.
 38 tests total (up from 18 at Epic 1 close): AuthServiceTest, AuthControllerIntegrationTest, ArchitectureTest, DoctorOnboardingServiceTest (8 unit), DoctorProfileControllerIntegrationTest (6 integration, incl. cross-doctor IDOR case).
