@@ -154,3 +154,9 @@ Extended src/test/renderWithProviders.tsx with an optional `initialEntries` para
 Coverage: 88.84% statements / 88.7% lines on the same scope convention as Story 1.1 (features/**+shared/**, excluding vendor UI + generated schema + the already-precedented thin-wrapper pages) — clears the 80% gate (logged to .logs/metrics.md).
 tsc/oxlint clean.
 Not yet done: Batch 6 (verify+ship — Playwright e2e + video recording per rule 9, final combined coverage check, push).
+
+## 2026-07-29 — EXECUTE: Epic 2 Batch 6 complete (verify+ship) — Sprint 2 Epic 2 CLOSED
+Added frontend/e2e/clinic-onboarding.spec.ts (2 tests, real backend not MSW): (1) full round-trip — doctor registers, creates a profile, uploads a document, logs out; the seeded PLATFORM_ADMIN (V3__seed_platform_admin.sql) logs in, sees it in the verification queue, views the document, approves it, queue empties; doctor logs back in and sees APPROVED status — (2) a PATIENT is redirected away from both /doctor/onboarding and /platform-admin/verification-queue. Full e2e suite (7 tests total, including the 5 from Epic 1's auth.spec.ts): all green.
+Video recording (rule 9): `RECORDING_VERSION=0.2.0 node scripts/collect-e2e-video.mjs` -> .recordings/v0.2.0-2026-07-29.webm (47.4s, all 7 flows). "0.2.0" chosen as the next shippable increment after Epic 1's "0.1.0".
+Final re-verification (not just trusting earlier batch numbers): backend `./gradlew test jacocoTestCoverageVerification` green (48 tests, 83.1% instruction coverage); frontend `vitest run --coverage` green (51 tests, 88.84%/88.7% statement/line coverage); `vite build` clean, bundle unchanged at 197KB gzip.
+**Sprint 2 Epic 2 (Doctor & Clinic Onboarding, Stories 2.1+2.2) is now fully CLOSED**: backend + frontend + e2e recorded + both coverage gates cleared. Next: commit, push, monitor CI (rules 7/11).
