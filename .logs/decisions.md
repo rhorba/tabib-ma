@@ -129,3 +129,8 @@ Owner: User (BRAINSTORM gate)
 
 ## 2026-07-29 — Story 2.3 PLAN confirmed
 User confirmed the 6-batch plan (backend clinic+invite -> backend doctor accept/decline -> frontend clinic-admin -> frontend doctor invitations UI -> tests/coverage -> verify+ship), mirroring Epic 2's rhythm exactly. Proceeding to EXECUTE, Batch 1.
+
+## 2026-07-29 — Real bug found in Batch 2: JwtTokenProvider never encoded the email claim, so UserContext.email() was always null from a real token
+Found: writing the doctor-side accept/decline integration tests (which match an invitation to the caller by `principal.email()`) surfaced that every integration test failed with 403 "not addressed to you" / an empty pending-invitations list, even right after successfully inviting that exact email. `JwtTokenProvider.generateAccessToken` only ever set the `role` claim and the subject (userId) — never an email claim — and `validateAndExtract` hardcoded `new UserContext(userId, null, role)`. This bug existed since Epic 1 (Story 1.1) but was invisible until now: every prior consumer of `UserContext` only ever compared `userId`, never `email`; my unit tests for the new methods also missed it because they construct `UserContext` directly (bypassing the real JWT round-trip) rather than through a real token like the integration tests do.
+Decision: Added an `email` claim to the JWT (encode from `User.getEmail()`, decode into `UserContext.email()`). No frontend impact — the frontend never read this claim; `GET /users/me`'s email always came from the DB via `UserController`, not the token.
+Owner: Backend Dev

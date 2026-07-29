@@ -27,13 +27,19 @@ public class DoctorOnboardingService {
     private final DoctorProfileRepository doctorProfileRepository;
     private final VerificationDocumentRepository verificationDocumentRepository;
     private final ObjectStorageClient objectStorageClient;
+    private final ClinicInvitationRepository clinicInvitationRepository;
+    private final ClinicStaffMembershipRepository clinicStaffMembershipRepository;
 
     public DoctorOnboardingService(DoctorProfileRepository doctorProfileRepository,
                                     VerificationDocumentRepository verificationDocumentRepository,
-                                    ObjectStorageClient objectStorageClient) {
+                                    ObjectStorageClient objectStorageClient,
+                                    ClinicInvitationRepository clinicInvitationRepository,
+                                    ClinicStaffMembershipRepository clinicStaffMembershipRepository) {
         this.doctorProfileRepository = doctorProfileRepository;
         this.verificationDocumentRepository = verificationDocumentRepository;
         this.objectStorageClient = objectStorageClient;
+        this.clinicInvitationRepository = clinicInvitationRepository;
+        this.clinicStaffMembershipRepository = clinicStaffMembershipRepository;
     }
 
     @Transactional
@@ -91,5 +97,41 @@ public class DoctorOnboardingService {
             throw new ForbiddenException("You can only view documents on your own doctor profile.");
         }
         return verificationDocumentRepository.findAllByDoctorProfileId(doctorProfileId);
+    }
+
+    public List<ClinicInvitation> listMyPendingInvitations(UserContext principal) {
+        return clinicInvitationRepository.findAllByInvitedEmailAndStatus(principal.email(), InvitationStatus.PENDING);
+    }
+
+    @Transactional
+    public ClinicInvitation acceptInvitation(UserContext principal, UUID invitationId) {
+        ClinicInvitation invitation = getOwnPendingInvitationOrThrow(principal, invitationId);
+        DoctorProfile profile = doctorProfileRepository.findByUserId(principal.userId())
+                .orElseThrow(() -> new ConflictException(
+                        "You need to create your doctor profile before joining a clinic."));
+        if (!clinicStaffMembershipRepository.existsByClinicIdAndDoctorProfileId(invitation.getClinicId(), profile.getId())) {
+            clinicStaffMembershipRepository.save(new ClinicStaffMembership(invitation.getClinicId(), profile.getId()));
+        }
+        invitation.accept();
+        return clinicInvitationRepository.save(invitation);
+    }
+
+    @Transactional
+    public ClinicInvitation declineInvitation(UserContext principal, UUID invitationId) {
+        ClinicInvitation invitation = getOwnPendingInvitationOrThrow(principal, invitationId);
+        invitation.decline();
+        return clinicInvitationRepository.save(invitation);
+    }
+
+    private ClinicInvitation getOwnPendingInvitationOrThrow(UserContext principal, UUID invitationId) {
+        ClinicInvitation invitation = clinicInvitationRepository.findById(invitationId)
+                .orElseThrow(() -> new NotFoundException("Invitation not found."));
+        if (!invitation.getInvitedEmail().equals(principal.email())) {
+            throw new ForbiddenException("This invitation was not sent to you.");
+        }
+        if (invitation.getStatus() != InvitationStatus.PENDING) {
+            throw new ConflictException("This invitation has already been decided.");
+        }
+        return invitation;
     }
 }

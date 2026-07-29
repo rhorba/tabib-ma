@@ -41,4 +41,9 @@ Gate: ≥ 80% combined — PASSED
 Instruction coverage: 2108/2531 = 83.3% (423 missed) | Branch coverage: 49/66 = 74.2% (17 missed)
 Gate: jacocoTestCoverageVerification (minimum 0.80 instruction) — PASSED
 62 tests total: adds ClinicOnboardingServiceTest (9 unit) + ClinicControllerIntegrationTest (4 integration) to the 48 from Epic 2.
+
+## 2026-07-29 — Story 2.3 Batch 2 (backend: doctor accept/decline) coverage
+Instruction coverage: 2284/2677 = 85.3% (393 missed) | Branch coverage: 55/72 = 76.4% (17 missed)
+Gate: jacocoTestCoverageVerification (minimum 0.80 instruction) — PASSED
+74 tests total: adds 7 unit tests (DoctorOnboardingServiceTest extended) + 4 integration tests (ClinicInvitationControllerIntegrationTest) to the 62 from Batch 1. Includes the JwtTokenProvider email-claim fix (real bug, not test-only).
 38 tests total (up from 18 at Epic 1 close): AuthServiceTest, AuthControllerIntegrationTest, ArchitectureTest, DoctorOnboardingServiceTest (8 unit), DoctorProfileControllerIntegrationTest (6 integration, incl. cross-doctor IDOR case).

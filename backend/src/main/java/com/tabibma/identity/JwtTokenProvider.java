@@ -19,6 +19,7 @@ import java.util.UUID;
 public class JwtTokenProvider {
 
     private static final String CLAIM_ROLE = "role";
+    private static final String CLAIM_EMAIL = "email";
 
     private final PrivateKey privateKey;
     private final PublicKey publicKey;
@@ -36,6 +37,7 @@ public class JwtTokenProvider {
         return Jwts.builder()
                 .subject(user.getId().toString())
                 .claim(CLAIM_ROLE, user.getRole().name())
+                .claim(CLAIM_EMAIL, user.getEmail())
                 .issuedAt(Date.from(now))
                 .expiration(Date.from(now.plus(Duration.ofMillis(accessTokenExpirationMs))))
                 .signWith(privateKey, Jwts.SIG.RS256)
@@ -56,7 +58,8 @@ public class JwtTokenProvider {
                     .getPayload();
             UUID userId = UUID.fromString(claims.getSubject());
             Role role = Role.valueOf(claims.get(CLAIM_ROLE, String.class));
-            return Optional.of(new UserContext(userId, null, role));
+            String email = claims.get(CLAIM_EMAIL, String.class);
+            return Optional.of(new UserContext(userId, email, role));
         } catch (JwtException | IllegalArgumentException ex) {
             return Optional.empty();
         }

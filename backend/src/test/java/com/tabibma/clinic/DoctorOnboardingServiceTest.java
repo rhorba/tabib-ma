@@ -38,12 +38,17 @@ class DoctorOnboardingServiceTest {
     private VerificationDocumentRepository verificationDocumentRepository;
     @Mock
     private ObjectStorageClient objectStorageClient;
+    @Mock
+    private ClinicInvitationRepository clinicInvitationRepository;
+    @Mock
+    private ClinicStaffMembershipRepository clinicStaffMembershipRepository;
 
     private DoctorOnboardingService service;
 
     @BeforeEach
     void setUp() {
-        service = new DoctorOnboardingService(doctorProfileRepository, verificationDocumentRepository, objectStorageClient);
+        service = new DoctorOnboardingService(doctorProfileRepository, verificationDocumentRepository,
+                objectStorageClient, clinicInvitationRepository, clinicStaffMembershipRepository);
     }
 
     @Test
@@ -175,5 +180,109 @@ class DoctorOnboardingServiceTest {
         when(verificationDocumentRepository.findAllByDoctorProfileId(profileId)).thenReturn(List.of(document));
 
         assertThat(service.listMyDocuments(owner, profileId)).containsExactly(document);
+    }
+
+    @Test
+    void listMyPendingInvitations_returnsPendingForCallerEmail() {
+        UserContext doctor = new UserContext(UUID.randomUUID(), "d@example.com", Role.DOCTOR);
+        ClinicInvitation invitation = new ClinicInvitation(UUID.randomUUID(), "d@example.com");
+        when(clinicInvitationRepository.findAllByInvitedEmailAndStatus("d@example.com", InvitationStatus.PENDING))
+                .thenReturn(List.of(invitation));
+
+        assertThat(service.listMyPendingInvitations(doctor)).containsExactly(invitation);
+    }
+
+    @Test
+    void acceptInvitation_rejectsWhenNotFound() {
+        UserContext doctor = new UserContext(UUID.randomUUID(), "d@example.com", Role.DOCTOR);
+        UUID invitationId = UUID.randomUUID();
+        when(clinicInvitationRepository.findById(invitationId)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> service.acceptInvitation(doctor, invitationId))
+                .isInstanceOf(NotFoundException.class);
+    }
+
+    @Test
+    void acceptInvitation_rejectsWhenNotAddressedToCaller() {
+        UserContext doctor = new UserContext(UUID.randomUUID(), "d@example.com", Role.DOCTOR);
+        ClinicInvitation invitation = new ClinicInvitation(UUID.randomUUID(), "someone-else@example.com");
+        UUID invitationId = UUID.randomUUID();
+        when(clinicInvitationRepository.findById(invitationId)).thenReturn(Optional.of(invitation));
+
+        assertThatThrownBy(() -> service.acceptInvitation(doctor, invitationId))
+                .isInstanceOf(ForbiddenException.class);
+    }
+
+    @Test
+    void acceptInvitation_rejectsWhenAlreadyDecided() {
+        UserContext doctor = new UserContext(UUID.randomUUID(), "d@example.com", Role.DOCTOR);
+        ClinicInvitation invitation = new ClinicInvitation(UUID.randomUUID(), "d@example.com");
+        invitation.decline();
+        UUID invitationId = UUID.randomUUID();
+        when(clinicInvitationRepository.findById(invitationId)).thenReturn(Optional.of(invitation));
+
+        assertThatThrownBy(() -> service.acceptInvitation(doctor, invitationId))
+                .isInstanceOf(ConflictException.class);
+    }
+
+    @Test
+    void acceptInvitation_rejectsWhenCallerHasNoDoctorProfile() {
+        UserContext doctor = new UserContext(UUID.randomUUID(), "d@example.com", Role.DOCTOR);
+        ClinicInvitation invitation = new ClinicInvitation(UUID.randomUUID(), "d@example.com");
+        UUID invitationId = UUID.randomUUID();
+        when(clinicInvitationRepository.findById(invitationId)).thenReturn(Optional.of(invitation));
+        when(doctorProfileRepository.findByUserId(doctor.userId())).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> service.acceptInvitation(doctor, invitationId))
+                .isInstanceOf(ConflictException.class);
+    }
+
+    @Test
+    void acceptInvitation_createsMembershipAndMarksAccepted() {
+        UserContext doctor = new UserContext(UUID.randomUUID(), "d@example.com", Role.DOCTOR);
+        UUID clinicId = UUID.randomUUID();
+        ClinicInvitation invitation = new ClinicInvitation(clinicId, "d@example.com");
+        UUID invitationId = UUID.randomUUID();
+        DoctorProfile profile = new DoctorProfile(doctor.userId(), "Cardiology", "bio", BigDecimal.TEN, "Rabat");
+        when(clinicInvitationRepository.findById(invitationId)).thenReturn(Optional.of(invitation));
+        when(doctorProfileRepository.findByUserId(doctor.userId())).thenReturn(Optional.of(profile));
+        when(clinicStaffMembershipRepository.existsByClinicIdAndDoctorProfileId(any(), any())).thenReturn(false);
+        when(clinicInvitationRepository.save(any(ClinicInvitation.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        ClinicInvitation result = service.acceptInvitation(doctor, invitationId);
+
+        assertThat(result.getStatus()).isEqualTo(InvitationStatus.ACCEPTED);
+        verify(clinicStaffMembershipRepository).save(any(ClinicStaffMembership.class));
+    }
+
+    @Test
+    void acceptInvitation_skipsDuplicateMembershipButStillAccepts() {
+        UserContext doctor = new UserContext(UUID.randomUUID(), "d@example.com", Role.DOCTOR);
+        UUID clinicId = UUID.randomUUID();
+        ClinicInvitation invitation = new ClinicInvitation(clinicId, "d@example.com");
+        UUID invitationId = UUID.randomUUID();
+        DoctorProfile profile = new DoctorProfile(doctor.userId(), "Cardiology", "bio", BigDecimal.TEN, "Rabat");
+        when(clinicInvitationRepository.findById(invitationId)).thenReturn(Optional.of(invitation));
+        when(doctorProfileRepository.findByUserId(doctor.userId())).thenReturn(Optional.of(profile));
+        when(clinicStaffMembershipRepository.existsByClinicIdAndDoctorProfileId(any(), any())).thenReturn(true);
+        when(clinicInvitationRepository.save(any(ClinicInvitation.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        ClinicInvitation result = service.acceptInvitation(doctor, invitationId);
+
+        assertThat(result.getStatus()).isEqualTo(InvitationStatus.ACCEPTED);
+        verify(clinicStaffMembershipRepository, never()).save(any());
+    }
+
+    @Test
+    void declineInvitation_marksDeclined() {
+        UserContext doctor = new UserContext(UUID.randomUUID(), "d@example.com", Role.DOCTOR);
+        ClinicInvitation invitation = new ClinicInvitation(UUID.randomUUID(), "d@example.com");
+        UUID invitationId = UUID.randomUUID();
+        when(clinicInvitationRepository.findById(invitationId)).thenReturn(Optional.of(invitation));
+        when(clinicInvitationRepository.save(any(ClinicInvitation.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        ClinicInvitation result = service.declineInvitation(doctor, invitationId);
+
+        assertThat(result.getStatus()).isEqualTo(InvitationStatus.DECLINED);
     }
 }
