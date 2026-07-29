@@ -182,3 +182,11 @@ Verified live in Chrome as the seeded clinic-admin@tabibma.dev: created a clinic
 Browser automation hit two unrelated transient hangs this batch (CDP screenshot timeouts on an existing tab) — resolved both times by opening a fresh tab; not a product bug, just extension/tab flakiness, not investigated further.
 tsc/oxlint/vite build all clean.
 Not yet done: commit Batch 3, continue to Batch 4 (doctor-side pending-invitations UI on DoctorOnboardingPage).
+
+## 2026-07-29 — EXECUTE: Story 2.3 Batch 3 committed (5450d5a), Batch 4 complete (doctor-side pending invitations UI)
+Before building this batch, found a UX gap: the doctor-facing invitation list only had a raw `clinicId` UUID to show, no clinic name. Added a `clinicName` field to `ClinicInvitationResponse`, resolved in `ClinicInvitationController` by injecting `ClinicRepository` directly (mirrors `AdminAccessController`'s existing precedent of a controller reading a repository for a simple lookup) — committed separately (a4c933a) before the frontend work, full suite reverified green (74 tests).
+Added `PendingInvitationsList` (features/doctor-onboarding), wired into `DoctorOnboardingPage` right after the profile card — renders nothing when there are no pending invitations, a card with accept/decline buttons otherwise; surfaces the CONFLICT error ("create your profile first") if a doctor without a profile tries to accept.
+Verified live end-to-end across the whole Story 2.3 chain: logged in as the seeded clinic-admin, created "Cabinet Al Amal", invited dr.bennani@example.com (the doctor from Epic 2's testing) — PENDING badge shown; logged in as that doctor, saw "Cabinet Al Amal" in a pending-invitations card with the resolved name (not a UUID), clicked Accepter, card disappeared (invitation now ACCEPTED, ClinicStaffMembership created).
+Browser automation hit two more transient CDP hangs this batch (screenshot timeouts) — both resolved on retry, no product impact.
+tsc/oxlint/vite build all clean.
+Not yet done: Batch 5 (automated tests + coverage), Batch 6 (e2e + video + verify+ship).

@@ -10,6 +10,7 @@ import {
 import { apiClient } from '@/shared/api/client'
 import { DoctorProfileForm } from '../components/DoctorProfileForm'
 import { DocumentUploadForm } from '../components/DocumentUploadForm'
+import { PendingInvitationsList } from '../components/PendingInvitationsList'
 
 const STATUS_STYLES: Record<string, string> = {
   PENDING: 'bg-amber-100 text-amber-800',
@@ -91,6 +92,8 @@ export function DoctorOnboardingPage() {
           )}
         </CardContent>
       </Card>
+
+      <PendingInvitationsList />
 
       {profileQuery.data && (
         <Card>

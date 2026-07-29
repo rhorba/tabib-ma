@@ -97,6 +97,15 @@
     "errors": {
       "fileTypeInvalid": "يُقبل فقط ملفات PDF وPNG وJPEG.",
       "generic": "حدث خطأ ما. يرجى المحاولة مرة أخرى."
+    },
+    "invitations": {
+      "title": "دعوات العيادات المعلقة",
+      "accept": "قبول",
+      "decline": "رفض",
+      "errors": {
+        "needsProfile": "يجب عليك أولاً إنشاء ملفك الطبي للانضمام إلى عيادة.",
+        "generic": "حدث خطأ ما. يرجى المحاولة مرة أخرى."
+      }
     }
   },
   "verificationQueue": {

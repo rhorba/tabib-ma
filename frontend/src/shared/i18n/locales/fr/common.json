@@ -97,6 +97,15 @@
     "errors": {
       "fileTypeInvalid": "Seuls les fichiers PDF, PNG et JPEG sont acceptés.",
       "generic": "Une erreur est survenue. Veuillez réessayer."
+    },
+    "invitations": {
+      "title": "Invitations de clinique en attente",
+      "accept": "Accepter",
+      "decline": "Refuser",
+      "errors": {
+        "needsProfile": "Vous devez d'abord créer votre profil médecin pour rejoindre une clinique.",
+        "generic": "Une erreur est survenue. Veuillez réessayer."
+      }
     }
   },
   "verificationQueue": {

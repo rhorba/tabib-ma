@@ -317,6 +317,7 @@ export interface components {
             id?: string;
             /** Format: uuid */
             clinicId?: string;
+            clinicName?: string;
             invitedEmail?: string;
             /** @enum {string} */
             status?: "PENDING" | "ACCEPTED" | "DECLINED";
