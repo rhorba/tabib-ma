@@ -16,6 +16,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.mock.web.MockMultipartFile;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -131,5 +132,48 @@ class DoctorOnboardingServiceTest {
 
         assertThat(saved.getObjectStorageKey()).isEqualTo("verification-documents/key");
         assertThat(saved.getDocumentType()).isEqualTo("MEDICAL_LICENSE");
+    }
+
+    @Test
+    void getMyProfile_rejectsWhenNoneExists() {
+        UserContext doctor = new UserContext(UUID.randomUUID(), "d@example.com", Role.DOCTOR);
+        when(doctorProfileRepository.findByUserId(doctor.userId())).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> service.getMyProfile(doctor))
+                .isInstanceOf(NotFoundException.class);
+    }
+
+    @Test
+    void getMyProfile_returnsOwnProfile() {
+        UserContext doctor = new UserContext(UUID.randomUUID(), "d@example.com", Role.DOCTOR);
+        DoctorProfile profile = new DoctorProfile(doctor.userId(), "Cardiology", "bio", BigDecimal.TEN, "Rabat");
+        when(doctorProfileRepository.findByUserId(doctor.userId())).thenReturn(Optional.of(profile));
+
+        assertThat(service.getMyProfile(doctor)).isSameAs(profile);
+    }
+
+    @Test
+    void listMyDocuments_rejectsWhenCallerDoesNotOwnProfile() {
+        UUID ownerId = UUID.randomUUID();
+        UserContext otherDoctor = new UserContext(UUID.randomUUID(), "other@example.com", Role.DOCTOR);
+        DoctorProfile profile = new DoctorProfile(ownerId, "Cardiology", "bio", BigDecimal.TEN, "Rabat");
+        UUID profileId = UUID.randomUUID();
+        when(doctorProfileRepository.findById(profileId)).thenReturn(Optional.of(profile));
+
+        assertThatThrownBy(() -> service.listMyDocuments(otherDoctor, profileId))
+                .isInstanceOf(ForbiddenException.class);
+    }
+
+    @Test
+    void listMyDocuments_returnsDocumentsForOwner() {
+        UUID ownerId = UUID.randomUUID();
+        UserContext owner = new UserContext(ownerId, "d@example.com", Role.DOCTOR);
+        DoctorProfile profile = new DoctorProfile(ownerId, "Cardiology", "bio", BigDecimal.TEN, "Rabat");
+        UUID profileId = UUID.randomUUID();
+        VerificationDocument document = new VerificationDocument(profileId, "MEDICAL_LICENSE", "key");
+        when(doctorProfileRepository.findById(profileId)).thenReturn(Optional.of(profile));
+        when(verificationDocumentRepository.findAllByDoctorProfileId(profileId)).thenReturn(List.of(document));
+
+        assertThat(service.listMyDocuments(owner, profileId)).containsExactly(document);
     }
 }

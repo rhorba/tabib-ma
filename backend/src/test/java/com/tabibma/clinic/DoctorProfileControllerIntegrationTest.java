@@ -9,6 +9,7 @@ import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -121,6 +122,45 @@ class DoctorProfileControllerIntegrationTest extends AbstractIntegrationTest {
                         .param("documentType", "MEDICAL_LICENSE")
                         .header("Authorization", "Bearer " + token))
                 .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void getMyProfile_returns404WhenNoneExists() throws Exception {
+        registerAndLogin("doctor-onboarding7@example.com", "DOCTOR");
+        String token = login("doctor-onboarding7@example.com");
+
+        mockMvc.perform(get("/api/v1/clinic/doctor-profiles/me")
+                        .header("Authorization", "Bearer " + token))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void getMyProfile_returnsOwnProfileAfterCreation() throws Exception {
+        String email = "doctor-onboarding8@example.com";
+        registerAndLogin(email, "DOCTOR");
+        String token = login(email);
+        createProfile(token, "Psychiatry", "Agadir");
+
+        mockMvc.perform(get("/api/v1/clinic/doctor-profiles/me")
+                        .header("Authorization", "Bearer " + token))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.specialty").value("Psychiatry"));
+    }
+
+    @Test
+    void listMyDocuments_rejectsNonOwner() throws Exception {
+        String ownerEmail = "doctor-onboarding9@example.com";
+        registerAndLogin(ownerEmail, "DOCTOR");
+        String ownerToken = login(ownerEmail);
+        String profileId = createProfile(ownerToken, "Urology", "Oujda");
+
+        String attackerEmail = "doctor-onboarding10@example.com";
+        registerAndLogin(attackerEmail, "DOCTOR");
+        String attackerToken = login(attackerEmail);
+
+        mockMvc.perform(get("/api/v1/clinic/doctor-profiles/" + profileId + "/documents")
+                        .header("Authorization", "Bearer " + attackerToken))
+                .andExpect(status().isForbidden());
     }
 
     private void registerAndLogin(String email, String role) throws Exception {

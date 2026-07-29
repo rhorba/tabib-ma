@@ -14,6 +14,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -76,5 +77,19 @@ public class DoctorOnboardingService {
 
         VerificationDocument document = new VerificationDocument(doctorProfileId, documentType.name(), storageKey);
         return verificationDocumentRepository.save(document);
+    }
+
+    public DoctorProfile getMyProfile(UserContext principal) {
+        return doctorProfileRepository.findByUserId(principal.userId())
+                .orElseThrow(() -> new NotFoundException("You don't have a doctor profile yet."));
+    }
+
+    public List<VerificationDocument> listMyDocuments(UserContext principal, UUID doctorProfileId) {
+        DoctorProfile profile = doctorProfileRepository.findById(doctorProfileId)
+                .orElseThrow(() -> new NotFoundException("Doctor profile not found."));
+        if (!profile.getUserId().equals(principal.userId())) {
+            throw new ForbiddenException("You can only view documents on your own doctor profile.");
+        }
+        return verificationDocumentRepository.findAllByDoctorProfileId(doctorProfileId);
     }
 }
