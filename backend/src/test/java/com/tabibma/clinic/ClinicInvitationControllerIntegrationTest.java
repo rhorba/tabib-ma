@@ -62,7 +62,8 @@ class ClinicInvitationControllerIntegrationTest extends AbstractIntegrationTest 
         mockMvc.perform(get("/api/v1/clinic/invitations/me")
                         .header("Authorization", "Bearer " + doctorToken))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].invitedEmail").value(doctorEmail));
+                .andExpect(jsonPath("$[0].invitedEmail").value(doctorEmail))
+                .andExpect(jsonPath("$[0].clinicName").value("Cabinet Test"));
 
         mockMvc.perform(post("/api/v1/clinic/invitations/" + invitationId + "/accept")
                         .header("Authorization", "Bearer " + doctorToken))

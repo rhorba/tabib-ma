@@ -18,27 +18,36 @@ import java.util.UUID;
 public class ClinicInvitationController {
 
     private final DoctorOnboardingService doctorOnboardingService;
+    private final ClinicRepository clinicRepository;
 
-    public ClinicInvitationController(DoctorOnboardingService doctorOnboardingService) {
+    public ClinicInvitationController(DoctorOnboardingService doctorOnboardingService,
+                                       ClinicRepository clinicRepository) {
         this.doctorOnboardingService = doctorOnboardingService;
+        this.clinicRepository = clinicRepository;
     }
 
     @GetMapping("/me")
     public List<ClinicInvitationResponse> listMyPendingInvitations(@AuthenticationPrincipal UserContext principal) {
         return doctorOnboardingService.listMyPendingInvitations(principal).stream()
-                .map(ClinicInvitationResponse::from)
+                .map(invitation -> ClinicInvitationResponse.from(invitation, clinicNameOf(invitation)))
                 .toList();
     }
 
     @PostMapping("/{invitationId}/accept")
     public ClinicInvitationResponse accept(@AuthenticationPrincipal UserContext principal,
                                             @PathVariable UUID invitationId) {
-        return ClinicInvitationResponse.from(doctorOnboardingService.acceptInvitation(principal, invitationId));
+        ClinicInvitation invitation = doctorOnboardingService.acceptInvitation(principal, invitationId);
+        return ClinicInvitationResponse.from(invitation, clinicNameOf(invitation));
     }
 
     @PostMapping("/{invitationId}/decline")
     public ClinicInvitationResponse decline(@AuthenticationPrincipal UserContext principal,
                                              @PathVariable UUID invitationId) {
-        return ClinicInvitationResponse.from(doctorOnboardingService.declineInvitation(principal, invitationId));
+        ClinicInvitation invitation = doctorOnboardingService.declineInvitation(principal, invitationId);
+        return ClinicInvitationResponse.from(invitation, clinicNameOf(invitation));
+    }
+
+    private String clinicNameOf(ClinicInvitation invitation) {
+        return clinicRepository.findById(invitation.getClinicId()).map(Clinic::getName).orElse(null);
     }
 }
