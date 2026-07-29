@@ -108,6 +108,11 @@ Decision: Removed `@Testcontainers`/`@Container` from `AbstractIntegrationTest` 
 Verified: full `./gradlew test` now passes in ~1m (down from ~5m20s with 7 failures), reran clean; `jacocoTestCoverageVerification` passes (81% instruction coverage).
 Owner: Backend Dev / Tech Lead
 
+## 2026-07-29 — Gap found starting frontend Story 2.2: PLATFORM_ADMIN seeding decision from 2026-07-28 BRAINSTORM was never implemented
+Found: the 2026-07-28 BRAINSTORM decided to seed a PLATFORM_ADMIN via Flyway ("dev/test credentials, documented in .env.example") to unblock Story 2.2 without an admin-creation endpoint. Batches 1-2 built the verification-queue backend but nobody actually added the seed migration — there was no way to reach the PLATFORM_ADMIN-only endpoints outside of a test's direct repository insert.
+Decision: Added V3__seed_platform_admin.sql (email tabib-admin@tabibma.dev, password changeme-admin-dev-only, argon2id hash generated via the real Argon2PasswordEncoder bean through a throwaway test — not hand-computed, to guarantee it actually verifies). Documented in .env.example with an explicit rotate-or-remove-before-production note.
+Owner: Backend Dev (completing a previously-agreed but dropped scope item, not a new decision)
+
 ## 2026-07-29 — Gap found starting frontend Story 2.1: no way for a doctor to fetch their own profile/status
 Found: backend Story 2.1 only exposed `POST /api/v1/clinic/doctor-profiles` (create) and `POST .../{id}/documents` (upload) — nothing to read the caller's own profile or their uploaded documents back. Without it, the frontend can't render onboarding status on a page reload/return visit except by provoking a 409 from a duplicate create attempt, which is a poor UX pattern, not a real read path.
 Decision: Added `GET /api/v1/clinic/doctor-profiles/me` (own profile, 404 if none) and `GET /api/v1/clinic/doctor-profiles/{id}/documents` (own documents, 403 if not owner) to `DoctorOnboardingService`/`DoctorProfileController`. Treated as an implementation-detail completion of the already-agreed Story 2.1 scope, not a new feature — same precedent as the 2026-07-22 JWT spec-conflict resolution (resolved without re-litigating with the user).

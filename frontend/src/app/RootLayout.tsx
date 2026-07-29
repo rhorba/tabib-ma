@@ -20,6 +20,14 @@ function AuthNav() {
             {t('nav.doctorOnboarding')}
           </Link>
         )}
+        {user.role === 'PLATFORM_ADMIN' && (
+          <Link
+            to="/platform-admin/verification-queue"
+            className="text-sm font-medium text-foreground hover:text-primary"
+          >
+            {t('nav.verificationQueue')}
+          </Link>
+        )}
         <span className="text-sm text-muted-foreground">
           {t('nav.greeting', { name: user.firstName })}
         </span>

@@ -7,7 +7,8 @@
     "register": "إنشاء حساب",
     "logout": "تسجيل الخروج",
     "greeting": "مرحبًا، {{name}}",
-    "doctorOnboarding": "ملفي الطبي"
+    "doctorOnboarding": "ملفي الطبي",
+    "verificationQueue": "قائمة التحقق"
   },
   "home": {
     "title": "Tabib.ma",
@@ -94,6 +95,21 @@
     },
     "errors": {
       "fileTypeInvalid": "يُقبل فقط ملفات PDF وPNG وJPEG.",
+      "generic": "حدث خطأ ما. يرجى المحاولة مرة أخرى."
+    }
+  },
+  "verificationQueue": {
+    "title": "قائمة التحقق",
+    "empty": "لا توجد طلبات قيد الانتظار.",
+    "specialtyLabel": "التخصص",
+    "cityLabel": "المدينة",
+    "feeLabel": "رسوم الاستشارة (درهم)",
+    "viewDocuments": "عرض المستندات",
+    "hideDocuments": "إخفاء المستندات",
+    "approve": "الموافقة",
+    "reject": "الرفض",
+    "errors": {
+      "alreadyReviewed": "تمت مراجعة هذا الملف بالفعل.",
       "generic": "حدث خطأ ما. يرجى المحاولة مرة أخرى."
     }
   }

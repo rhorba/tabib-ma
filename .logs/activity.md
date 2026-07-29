@@ -138,3 +138,10 @@ Fixed a zod v4 + react-hook-form typing conflict: z.coerce.number() gives the sc
 Verified live in Chrome (not just tsc/build/lint, which were also clean): registered a DOCTOR account, created a profile, saw the PENDING status badge, uploaded a document and saw it listed, reloaded the page and confirmed the profile/documents persisted (this is exactly the gap the new GET endpoints closed), logged out and confirmed direct navigation to /doctor/onboarding redirects to /login.
 Bundle size unchanged concern carried forward (still one 629KB/196KB-gzip chunk, pre-existing from Epic 1).
 Not yet done: Batch 4 (frontend Story 2.2 — platform admin verification queue UI), Batch 5 (tests/coverage), Batch 6 (verify+ship).
+
+## 2026-07-29 — EXECUTE: Epic 2 Batch 4 complete (frontend Story 2.2)
+Added `features/platform-admin`: VerificationQueuePage (lists PENDING doctor profiles) + VerificationQueueItem (per-row expandable document list, Approve/Reject buttons, handles the CONFLICT error if a profile was already reviewed by another admin action in-flight). Route at /platform-admin/verification-queue (PLATFORM_ADMIN-only via RequireRole) + conditional nav link.
+Found and fixed a real gap while testing this live: no PLATFORM_ADMIN account existed anywhere except inside test code, because the 2026-07-28 BRAINSTORM's "seed via Flyway" decision was never actually implemented across Batches 1-2. Added V3__seed_platform_admin.sql (details in .logs/decisions.md) to close it — full backend suite re-verified green (48 tests) after adding it.
+Verified live end-to-end: logged in as the seeded admin, saw the doctor profile created in Batch 3 in the pending queue, viewed its uploaded document, approved it, watched it disappear from the queue, then logged back in as the doctor and confirmed the status badge flipped from "En attente de vérification" to "Vérifié". This closes the loop across both Story 2.1 and 2.2's frontends against the real backend.
+tsc/oxlint/vite build all clean.
+Not yet done: Batch 5 (automated tests + coverage check for both frontend features), Batch 6 (verify+ship — e2e/video recording, final push).

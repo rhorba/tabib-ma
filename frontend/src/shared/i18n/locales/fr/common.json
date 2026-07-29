@@ -7,7 +7,8 @@
     "register": "Créer un compte",
     "logout": "Déconnexion",
     "greeting": "Bonjour, {{name}}",
-    "doctorOnboarding": "Mon profil médecin"
+    "doctorOnboarding": "Mon profil médecin",
+    "verificationQueue": "File de vérification"
   },
   "home": {
     "title": "Tabib.ma",
@@ -94,6 +95,21 @@
     },
     "errors": {
       "fileTypeInvalid": "Seuls les fichiers PDF, PNG et JPEG sont acceptés.",
+      "generic": "Une erreur est survenue. Veuillez réessayer."
+    }
+  },
+  "verificationQueue": {
+    "title": "File de vérification",
+    "empty": "Aucune soumission en attente.",
+    "specialtyLabel": "Spécialité",
+    "cityLabel": "Ville",
+    "feeLabel": "Tarif de consultation (MAD)",
+    "viewDocuments": "Voir les documents",
+    "hideDocuments": "Masquer les documents",
+    "approve": "Approuver",
+    "reject": "Rejeter",
+    "errors": {
+      "alreadyReviewed": "Ce profil a déjà été examiné.",
       "generic": "Une erreur est survenue. Veuillez réessayer."
     }
   }
