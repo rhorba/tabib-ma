@@ -25,4 +25,9 @@ Gate: ≥ 80% on both — PASSED. e2e suite (Playwright, 5 tests, real backend) 
 ## 2026-07-29 — Epic 2 Batch 1 (backend Story 2.1) coverage, post Testcontainers-lifecycle fix
 Instruction coverage: 1522/1864 = 81.7% (342 missed) | Branch coverage: 37/54 = 68.5% (17 missed)
 Gate: jacocoTestCoverageVerification (minimum 0.80 instruction) — PASSED
+
+## 2026-07-29 — Epic 2 Batch 2 (backend Story 2.2) coverage
+Instruction coverage: 1716/2064 = 83.1% (348 missed) | Branch coverage: 39/56 = 69.6% (17 missed)
+Gate: jacocoTestCoverageVerification (minimum 0.80 instruction) — PASSED
+41 tests total: adds VerificationReviewServiceTest (5 unit) + VerificationReviewControllerIntegrationTest (5 integration) to the 31 from Batch 1/Epic 1.
 38 tests total (up from 18 at Epic 1 close): AuthServiceTest, AuthControllerIntegrationTest, ArchitectureTest, DoctorOnboardingServiceTest (8 unit), DoctorProfileControllerIntegrationTest (6 integration, incl. cross-doctor IDOR case).
