@@ -7,7 +7,7 @@ export type FakeUser = {
   id: string
   email: string
   password: string
-  role: 'PATIENT' | 'DOCTOR' | 'PLATFORM_ADMIN'
+  role: 'PATIENT' | 'DOCTOR' | 'PLATFORM_ADMIN' | 'CLINIC_ADMIN'
   firstName: string
   lastName: string
 }

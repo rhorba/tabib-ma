@@ -20,17 +20,39 @@ type FakeDocument = {
   documentType: string
   createdAt: string
 }
+type FakeClinic = {
+  id: string
+  adminUserId: string
+  name: string
+  city: string
+  address?: string
+}
+type FakeInvitation = {
+  id: string
+  clinicId: string
+  invitedEmail: string
+  status: 'PENDING' | 'ACCEPTED' | 'DECLINED'
+  createdAt: string
+}
 
 let profiles: FakeDoctorProfile[] = []
 let documents: FakeDocument[] = []
+let clinics: FakeClinic[] = []
+let invitations: FakeInvitation[] = []
 let nextProfileId = 1
 let nextDocumentId = 1
+let nextClinicId = 1
+let nextInvitationId = 1
 
 export function resetClinicState() {
   profiles = []
   documents = []
+  clinics = []
+  invitations = []
   nextProfileId = 1
   nextDocumentId = 1
+  nextClinicId = 1
+  nextInvitationId = 1
 }
 
 function errorResponse(status: number, code: string, message: string) {
@@ -48,6 +70,16 @@ function toProfileResponse(profile: FakeDoctorProfile) {
 function toDocumentResponse(document: FakeDocument) {
   const { id, doctorProfileId, documentType, createdAt } = document
   return { id, doctorProfileId, documentType, createdAt }
+}
+
+function toClinicResponse(clinic: FakeClinic) {
+  const { id, adminUserId, name, city, address } = clinic
+  return { id, adminUserId, name, city, address }
+}
+
+function toInvitationResponse(invitation: FakeInvitation, clinicName?: string) {
+  const { id, clinicId, invitedEmail, status, createdAt } = invitation
+  return { id, clinicId, clinicName: clinicName ?? null, invitedEmail, status, createdAt }
 }
 
 function pathSegment(request: Request, indexFromEnd: number) {
@@ -162,7 +194,128 @@ export const clinicHandlers = [
   http.post(/\/api\/v1\/admin\/platform\/verification-queue\/[^/]+\/reject$/, ({ request }) =>
     decide(request, 'REJECTED')
   ),
+
+  http.post(/\/api\/v1\/clinic\/clinics$/, async ({ request }) => {
+    const user = getAuthenticatedUser(request)
+    if (!user) {
+      return errorResponse(401, 'UNAUTHORIZED', 'Authentication is required.')
+    }
+    if (user.role !== 'CLINIC_ADMIN') {
+      return errorResponse(403, 'FORBIDDEN', 'Only clinic admins can create a clinic.')
+    }
+    if (clinics.some((c) => c.adminUserId === user.id)) {
+      return errorResponse(409, 'CONFLICT', 'A clinic already exists for this account.')
+    }
+    const body = (await request.json()) as { name: string; city: string; address?: string }
+    const clinic: FakeClinic = { id: String(nextClinicId++), adminUserId: user.id, ...body }
+    clinics.push(clinic)
+    return HttpResponse.json(toClinicResponse(clinic), { status: 201 })
+  }),
+
+  http.get(/\/api\/v1\/clinic\/clinics\/me$/, ({ request }) => {
+    const user = getAuthenticatedUser(request)
+    if (!user) {
+      return errorResponse(401, 'UNAUTHORIZED', 'Authentication is required.')
+    }
+    const clinic = clinics.find((c) => c.adminUserId === user.id)
+    if (!clinic) {
+      return errorResponse(404, 'NOT_FOUND', "You don't have a clinic yet.")
+    }
+    return HttpResponse.json(toClinicResponse(clinic))
+  }),
+
+  http.post(/\/api\/v1\/clinic\/clinics\/[^/]+\/invitations$/, async ({ request }) => {
+    const user = getAuthenticatedUser(request)
+    if (!user) {
+      return errorResponse(401, 'UNAUTHORIZED', 'Authentication is required.')
+    }
+    const clinicId = pathSegment(request, 2)
+    const clinic = clinics.find((c) => c.id === clinicId)
+    if (!clinic) {
+      return errorResponse(404, 'NOT_FOUND', 'Clinic not found.')
+    }
+    if (clinic.adminUserId !== user.id) {
+      return errorResponse(403, 'FORBIDDEN', 'You can only manage your own clinic.')
+    }
+    const body = (await request.json()) as { email: string }
+    if (
+      invitations.some(
+        (i) => i.clinicId === clinicId && i.invitedEmail === body.email && i.status === 'PENDING'
+      )
+    ) {
+      return errorResponse(409, 'CONFLICT', 'This email already has a pending invitation for this clinic.')
+    }
+    const invitation: FakeInvitation = {
+      id: String(nextInvitationId++),
+      clinicId,
+      invitedEmail: body.email,
+      status: 'PENDING',
+      createdAt: new Date().toISOString(),
+    }
+    invitations.push(invitation)
+    return HttpResponse.json(toInvitationResponse(invitation, clinic.name), { status: 201 })
+  }),
+
+  http.get(/\/api\/v1\/clinic\/clinics\/[^/]+\/invitations$/, ({ request }) => {
+    const user = getAuthenticatedUser(request)
+    if (!user) {
+      return errorResponse(401, 'UNAUTHORIZED', 'Authentication is required.')
+    }
+    const clinicId = pathSegment(request, 2)
+    const clinic = clinics.find((c) => c.id === clinicId)
+    if (!clinic) {
+      return errorResponse(404, 'NOT_FOUND', 'Clinic not found.')
+    }
+    if (clinic.adminUserId !== user.id) {
+      return errorResponse(403, 'FORBIDDEN', 'You can only manage your own clinic.')
+    }
+    return HttpResponse.json(
+      invitations.filter((i) => i.clinicId === clinicId).map((i) => toInvitationResponse(i, clinic.name))
+    )
+  }),
+
+  http.get(/\/api\/v1\/clinic\/invitations\/me$/, ({ request }) => {
+    const user = getAuthenticatedUser(request)
+    if (!user) {
+      return errorResponse(401, 'UNAUTHORIZED', 'Authentication is required.')
+    }
+    return HttpResponse.json(
+      invitations
+        .filter((i) => i.invitedEmail === user.email && i.status === 'PENDING')
+        .map((i) => toInvitationResponse(i, clinics.find((c) => c.id === i.clinicId)?.name))
+    )
+  }),
+
+  http.post(/\/api\/v1\/clinic\/invitations\/[^/]+\/accept$/, ({ request }) =>
+    decideInvitation(request, 'ACCEPTED')
+  ),
+  http.post(/\/api\/v1\/clinic\/invitations\/[^/]+\/decline$/, ({ request }) =>
+    decideInvitation(request, 'DECLINED')
+  ),
 ]
+
+function decideInvitation(request: Request, status: 'ACCEPTED' | 'DECLINED') {
+  const user = getAuthenticatedUser(request)
+  if (!user) {
+    return errorResponse(401, 'UNAUTHORIZED', 'Authentication is required.')
+  }
+  const invitationId = pathSegment(request, 2)
+  const invitation = invitations.find((i) => i.id === invitationId)
+  if (!invitation) {
+    return errorResponse(404, 'NOT_FOUND', 'Invitation not found.')
+  }
+  if (invitation.invitedEmail !== user.email) {
+    return errorResponse(403, 'FORBIDDEN', 'This invitation was not sent to you.')
+  }
+  if (invitation.status !== 'PENDING') {
+    return errorResponse(409, 'CONFLICT', 'This invitation has already been decided.')
+  }
+  if (status === 'ACCEPTED' && !profiles.some((p) => p.userId === user.id)) {
+    return errorResponse(409, 'CONFLICT', 'You need to create your doctor profile before joining a clinic.')
+  }
+  invitation.status = status
+  return HttpResponse.json(toInvitationResponse(invitation, clinics.find((c) => c.id === invitation.clinicId)?.name))
+}
 
 function decide(request: Request, status: 'APPROVED' | 'REJECTED') {
   const user = getAuthenticatedUser(request)
@@ -187,4 +340,26 @@ export function seedDoctorProfile(profile: Omit<FakeDoctorProfile, 'id'>) {
   const fakeProfile: FakeDoctorProfile = { id: String(nextProfileId++), ...profile }
   profiles.push(fakeProfile)
   return fakeProfile
+}
+
+// Test-only helper: lets tests seed a clinic directly without going through
+// the create-clinic UI first (e.g. to test InviteDoctorForm/invitation lists
+// in isolation).
+export function seedClinic(clinic: Omit<FakeClinic, 'id'>) {
+  const fakeClinic: FakeClinic = { id: String(nextClinicId++), ...clinic }
+  clinics.push(fakeClinic)
+  return fakeClinic
+}
+
+// Test-only helper: lets tests seed a pending invitation directly, mirroring
+// seedDoctorProfile's role for the doctor-onboarding side.
+export function seedClinicInvitation(invitation: Omit<FakeInvitation, 'id' | 'createdAt' | 'status'>) {
+  const fakeInvitation: FakeInvitation = {
+    id: String(nextInvitationId++),
+    status: 'PENDING',
+    createdAt: new Date().toISOString(),
+    ...invitation,
+  }
+  invitations.push(fakeInvitation)
+  return fakeInvitation
 }
