@@ -11,6 +11,7 @@ services:
       # containers reach each other by service name, not localhost.
       DATABASE_URL: jdbc:postgresql://db:5432/tabibma
       REDIS_URL: redis://redis:6379
+    volumes: ["objectstorage:/app/data/object-storage"]
     depends_on:
       db:
         condition: service_healthy
@@ -34,6 +35,7 @@ services:
 volumes:
   pgdata:
   redisdata:
+  objectstorage:
 
 # frontend service intentionally not added yet — no frontend/ or its Dockerfile exist
 # (see docs/devops-tabib-ma.md Section 5 for the full v1 design once that lands).

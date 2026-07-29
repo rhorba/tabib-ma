@@ -2,6 +2,7 @@
 backend/build/
 backend/.gradle/
 backend/out/
+backend/data/
 !backend/gradle/wrapper/gradle-wrapper.jar
 
 # Frontend (Node)

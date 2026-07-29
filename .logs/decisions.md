@@ -93,3 +93,17 @@ Owner: Frontend Dev
 Found while wiring MSW for component tests: apiClient (frontend/src/shared/api/client.ts) requests kept hitting the real backend instead of MSW mocks, even with correct handler URL patterns. Root cause: openapi-fetch's createClient() resolves `fetch: baseFetch = globalThis.fetch` as a parameter default — evaluated once, at client-creation/module-import time. Since MSW patches globalThis.fetch later (inside a test's beforeAll), the already-captured reference is the original, unpatched fetch.
 Decision: Pass `fetch: (...args) => globalThis.fetch(...args)` explicitly to createClient() — a thin wrapper that looks up globalThis.fetch at call time instead of capture time. No production behavior change (globalThis.fetch is stable outside tests); makes the client properly mockable.
 Owner: Frontend Dev (Story 1.1 Batch 5)
+
+## 2026-07-28 — Epic 2 scope & approach (BRAINSTORM gate)
+Scope: Stories 2.1 (doctor profile + credential upload) + 2.2 (Platform Admin verification review queue) this pass. Story 2.3 (clinic onboarding + doctor invitation, Should priority) deferred — its formal dependency on Story 1.4 is real for the invitation UX but 1.4 itself only needs a minimal Clinic/ClinicStaffMembership row, which 2.1/2.2 don't require.
+Storage: local-filesystem ObjectStorageClient implementation behind the interface already speced in docs/architecture-tabib-ma.md — same mock-adapter pattern as Twilio/TurnCredentialProvider. Swap for real S3 later without touching callers.
+Admin bootstrap: one PLATFORM_ADMIN user seeded via Flyway migration (dev/test credentials, documented in .env.example) rather than building an admin-creation endpoint nothing else needs yet.
+
+## 2026-07-28 — Epic 2 PLAN confirmed
+User confirmed the 6-batch plan for Stories 2.1+2.2 (backend 2.1 -> backend 2.2 -> frontend 2.1 -> frontend 2.2 -> tests/coverage -> verify+ship). Proceeding to EXECUTE, Batch 1.
+
+## 2026-07-29 — Root cause found for the "second integration test class always red" blocker carried from 2026-07-28
+Found: `AbstractIntegrationTest.POSTGRES` is a `static` field on the shared base class, so every subclass (AuthControllerIntegrationTest, DoctorProfileControllerIntegrationTest) refers to the *same* single container instance via inheritance. It was annotated `@Container` under class-level `@Testcontainers`, which makes JUnit's Testcontainers extension start the container before and stop it after each test class independently. Whichever class ran second therefore tried to reuse a container the first class had already stopped — every DB call blocked for exactly Hikari's 30s connection-timeout before failing (confirmed via per-testcase `time="30.0xx"` in the JUnit XML report and testsuite timestamps showing strict first-class/second-class ordering). This was a real code bug, not environment/Docker resource contention as suspected on 2026-07-28 (that theory is now superseded).
+Decision: Removed `@Testcontainers`/`@Container` from `AbstractIntegrationTest` and start `POSTGRES` once in a static initializer block instead — the standard Testcontainers "singleton container" pattern for a container shared across multiple test classes. Ryuk still reaps it at JVM/session end.
+Verified: full `./gradlew test` now passes in ~1m (down from ~5m20s with 7 failures), reran clean; `jacocoTestCoverageVerification` passes (81% instruction coverage).
+Owner: Backend Dev / Tech Lead

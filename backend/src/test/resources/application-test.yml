@@ -11,3 +11,5 @@ app:
     refresh-token-expiration-ms: 2592000000
   cors:
     allowed-origins: http://localhost:3000
+  storage:
+    local-dir: ${java.io.tmpdir}/tabibma-test-object-storage

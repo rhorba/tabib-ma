@@ -171,19 +171,24 @@ class AuthControllerIntegrationTest extends AbstractIntegrationTest {
 
     private void registerPatient(String email) throws Exception {
         mockMvc.perform(post("/api/v1/auth/register")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content("""
-                        {"email":"%s","password":"correcthorsebattery","role":"PATIENT","firstName":"A","lastName":"B"}
-                        """.formatted(email)));
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"email":"%s","password":"correcthorsebattery","role":"PATIENT","firstName":"A","lastName":"B"}
+                                """.formatted(email)))
+                .andExpect(status().isCreated());
     }
 
     private String loginAndGetAccessToken(String email) throws Exception {
-        String response = mockMvc.perform(post("/api/v1/auth/login")
+        var result = mockMvc.perform(post("/api/v1/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                                 {"email":"%s","password":"correcthorsebattery"}
                                 """.formatted(email)))
-                .andReturn().getResponse().getContentAsString();
-        return objectMapper.readTree(response).get("accessToken").asText();
+                .andReturn();
+        String body = result.getResponse().getContentAsString();
+        assertThat(result.getResponse().getStatus())
+                .as("login response for %s was not 200 OK; body=%s", email, body)
+                .isEqualTo(200);
+        return objectMapper.readTree(body).get("accessToken").asText();
     }
 }

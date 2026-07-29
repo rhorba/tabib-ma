@@ -7,26 +7,33 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.containers.PostgreSQLContainer;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
 
 /**
  * Base class for integration tests that need a real Postgres — required rather than an in-memory
  * substitute per docs/test-strategy-tabib-ma.md Section 5 (real DB behavior, e.g. the booking
  * module's EXCLUDE constraint in later epics, is untestable with mocks/H2).
+ *
+ * POSTGRES is a singleton container shared by every subclass (static field on this base class).
+ * It is deliberately NOT annotated with JUnit's {@code @Testcontainers}/{@code @Container} — that
+ * combination starts/stops the container around each *test class*, and since every subclass shares
+ * the same static instance, the second test class to run would get a container already stopped by
+ * the first. Starting it once here keeps it alive for the whole JVM; Testcontainers' Ryuk reaper
+ * cleans it up when the session ends.
  */
 @SpringBootTest
 @AutoConfigureMockMvc
-@Testcontainers
 @ActiveProfiles("test")
 @Import(TestJwtKeyConfig.class)
 public abstract class AbstractIntegrationTest {
 
-    @Container
     static final PostgreSQLContainer<?> POSTGRES = new PostgreSQLContainer<>("postgres:16-alpine")
             .withDatabaseName("tabibma_test")
             .withUsername("tabibma")
             .withPassword("test");
+
+    static {
+        POSTGRES.start();
+    }
 
     @DynamicPropertySource
     static void registerDatasourceProperties(DynamicPropertyRegistry registry) {

@@ -10,6 +10,7 @@ FROM eclipse-temurin:21-jre-jammy
 RUN groupadd -r app && useradd -r -g app app
 WORKDIR /app
 COPY --from=builder --chown=app:app /app/build/libs/*.jar app.jar
+RUN mkdir -p /app/data/object-storage && chown -R app:app /app/data
 USER app
 HEALTHCHECK --interval=30s --timeout=5s CMD wget -qO- http://localhost:8080/actuator/health || exit 1
 EXPOSE 8080
