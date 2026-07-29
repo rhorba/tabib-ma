@@ -15,6 +15,11 @@ function AuthNav() {
   if (status === 'authenticated' && user) {
     return (
       <div className="flex items-center gap-3">
+        {user.role === 'DOCTOR' && (
+          <Link to="/doctor/onboarding" className="text-sm font-medium text-foreground hover:text-primary">
+            {t('nav.doctorOnboarding')}
+          </Link>
+        )}
         <span className="text-sm text-muted-foreground">
           {t('nav.greeting', { name: user.firstName })}
         </span>

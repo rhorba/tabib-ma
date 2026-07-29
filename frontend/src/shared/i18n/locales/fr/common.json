@@ -6,7 +6,8 @@
     "login": "Connexion",
     "register": "Créer un compte",
     "logout": "Déconnexion",
-    "greeting": "Bonjour, {{name}}"
+    "greeting": "Bonjour, {{name}}",
+    "doctorOnboarding": "Mon profil médecin"
   },
   "home": {
     "title": "Tabib.ma",
@@ -52,6 +53,47 @@
     "errors": {
       "invalidCredentials": "E-mail ou mot de passe incorrect.",
       "emailTaken": "Un compte existe déjà avec cette adresse e-mail.",
+      "generic": "Une erreur est survenue. Veuillez réessayer."
+    }
+  },
+  "doctorOnboarding": {
+    "title": "Profil médecin",
+    "form": {
+      "specialtyLabel": "Spécialité",
+      "cityLabel": "Ville",
+      "consultationFeeLabel": "Tarif de consultation (MAD)",
+      "bioLabel": "Biographie (optionnel)",
+      "submit": "Créer mon profil",
+      "submitting": "Création en cours…"
+    },
+    "validation": {
+      "specialtyRequired": "La spécialité est requise.",
+      "cityRequired": "La ville est requise.",
+      "feeRequired": "Le tarif de consultation est requis.",
+      "feePositive": "Le tarif de consultation doit être positif.",
+      "documentTypeRequired": "Veuillez choisir un type de document.",
+      "fileRequired": "Veuillez sélectionner un fichier.",
+      "fileTooLarge": "Le fichier dépasse la limite de 10 Mo.",
+      "fileTypeInvalid": "Seuls les fichiers PDF, PNG et JPEG sont acceptés."
+    },
+    "status": {
+      "pending": "En attente de vérification",
+      "approved": "Vérifié",
+      "rejected": "Rejeté"
+    },
+    "documents": {
+      "title": "Documents justificatifs",
+      "typeLabel": "Type de document",
+      "typeMedicalLicense": "Licence médicale",
+      "typeIdCard": "Carte d'identité",
+      "typeDiploma": "Diplôme",
+      "fileLabel": "Fichier",
+      "upload": "Téléverser",
+      "uploading": "Téléversement…",
+      "empty": "Aucun document téléversé pour le moment."
+    },
+    "errors": {
+      "fileTypeInvalid": "Seuls les fichiers PDF, PNG et JPEG sont acceptés.",
       "generic": "Une erreur est survenue. Veuillez réessayer."
     }
   }

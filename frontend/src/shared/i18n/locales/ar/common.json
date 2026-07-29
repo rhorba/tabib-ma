@@ -6,7 +6,8 @@
     "login": "تسجيل الدخول",
     "register": "إنشاء حساب",
     "logout": "تسجيل الخروج",
-    "greeting": "مرحبًا، {{name}}"
+    "greeting": "مرحبًا، {{name}}",
+    "doctorOnboarding": "ملفي الطبي"
   },
   "home": {
     "title": "Tabib.ma",
@@ -52,6 +53,47 @@
     "errors": {
       "invalidCredentials": "البريد الإلكتروني أو كلمة المرور غير صحيحة.",
       "emailTaken": "يوجد حساب بهذا البريد الإلكتروني بالفعل.",
+      "generic": "حدث خطأ ما. يرجى المحاولة مرة أخرى."
+    }
+  },
+  "doctorOnboarding": {
+    "title": "الملف الطبي",
+    "form": {
+      "specialtyLabel": "التخصص",
+      "cityLabel": "المدينة",
+      "consultationFeeLabel": "رسوم الاستشارة (درهم)",
+      "bioLabel": "نبذة (اختياري)",
+      "submit": "إنشاء ملفي",
+      "submitting": "جارٍ الإنشاء…"
+    },
+    "validation": {
+      "specialtyRequired": "التخصص مطلوب.",
+      "cityRequired": "المدينة مطلوبة.",
+      "feeRequired": "رسوم الاستشارة مطلوبة.",
+      "feePositive": "يجب أن تكون رسوم الاستشارة موجبة.",
+      "documentTypeRequired": "يرجى اختيار نوع المستند.",
+      "fileRequired": "يرجى اختيار ملف.",
+      "fileTooLarge": "يتجاوز الملف الحد الأقصى 10 ميغابايت.",
+      "fileTypeInvalid": "يُقبل فقط ملفات PDF وPNG وJPEG."
+    },
+    "status": {
+      "pending": "قيد المراجعة",
+      "approved": "تم التحقق",
+      "rejected": "مرفوض"
+    },
+    "documents": {
+      "title": "المستندات الثبوتية",
+      "typeLabel": "نوع المستند",
+      "typeMedicalLicense": "الرخصة الطبية",
+      "typeIdCard": "بطاقة الهوية",
+      "typeDiploma": "الشهادة",
+      "fileLabel": "الملف",
+      "upload": "رفع",
+      "uploading": "جارٍ الرفع…",
+      "empty": "لم يتم رفع أي مستند بعد."
+    },
+    "errors": {
+      "fileTypeInvalid": "يُقبل فقط ملفات PDF وPNG وJPEG.",
       "generic": "حدث خطأ ما. يرجى المحاولة مرة أخرى."
     }
   }
