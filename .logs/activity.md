@@ -231,3 +231,9 @@ Added `DoctorPublicProfilePage` (features/search/pages) at `/doctors/:doctorProf
 Retried the Claude-in-Chrome extension before starting this batch — still not connecting, same as Batch 3. Proceeding on tsc/lint/build alone per the user's standing decision from Batch 3; not re-asking each batch.
 tsc/oxlint/vite build all clean.
 Not yet done: Batch 5 (automated tests + coverage for both frontend features), Batch 6 (verify+ship — e2e/video recording, final push).
+
+## 2026-07-30 — EXECUTE: Epic 3 Batch 5 complete (frontend automated tests + coverage)
+Extended `clinicHandlers.ts` with search (specialty+city filter, APPROVED-only) and public-profile MSW fakes; added `findUserById` to `authHandlers.ts` (exported the same way `getAuthenticatedUser` already is) so the fakes can resolve a doctor's display name from the seeded user, mirroring the real backend's `DoctorSearchService` joining `DoctorProfile.userId` against `UserRepository`.
+6 new tests: `SearchPage` (empty state, filtered results by specialty+city, excludes non-approved profiles) + `DoctorPublicProfilePage` (not-found for a nonexistent id, not-found for a still-PENDING profile, full details + "no reviews yet" for an approved one — the latter using the same `<Routes><Route path=":id">` wrapper pattern `RequireRole.test.tsx` established for route-param components). Full suite: 69 tests green, 90.71%/90.63% statement/line coverage (up from 90.18%/90.09% at Story 2.3 close, logged to .logs/metrics.md).
+tsc/oxlint clean.
+Committed 57a78e7. Not yet done: Batch 6 (Playwright e2e for the search-to-profile flow, video recording, final combined coverage re-check, push).

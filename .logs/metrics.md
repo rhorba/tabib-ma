@@ -68,3 +68,9 @@ Gate: jacocoTestCoverageVerification (minimum 0.80 instruction) — PASSED
 Instruction coverage: 2567/2962 = 86.66% (395 missed)
 Gate: jacocoTestCoverageVerification (minimum 0.80 instruction) — PASSED
 89 tests total: adds 3 unit tests (DoctorSearchServiceTest extended) + 4 integration tests (DoctorSearchControllerIntegrationTest extended) to the 82 from Batch 1.
+
+## 2026-07-30 — Epic 3 Batch 5 (frontend automated tests: search + public profile) coverage
+Statements: 90.71% (332/366) | Branches: 74.59% (185/248) | Functions: 92.96% (119/128) | Lines: 90.63% (329/363)
+Scope: src/features/**+src/shared/** (same exclusions as prior batches). Up from 90.18%/90.09% at Story 2.3 close.
+Gate: ≥ 80% combined — PASSED
+69 tests total (up from 63 at Story 2.3 close): 6 new tests — SearchPage (3) + DoctorPublicProfilePage (3). Extended clinicHandlers.ts with search/public-profile MSW fakes + a findUserById export from authHandlers.ts.
