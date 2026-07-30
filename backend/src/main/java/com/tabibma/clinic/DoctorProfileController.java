@@ -2,6 +2,7 @@ package com.tabibma.clinic;
 
 import com.tabibma.clinic.dto.CreateDoctorProfileRequest;
 import com.tabibma.clinic.dto.DoctorProfileResponse;
+import com.tabibma.clinic.dto.DoctorSearchResponse;
 import com.tabibma.clinic.dto.VerificationDocumentResponse;
 import com.tabibma.identity.UserContext;
 import jakarta.validation.Valid;
@@ -26,9 +27,20 @@ import java.util.UUID;
 public class DoctorProfileController {
 
     private final DoctorOnboardingService doctorOnboardingService;
+    private final DoctorSearchService doctorSearchService;
 
-    public DoctorProfileController(DoctorOnboardingService doctorOnboardingService) {
+    public DoctorProfileController(DoctorOnboardingService doctorOnboardingService,
+                                    DoctorSearchService doctorSearchService) {
         this.doctorOnboardingService = doctorOnboardingService;
+        this.doctorSearchService = doctorSearchService;
+    }
+
+    @GetMapping("/search")
+    public DoctorSearchResponse search(@RequestParam(required = false) String specialty,
+                                        @RequestParam(required = false) String city,
+                                        @RequestParam(defaultValue = "0") int page,
+                                        @RequestParam(defaultValue = "20") int size) {
+        return doctorSearchService.search(specialty, city, page, size);
     }
 
     @PostMapping

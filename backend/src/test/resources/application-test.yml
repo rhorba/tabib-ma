@@ -2,6 +2,10 @@ spring:
   jpa:
     hibernate:
       ddl-auto: validate
+  cache:
+    type: redis
+    redis:
+      time-to-live: 60000
 
 app:
   jwt:
