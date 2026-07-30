@@ -1,5 +1,5 @@
 import { http, HttpResponse } from 'msw'
-import { getAuthenticatedUser } from './authHandlers'
+import { findUserById, getAuthenticatedUser } from './authHandlers'
 
 // A tiny in-memory fake of the clinic module's doctor-profile/verification-queue
 // contract — close enough to exercise the frontend's request/response handling,
@@ -67,6 +67,33 @@ function toProfileResponse(profile: FakeDoctorProfile) {
   return { id, userId, specialty, bio, consultationFeeMad, verificationStatus, city }
 }
 
+function toSearchResultResponse(profile: FakeDoctorProfile) {
+  const owner = findUserById(profile.userId)
+  return {
+    doctorProfileId: profile.id,
+    firstName: owner?.firstName ?? null,
+    lastName: owner?.lastName ?? null,
+    specialty: profile.specialty,
+    city: profile.city,
+    consultationFeeMad: profile.consultationFeeMad,
+  }
+}
+
+function toPublicProfileResponse(profile: FakeDoctorProfile) {
+  const owner = findUserById(profile.userId)
+  return {
+    doctorProfileId: profile.id,
+    firstName: owner?.firstName ?? null,
+    lastName: owner?.lastName ?? null,
+    specialty: profile.specialty,
+    city: profile.city,
+    bio: profile.bio ?? null,
+    consultationFeeMad: profile.consultationFeeMad,
+    averageRating: null,
+    reviewCount: 0,
+  }
+}
+
 function toDocumentResponse(document: FakeDocument) {
   const { id, doctorProfileId, documentType, createdAt } = document
   return { id, doctorProfileId, documentType, createdAt }
@@ -122,6 +149,35 @@ export const clinicHandlers = [
       return errorResponse(404, 'NOT_FOUND', "You don't have a doctor profile yet.")
     }
     return HttpResponse.json(toProfileResponse(profile))
+  }),
+
+  http.get(/\/api\/v1\/clinic\/doctor-profiles\/search$/, ({ request }) => {
+    const user = getAuthenticatedUser(request)
+    if (!user) {
+      return errorResponse(401, 'UNAUTHORIZED', 'Authentication is required.')
+    }
+    const url = new URL(request.url)
+    const specialty = url.searchParams.get('specialty')
+    const city = url.searchParams.get('city')
+    const results = profiles
+      .filter((p) => p.verificationStatus === 'APPROVED')
+      .filter((p) => !specialty || p.specialty.toLowerCase() === specialty.toLowerCase())
+      .filter((p) => !city || p.city.toLowerCase() === city.toLowerCase())
+      .map((p) => toSearchResultResponse(p))
+    return HttpResponse.json({ results, page: 0, size: 20, totalElements: results.length, totalPages: 1 })
+  }),
+
+  http.get(/\/api\/v1\/clinic\/doctor-profiles\/[^/]+\/public$/, ({ request }) => {
+    const user = getAuthenticatedUser(request)
+    if (!user) {
+      return errorResponse(401, 'UNAUTHORIZED', 'Authentication is required.')
+    }
+    const doctorProfileId = pathSegment(request, 2)
+    const profile = profiles.find((p) => p.id === doctorProfileId && p.verificationStatus === 'APPROVED')
+    if (!profile) {
+      return errorResponse(404, 'NOT_FOUND', 'Doctor profile not found.')
+    }
+    return HttpResponse.json(toPublicProfileResponse(profile))
   }),
 
   http.post(/\/api\/v1\/clinic\/doctor-profiles\/[^/]+\/documents$/, async ({ request }) => {

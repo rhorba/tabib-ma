@@ -27,6 +27,13 @@ export function getAuthenticatedUser(request: Request): FakeUser | null {
   return users.find((u) => u.email === email) ?? null
 }
 
+// Shared with clinicHandlers.ts so the search/public-profile fakes can resolve a
+// doctor's display name the same way the real backend joins DoctorProfile.userId
+// against the identity module.
+export function findUserById(userId: string): FakeUser | null {
+  return users.find((u) => u.id === userId) ?? null
+}
+
 // Test-only helper: some tests need a PLATFORM_ADMIN session, which isn't
 // reachable via the self-registration endpoint (mirrors the real backend's
 // SELF_REGISTERABLE_ROLES restriction).
