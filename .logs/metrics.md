@@ -63,3 +63,8 @@ Gate: ≥ 80% on both — PASSED. e2e suite (Playwright, 9 tests total — 7 fro
 Instruction coverage: 2474/2867 = 86.29% (393 missed)
 Gate: jacocoTestCoverageVerification (minimum 0.80 instruction) — PASSED
 82 tests total: adds DoctorSearchServiceTest (4 unit) + DoctorSearchControllerIntegrationTest (4 integration, incl. unauthenticated-rejected, non-APPROVED-excluded, case-insensitive match, no-filter) to the 74 from Story 2.3.
+
+## 2026-07-30 — Epic 3 Batch 2 (backend: public doctor profile, Story 3.2) coverage
+Instruction coverage: 2567/2962 = 86.66% (395 missed)
+Gate: jacocoTestCoverageVerification (minimum 0.80 instruction) — PASSED
+89 tests total: adds 3 unit tests (DoctorSearchServiceTest extended) + 4 integration tests (DoctorSearchControllerIntegrationTest extended) to the 82 from Batch 1.
