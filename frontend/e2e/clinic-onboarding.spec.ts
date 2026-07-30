@@ -49,7 +49,7 @@ test('doctor creates a profile, uploads a document, and platform admin approves 
   await queueItem.getByRole('button', { name: 'Voir les documents' }).click()
   await expect(queueItem.getByText('Licence médicale')).toBeVisible()
   await queueItem.getByRole('button', { name: 'Approuver' }).click()
-  await expect(page.getByText('Aucune soumission en attente.')).toBeVisible()
+  await expect(queueItem).not.toBeVisible()
 
   await page.getByRole('button', { name: 'Déconnexion' }).click()
   await page.goto('/login')
