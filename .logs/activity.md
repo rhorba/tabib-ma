@@ -225,3 +225,9 @@ Regenerated `shared/api/schema.d.ts` against the Batch 1/2 backend (confirmed th
 **Browser automation gap**: the Claude-in-Chrome extension wasn't connecting this session (both `tabs_context_mcp` calls failed with "extension is not connected"), so this batch could not get the live-in-Chrome verification every prior frontend batch has had. Asked the user how to proceed; they chose to continue on tsc/lint/build + the already-curl-verified backend endpoints alone, flagged as a real gap rather than silently skipped. Revisit live-browser verification before Sprint 3 closes if the extension reconnects.
 tsc/oxlint/vite build all clean.
 Not yet done: Batch 4 (frontend doctor public-profile page), Batch 5 (tests/coverage), Batch 6 (verify+ship).
+
+## 2026-07-30 — EXECUTE: Epic 3 Batch 4 complete (frontend doctor public-profile page)
+Added `DoctorPublicProfilePage` (features/search/pages) at `/doctors/:doctorProfileId` — first dynamic route param in the app (`useParams`). Reads `GET .../{id}/public`, 404-handled the same way `ClinicAdminPage`/`DoctorOnboardingPage` handle their own-resource 404s (check `response.status === 404` before the generic error throw). Shows "no reviews yet" when `averageRating` is null, matching the backend's Epic-9-not-built stub.
+Retried the Claude-in-Chrome extension before starting this batch — still not connecting, same as Batch 3. Proceeding on tsc/lint/build alone per the user's standing decision from Batch 3; not re-asking each batch.
+tsc/oxlint/vite build all clean.
+Not yet done: Batch 5 (automated tests + coverage for both frontend features), Batch 6 (verify+ship — e2e/video recording, final push).
