@@ -53,3 +53,8 @@ Statements: 90.18% (294/326) | Branches: 74.19% (161/217) | Functions: 92.3% (10
 Scope: src/features/**+src/shared/** (same exclusions as prior batches). Up from 88.84%/88.7% at Epic 2 close.
 Gate: ≥ 80% combined — PASSED
 63 tests total (up from 51 at Epic 2 close): 12 new tests — CreateClinicForm (2), InviteDoctorForm (3), ClinicAdminPage (3), PendingInvitationsList (4 incl. accept/decline/needs-profile-conflict cases). Extended clinicHandlers.ts with clinic/invitation MSW fakes + seedClinic/seedClinicInvitation test helpers; FakeUser role type gained CLINIC_ADMIN.
+
+## 2026-07-30 — Story 2.3 Batch 6 (e2e + final verify) — final combined coverage check
+Backend (Gradle jacoco): Instruction 2284/2677 = 85% — re-verified via `jacocoTestCoverageVerification` (task UP-TO-DATE, no backend changes this batch), unchanged test set (74 tests).
+Frontend (Vitest, src/features/**+src/shared/**): Statements 90.18% (294/326), Branches 74.19% (161/217), Functions 92.3% (108/117), Lines 90.09% (291/323) — unchanged from Batch 5, no new frontend source landed (only e2e specs, which aren't counted toward this %).
+Gate: ≥ 80% on both — PASSED. e2e suite (Playwright, 9 tests total — 7 from Epics 1-2 + 2 new Story 2.3 tests, real backend) is a smoke layer on top, not counted toward the coverage %.
