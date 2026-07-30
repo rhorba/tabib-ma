@@ -9,7 +9,8 @@
     "greeting": "Bonjour, {{name}}",
     "doctorOnboarding": "Mon profil médecin",
     "verificationQueue": "File de vérification",
-    "clinicAdmin": "Ma clinique"
+    "clinicAdmin": "Ma clinique",
+    "search": "Rechercher un médecin"
   },
   "home": {
     "title": "Tabib.ma",
@@ -154,5 +155,30 @@
       "alreadyInvited": "Cette adresse e-mail a déjà une invitation en attente.",
       "generic": "Une erreur est survenue. Veuillez réessayer."
     }
+  },
+  "search": {
+    "title": "Rechercher un médecin",
+    "filters": {
+      "specialtyLabel": "Spécialité",
+      "cityLabel": "Ville",
+      "submit": "Rechercher"
+    },
+    "results": {
+      "feeLabel": "Tarif (MAD)",
+      "viewProfile": "Voir le profil",
+      "empty": "Aucun médecin trouvé."
+    },
+    "errors": {
+      "generic": "Une erreur est survenue. Veuillez réessayer."
+    }
+  },
+  "doctorPublicProfile": {
+    "backToSearch": "Retour à la recherche",
+    "feeLabel": "Tarif de consultation (MAD)",
+    "cityLabel": "Ville",
+    "ratingLabel": "Note",
+    "noRating": "Pas encore d'avis",
+    "reviewCount": "{{count}} avis",
+    "notFound": "Ce médecin n'est pas disponible."
   }
 }

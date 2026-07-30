@@ -4,6 +4,7 @@ import { RegisterPage } from '@/features/auth/pages/RegisterPage'
 import { DoctorOnboardingPage } from '@/features/doctor-onboarding/pages/DoctorOnboardingPage'
 import { VerificationQueuePage } from '@/features/platform-admin/pages/VerificationQueuePage'
 import { ClinicAdminPage } from '@/features/clinic-admin/pages/ClinicAdminPage'
+import { SearchPage } from '@/features/search/pages/SearchPage'
 import { RequireRole } from '@/shared/components/RequireRole'
 import { RootLayout } from './RootLayout'
 import { HomePage } from './HomePage'
@@ -16,6 +17,7 @@ export const router = createBrowserRouter([
       { index: true, element: <HomePage /> },
       { path: 'login', element: <LoginPage /> },
       { path: 'register', element: <RegisterPage /> },
+      { path: 'search', element: <SearchPage /> },
       {
         element: <RequireRole roles={['DOCTOR']} />,
         children: [{ path: 'doctor/onboarding', element: <DoctorOnboardingPage /> }],

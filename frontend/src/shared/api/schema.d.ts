@@ -212,6 +212,38 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/clinic/doctor-profiles/{doctorProfileId}/public": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getPublicProfile"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/clinic/doctor-profiles/search": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["search"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/clinic/doctor-profiles/me": {
         parameters: {
             query?: never;
@@ -397,6 +429,40 @@ export interface components {
         LoginRequest: {
             email: string;
             password: string;
+        };
+        DoctorPublicProfileResponse: {
+            /** Format: uuid */
+            doctorProfileId?: string;
+            firstName?: string;
+            lastName?: string;
+            specialty?: string;
+            city?: string;
+            bio?: string;
+            consultationFeeMad?: number;
+            /** Format: double */
+            averageRating?: number;
+            /** Format: int64 */
+            reviewCount?: number;
+        };
+        DoctorSearchResponse: {
+            results?: components["schemas"]["DoctorSearchResultResponse"][];
+            /** Format: int32 */
+            page?: number;
+            /** Format: int32 */
+            size?: number;
+            /** Format: int64 */
+            totalElements?: number;
+            /** Format: int32 */
+            totalPages?: number;
+        };
+        DoctorSearchResultResponse: {
+            /** Format: uuid */
+            doctorProfileId?: string;
+            firstName?: string;
+            lastName?: string;
+            specialty?: string;
+            city?: string;
+            consultationFeeMad?: number;
         };
     };
     responses: never;
@@ -752,6 +818,53 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["ClinicInvitationResponse"][];
+                };
+            };
+        };
+    };
+    getPublicProfile: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                doctorProfileId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["DoctorPublicProfileResponse"];
+                };
+            };
+        };
+    };
+    search: {
+        parameters: {
+            query?: {
+                specialty?: string;
+                city?: string;
+                page?: number;
+                size?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["DoctorSearchResponse"];
                 };
             };
         };

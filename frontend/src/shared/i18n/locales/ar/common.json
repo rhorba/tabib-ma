@@ -9,7 +9,8 @@
     "greeting": "مرحبًا، {{name}}",
     "doctorOnboarding": "ملفي الطبي",
     "verificationQueue": "قائمة التحقق",
-    "clinicAdmin": "عيادتي"
+    "clinicAdmin": "عيادتي",
+    "search": "البحث عن طبيب"
   },
   "home": {
     "title": "Tabib.ma",
@@ -154,5 +155,30 @@
       "alreadyInvited": "يوجد بالفعل دعوة قيد الانتظار لهذا البريد الإلكتروني.",
       "generic": "حدث خطأ ما. يرجى المحاولة مرة أخرى."
     }
+  },
+  "search": {
+    "title": "البحث عن طبيب",
+    "filters": {
+      "specialtyLabel": "التخصص",
+      "cityLabel": "المدينة",
+      "submit": "بحث"
+    },
+    "results": {
+      "feeLabel": "الرسوم (درهم)",
+      "viewProfile": "عرض الملف",
+      "empty": "لم يتم العثور على أي طبيب."
+    },
+    "errors": {
+      "generic": "حدث خطأ ما. يرجى المحاولة مرة أخرى."
+    }
+  },
+  "doctorPublicProfile": {
+    "backToSearch": "العودة إلى البحث",
+    "feeLabel": "رسوم الاستشارة (درهم)",
+    "cityLabel": "المدينة",
+    "ratingLabel": "التقييم",
+    "noRating": "لا توجد تقييمات بعد",
+    "reviewCount": "{{count}} تقييم",
+    "notFound": "هذا الطبيب غير متاح."
   }
 }
