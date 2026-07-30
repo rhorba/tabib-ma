@@ -58,3 +58,8 @@ Gate: ≥ 80% combined — PASSED
 Backend (Gradle jacoco): Instruction 2284/2677 = 85% — re-verified via `jacocoTestCoverageVerification` (task UP-TO-DATE, no backend changes this batch), unchanged test set (74 tests).
 Frontend (Vitest, src/features/**+src/shared/**): Statements 90.18% (294/326), Branches 74.19% (161/217), Functions 92.3% (108/117), Lines 90.09% (291/323) — unchanged from Batch 5, no new frontend source landed (only e2e specs, which aren't counted toward this %).
 Gate: ≥ 80% on both — PASSED. e2e suite (Playwright, 9 tests total — 7 from Epics 1-2 + 2 new Story 2.3 tests, real backend) is a smoke layer on top, not counted toward the coverage %.
+
+## 2026-07-30 — Epic 3 Batch 1 (backend: doctor search, Story 3.1) coverage
+Instruction coverage: 2474/2867 = 86.29% (393 missed)
+Gate: jacocoTestCoverageVerification (minimum 0.80 instruction) — PASSED
+82 tests total: adds DoctorSearchServiceTest (4 unit) + DoctorSearchControllerIntegrationTest (4 integration, incl. unauthenticated-rejected, non-APPROVED-excluded, case-insensitive match, no-filter) to the 74 from Story 2.3.
