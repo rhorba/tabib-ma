@@ -244,4 +244,5 @@ Added `frontend/e2e/epic-3-search.spec.ts` (2 tests, real backend not MSW): (1) 
 Video recording (rule 9): `RECORDING_VERSION=0.4.0 npm run e2e:record` -> `.recordings/v0.4.0-2026-07-30.webm` (all 11 flows, ~73s). "0.4.0" chosen as the next shippable increment after Story 2.3's "0.3.0".
 Final re-verification: backend `./gradlew test jacocoTestCoverageVerification` — UP-TO-DATE, 86.66% instruction coverage (89 tests, unchanged this batch); frontend `tsc --noEmit`/`oxlint` clean, `vitest run --coverage` green (69 tests, 90.71%/90.63% statement/line coverage, unchanged this batch — e2e specs aren't counted). Both clear the 80% gate.
 **Sprint 3 Epic 3 (Doctor Search & Discovery, Stories 3.1+3.2) is now fully CLOSED** — backend + frontend + e2e recorded + both coverage gates cleared.
-Committed f77e11c.
+Committed f77e11c, 5911b5a. PUSH (rule 7): `git push origin main` (78071bd..5911b5a, 12 commits). CI run 30560623242: GREEN (all jobs passed).
+Local state: docker containers (db/redis/backend) and the frontend dev server left running (same as end of Story 2.3) in case of immediate follow-up work.
