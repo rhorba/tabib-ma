@@ -11,6 +11,8 @@ import org.springframework.http.MediaType;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.util.UUID;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -83,6 +85,56 @@ class DoctorSearchControllerIntegrationTest extends AbstractIntegrationTest {
                         .header("Authorization", "Bearer " + doctorToken))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.results[?(@.specialty=='Rheumatology')]").exists());
+    }
+
+    @Test
+    void getPublicProfile_rejectsUnauthenticated() throws Exception {
+        mockMvc.perform(get("/api/v1/clinic/doctor-profiles/" + UUID.randomUUID() + "/public"))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void getPublicProfile_returns404ForNonExistentProfile() throws Exception {
+        String email = "doctor-search4@example.com";
+        registerAndLogin(email, "DOCTOR");
+        String token = login(email);
+
+        mockMvc.perform(get("/api/v1/clinic/doctor-profiles/" + UUID.randomUUID() + "/public")
+                        .header("Authorization", "Bearer " + token))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void getPublicProfile_returns404ForPendingProfile() throws Exception {
+        String email = "doctor-search5@example.com";
+        registerAndLogin(email, "DOCTOR");
+        String token = login(email);
+        String profileId = createProfile(token, "Ophthalmology", "Laayoune");
+
+        mockMvc.perform(get("/api/v1/clinic/doctor-profiles/" + profileId + "/public")
+                        .header("Authorization", "Bearer " + token))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void getPublicProfile_returnsProfileWithStubbedRatingForApprovedProfile() throws Exception {
+        String doctorEmail = "doctor-search6@example.com";
+        registerAndLogin(doctorEmail, "DOCTOR");
+        String doctorToken = login(doctorEmail);
+        String profileId = createProfile(doctorToken, "Pulmonology", "Nador");
+        approve(profileId);
+
+        String patientEmail = "patient-search6@example.com";
+        registerAndLogin(patientEmail, "PATIENT");
+        String patientToken = login(patientEmail);
+
+        mockMvc.perform(get("/api/v1/clinic/doctor-profiles/" + profileId + "/public")
+                        .header("Authorization", "Bearer " + patientToken))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.specialty").value("Pulmonology"))
+                .andExpect(jsonPath("$.firstName").value("A"))
+                .andExpect(jsonPath("$.averageRating").value(org.hamcrest.Matchers.nullValue()))
+                .andExpect(jsonPath("$.reviewCount").value(0));
     }
 
     private void registerAndLogin(String email, String role) throws Exception {

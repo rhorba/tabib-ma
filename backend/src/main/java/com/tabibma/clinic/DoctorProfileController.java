@@ -2,6 +2,7 @@ package com.tabibma.clinic;
 
 import com.tabibma.clinic.dto.CreateDoctorProfileRequest;
 import com.tabibma.clinic.dto.DoctorProfileResponse;
+import com.tabibma.clinic.dto.DoctorPublicProfileResponse;
 import com.tabibma.clinic.dto.DoctorSearchResponse;
 import com.tabibma.clinic.dto.VerificationDocumentResponse;
 import com.tabibma.identity.UserContext;
@@ -70,5 +71,10 @@ public class DoctorProfileController {
         return doctorOnboardingService.listMyDocuments(principal, doctorProfileId).stream()
                 .map(VerificationDocumentResponse::from)
                 .toList();
+    }
+
+    @GetMapping("/{doctorProfileId}/public")
+    public DoctorPublicProfileResponse getPublicProfile(@PathVariable UUID doctorProfileId) {
+        return doctorSearchService.getPublicProfile(doctorProfileId);
     }
 }

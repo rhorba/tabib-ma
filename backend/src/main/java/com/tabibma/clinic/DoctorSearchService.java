@@ -1,9 +1,11 @@
 package com.tabibma.clinic;
 
+import com.tabibma.clinic.dto.DoctorPublicProfileResponse;
 import com.tabibma.clinic.dto.DoctorSearchResponse;
 import com.tabibma.clinic.dto.DoctorSearchResultResponse;
 import com.tabibma.identity.User;
 import com.tabibma.identity.UserRepository;
+import com.tabibma.shared.exception.NotFoundException;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -49,6 +51,27 @@ public class DoctorSearchService {
 
         return new DoctorSearchResponse(results, profiles.getNumber(), profiles.getSize(),
                 profiles.getTotalElements(), profiles.getTotalPages());
+    }
+
+    public DoctorPublicProfileResponse getPublicProfile(UUID doctorProfileId) {
+        DoctorProfile profile = doctorProfileRepository.findById(doctorProfileId)
+                .filter(p -> p.getVerificationStatus() == VerificationStatus.APPROVED)
+                .orElseThrow(() -> new NotFoundException("Doctor profile not found."));
+
+        User user = userRepository.findById(profile.getUserId()).orElse(null);
+
+        // No review module yet (Epic 9) — degrade gracefully per stories-tabib-ma.md Story 3.2's
+        // "reviews — degrade gracefully if none exist yet" note, rather than blocking this story on it.
+        return new DoctorPublicProfileResponse(
+                profile.getId(),
+                user != null ? user.getFirstName() : null,
+                user != null ? user.getLastName() : null,
+                profile.getSpecialty(),
+                profile.getCity(),
+                profile.getBio(),
+                profile.getConsultationFeeMad(),
+                null,
+                0L);
     }
 
     private static String blankToNull(String value) {
