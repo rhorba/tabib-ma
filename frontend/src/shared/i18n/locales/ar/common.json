@@ -10,7 +10,9 @@
     "doctorOnboarding": "ملفي الطبي",
     "verificationQueue": "قائمة التحقق",
     "clinicAdmin": "عيادتي",
-    "search": "البحث عن طبيب"
+    "search": "البحث عن طبيب",
+    "availability": "أوقات تواجدي",
+    "myAppointments": "مواعيدي"
   },
   "home": {
     "title": "Tabib.ma",
@@ -179,6 +181,100 @@
     "ratingLabel": "التقييم",
     "noRating": "لا توجد تقييمات بعد",
     "reviewCount": "{{count}} تقييم",
-    "notFound": "هذا الطبيب غير متاح."
+    "notFound": "هذا الطبيب غير متاح.",
+    "bookAppointment": "احجز موعدًا"
+  },
+  "booking": {
+    "availability": {
+      "title": "أوقات تواجدي",
+      "needsProfile": "يجب عليك أولاً إنشاء ملفك الطبي.",
+      "goToOnboarding": "إنشاء ملفي الطبي",
+      "days": {
+        "MONDAY": "الاثنين",
+        "TUESDAY": "الثلاثاء",
+        "WEDNESDAY": "الأربعاء",
+        "THURSDAY": "الخميس",
+        "FRIDAY": "الجمعة",
+        "SATURDAY": "السبت",
+        "SUNDAY": "الأحد"
+      },
+      "locationTypes": {
+        "inPerson": "في العيادة",
+        "video": "استشارة عن بعد"
+      },
+      "form": {
+        "dayOfWeekLabel": "يوم الأسبوع",
+        "startTimeLabel": "وقت البدء",
+        "endTimeLabel": "وقت الانتهاء",
+        "durationLabel": "مدة الموعد (بالدقائق)",
+        "locationTypeLabel": "نوع الاستشارة",
+        "submit": "إضافة هذا التوقيت المتكرر",
+        "submitting": "جارٍ الإضافة…"
+      },
+      "validation": {
+        "dayOfWeekRequired": "يرجى اختيار يوم.",
+        "timeInvalid": "وقت غير صالح.",
+        "durationRequired": "المدة مطلوبة.",
+        "durationTooShort": "يجب أن تكون المدة 5 دقائق على الأقل.",
+        "locationTypeRequired": "يرجى اختيار نوع الاستشارة.",
+        "endBeforeStart": "يجب أن يكون وقت الانتهاء بعد وقت البدء.",
+        "dateRequired": "التاريخ مطلوب."
+      },
+      "rules": {
+        "title": "الأوقات المتكررة",
+        "empty": "لم يتم تحديد أي وقت متكرر.",
+        "minutesAbbrev": " دقيقة"
+      },
+      "exceptions": {
+        "title": "الأيام المحجوبة",
+        "empty": "لا توجد أيام محجوبة.",
+        "dateLabel": "التاريخ",
+        "reasonLabel": "السبب (اختياري)",
+        "submit": "حجب هذا التاريخ",
+        "submitting": "جارٍ الإضافة…",
+        "errors": {
+          "alreadyMarked": "هذا التاريخ محجوب بالفعل."
+        }
+      },
+      "generate": {
+        "title": "إنشاء المواعيد",
+        "submit": "إنشاء مواعيد الثلاثين يومًا القادمة",
+        "generating": "جارٍ الإنشاء…",
+        "success": "تم إنشاء {{count}} موعد."
+      },
+      "errors": {
+        "generic": "حدث خطأ ما. يرجى المحاولة مرة أخرى."
+      }
+    },
+    "book": {
+      "title": "احجز موعدًا مع {{name}}",
+      "feeLabel": "الرسوم",
+      "confirmAndPay": "تأكيد والدفع",
+      "confirming": "جارٍ المعالجة…",
+      "slots": {
+        "empty": "لا توجد مواعيد متاحة حاليًا."
+      },
+      "result": {
+        "confirmed": "تم تأكيد موعدك.",
+        "paymentFailed": "فشلت عملية الدفع. تم تحرير الموعد.",
+        "viewAppointments": "عرض مواعيدي"
+      },
+      "errors": {
+        "slotTaken": "تم حجز هذا الموعد للتو من قبل شخص آخر.",
+        "generic": "حدث خطأ ما. يرجى المحاولة مرة أخرى."
+      }
+    },
+    "myAppointments": {
+      "title": "مواعيدي",
+      "empty": "ليس لديك أي مواعيد بعد.",
+      "viewDoctor": "عرض الطبيب",
+      "status": {
+        "pending_payment": "الدفع قيد الانتظار",
+        "confirmed": "مؤكد",
+        "cancelled": "ملغى",
+        "completed": "منتهٍ",
+        "no_show": "غياب"
+      }
+    }
   }
 }

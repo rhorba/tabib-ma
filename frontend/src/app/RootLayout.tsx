@@ -19,8 +19,18 @@ function AuthNav() {
           {t('nav.search')}
         </Link>
         {user.role === 'DOCTOR' && (
-          <Link to="/doctor/onboarding" className="text-sm font-medium text-foreground hover:text-primary">
-            {t('nav.doctorOnboarding')}
+          <>
+            <Link to="/doctor/onboarding" className="text-sm font-medium text-foreground hover:text-primary">
+              {t('nav.doctorOnboarding')}
+            </Link>
+            <Link to="/doctor/availability" className="text-sm font-medium text-foreground hover:text-primary">
+              {t('nav.availability')}
+            </Link>
+          </>
+        )}
+        {user.role === 'PATIENT' && (
+          <Link to="/appointments" className="text-sm font-medium text-foreground hover:text-primary">
+            {t('nav.myAppointments')}
           </Link>
         )}
         {user.role === 'PLATFORM_ADMIN' && (

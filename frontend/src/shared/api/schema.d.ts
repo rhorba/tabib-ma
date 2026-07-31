@@ -100,6 +100,86 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/booking/availability/rules": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["listMyRules"];
+        put?: never;
+        post: operations["createRule"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/booking/availability/generate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["generateSlots"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/booking/availability/exceptions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["listMyExceptions"];
+        put?: never;
+        post: operations["createException"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/booking/appointments": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["listMine"];
+        put?: never;
+        post: operations["book"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/booking/appointments/{appointmentId}/cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["cancel"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/auth/register": {
         parameters: {
             query?: never;
@@ -276,6 +356,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/booking/availability/slots": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["listOpenSlots"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/admin/platform/verification-queue": {
         parameters: {
             query?: never;
@@ -399,6 +495,90 @@ export interface components {
         };
         InviteDoctorRequest: {
             email: string;
+        };
+        CreateAvailabilityRuleRequest: {
+            /** @enum {string} */
+            dayOfWeek: "MONDAY" | "TUESDAY" | "WEDNESDAY" | "THURSDAY" | "FRIDAY" | "SATURDAY" | "SUNDAY";
+            startTime: string;
+            endTime: string;
+            /** Format: int32 */
+            slotDurationMinutes?: number;
+            /** @enum {string} */
+            locationType: "IN_PERSON" | "VIDEO";
+            /** Format: uuid */
+            clinicId?: string;
+        };
+        AvailabilityRuleResponse: {
+            /** Format: uuid */
+            id?: string;
+            /** @enum {string} */
+            dayOfWeek?: "MONDAY" | "TUESDAY" | "WEDNESDAY" | "THURSDAY" | "FRIDAY" | "SATURDAY" | "SUNDAY";
+            startTime?: string;
+            endTime?: string;
+            /** Format: int32 */
+            slotDurationMinutes?: number;
+            /** @enum {string} */
+            locationType?: "IN_PERSON" | "VIDEO";
+            /** Format: uuid */
+            clinicId?: string;
+            active?: boolean;
+        };
+        GenerateSlotsRequest: {
+            /** Format: date */
+            fromDate?: string;
+            /** Format: date */
+            toDate?: string;
+        };
+        AvailabilitySlotResponse: {
+            /** Format: uuid */
+            id?: string;
+            /** Format: uuid */
+            doctorProfileId?: string;
+            /** Format: date-time */
+            startsAt?: string;
+            /** Format: date-time */
+            endsAt?: string;
+            /** @enum {string} */
+            locationType?: "IN_PERSON" | "VIDEO";
+            /** Format: uuid */
+            clinicId?: string;
+            booked?: boolean;
+        };
+        CreateAvailabilityExceptionRequest: {
+            /** Format: date */
+            exceptionDate: string;
+            reason?: string;
+        };
+        AvailabilityExceptionResponse: {
+            /** Format: uuid */
+            id?: string;
+            /** Format: date */
+            exceptionDate?: string;
+            reason?: string;
+        };
+        BookAppointmentRequest: {
+            /** Format: uuid */
+            availabilitySlotId: string;
+        };
+        AppointmentResponse: {
+            /** Format: uuid */
+            id?: string;
+            /** Format: uuid */
+            doctorProfileId?: string;
+            /** Format: uuid */
+            availabilitySlotId?: string;
+            /** Format: date-time */
+            startsAt?: string;
+            /** Format: date-time */
+            endsAt?: string;
+            /** @enum {string} */
+            locationType?: "IN_PERSON" | "VIDEO";
+            /** @enum {string} */
+            status?: "PENDING_PAYMENT" | "CONFIRMED" | "CANCELLED" | "COMPLETED" | "NO_SHOW";
+            /** Format: int32 */
+            cancellationWindowHours?: number;
+            /** Format: date-time */
+            createdAt?: string;
         };
         RegisterRequest: {
             email: string;
@@ -666,6 +846,184 @@ export interface operations {
             };
         };
     };
+    listMyRules: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["AvailabilityRuleResponse"][];
+                };
+            };
+        };
+    };
+    createRule: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateAvailabilityRuleRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["AvailabilityRuleResponse"];
+                };
+            };
+        };
+    };
+    generateSlots: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["GenerateSlotsRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["AvailabilitySlotResponse"][];
+                };
+            };
+        };
+    };
+    listMyExceptions: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["AvailabilityExceptionResponse"][];
+                };
+            };
+        };
+    };
+    createException: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateAvailabilityExceptionRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["AvailabilityExceptionResponse"];
+                };
+            };
+        };
+    };
+    listMine: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["AppointmentResponse"][];
+                };
+            };
+        };
+    };
+    book: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BookAppointmentRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["AppointmentResponse"];
+                };
+            };
+        };
+    };
+    cancel: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                appointmentId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["AppointmentResponse"];
+                };
+            };
+        };
+    };
     register: {
         parameters: {
             query?: never;
@@ -905,6 +1263,30 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["ClinicResponse"];
+                };
+            };
+        };
+    };
+    listOpenSlots: {
+        parameters: {
+            query: {
+                doctorProfileId: string;
+                from: string;
+                to: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["AvailabilitySlotResponse"][];
                 };
             };
         };

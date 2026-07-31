@@ -1,8 +1,10 @@
 import { useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { Link, useParams } from 'react-router'
+import { Button } from '@/shared/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui/card'
 import { apiClient } from '@/shared/api/client'
+import { useAuth } from '@/features/auth/AuthContext'
 
 function useDoctorPublicProfile(doctorProfileId: string | undefined) {
   return useQuery({
@@ -28,6 +30,7 @@ export function DoctorPublicProfilePage() {
   const { t } = useTranslation()
   const { doctorProfileId } = useParams<{ doctorProfileId: string }>()
   const profileQuery = useDoctorPublicProfile(doctorProfileId)
+  const { status, user } = useAuth()
 
   if (profileQuery.isLoading) {
     return null
@@ -72,6 +75,11 @@ export function DoctorPublicProfilePage() {
           {profile.bio && <p className="text-muted-foreground">{profile.bio}</p>}
         </CardContent>
       </Card>
+      {status === 'authenticated' && user?.role === 'PATIENT' && (
+        <Button asChild>
+          <Link to={`/doctors/${doctorProfileId}/book`}>{t('doctorPublicProfile.bookAppointment')}</Link>
+        </Button>
+      )}
       <Link to="/search" className="text-sm font-medium text-primary hover:underline">
         {t('doctorPublicProfile.backToSearch')}
       </Link>

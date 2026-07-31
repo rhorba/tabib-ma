@@ -6,6 +6,9 @@ import { VerificationQueuePage } from '@/features/platform-admin/pages/Verificat
 import { ClinicAdminPage } from '@/features/clinic-admin/pages/ClinicAdminPage'
 import { SearchPage } from '@/features/search/pages/SearchPage'
 import { DoctorPublicProfilePage } from '@/features/search/pages/DoctorPublicProfilePage'
+import { DoctorAvailabilityPage } from '@/features/booking/pages/DoctorAvailabilityPage'
+import { BookAppointmentPage } from '@/features/booking/pages/BookAppointmentPage'
+import { MyAppointmentsPage } from '@/features/booking/pages/MyAppointmentsPage'
 import { RequireRole } from '@/shared/components/RequireRole'
 import { RootLayout } from './RootLayout'
 import { HomePage } from './HomePage'
@@ -22,7 +25,10 @@ export const router = createBrowserRouter([
       { path: 'doctors/:doctorProfileId', element: <DoctorPublicProfilePage /> },
       {
         element: <RequireRole roles={['DOCTOR']} />,
-        children: [{ path: 'doctor/onboarding', element: <DoctorOnboardingPage /> }],
+        children: [
+          { path: 'doctor/onboarding', element: <DoctorOnboardingPage /> },
+          { path: 'doctor/availability', element: <DoctorAvailabilityPage /> },
+        ],
       },
       {
         element: <RequireRole roles={['PLATFORM_ADMIN']} />,
@@ -33,6 +39,13 @@ export const router = createBrowserRouter([
       {
         element: <RequireRole roles={['CLINIC_ADMIN']} />,
         children: [{ path: 'clinic-admin', element: <ClinicAdminPage /> }],
+      },
+      {
+        element: <RequireRole roles={['PATIENT']} />,
+        children: [
+          { path: 'doctors/:doctorProfileId/book', element: <BookAppointmentPage /> },
+          { path: 'appointments', element: <MyAppointmentsPage /> },
+        ],
       },
     ],
   },
