@@ -301,3 +301,6 @@ Full e2e suite: 13/13 green (11 pre-existing + 2 new).
 Video: `RECORDING_VERSION=0.5.0 npm run e2e:record` -> `.recordings/v0.5.0-2026-07-31.webm` (15 clips, all specs including both new-context sessions of the race test).
 Final re-verification: backend `./gradlew test jacocoTestCoverageVerification` — 151 tests, 89.16% instruction coverage. Frontend `tsc --noEmit`/`oxlint` clean, `vitest run --coverage` — 98 tests, 91.88%/91.84% statement/line coverage. Both clear the 80% gate.
 **Sprint 4 Epic 4 (Appointment Booking & Scheduling, Stories 4.1-4.5) + Epic 5 Story 5.1 (CMI payment capture, mocked) are now fully CLOSED** — backend + frontend + e2e recorded + coverage gates cleared.
+
+## 2026-07-31 — Epic 4 push confirmed CI green
+`git push origin main` (dd0a95d..80b8a2d, 8 commits). CI run 30666728859: GREEN (security 59s, backend-build-test 1m14s). No frontend job in this CI pipeline yet (backend-only per the existing workflow) — pre-existing scope, not an Epic 4 regression.
