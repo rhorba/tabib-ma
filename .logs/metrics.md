@@ -74,3 +74,8 @@ Statements: 90.71% (332/366) | Branches: 74.59% (185/248) | Functions: 92.96% (1
 Scope: src/features/**+src/shared/** (same exclusions as prior batches). Up from 90.18%/90.09% at Story 2.3 close.
 Gate: ≥ 80% combined — PASSED
 69 tests total (up from 63 at Story 2.3 close): 6 new tests — SearchPage (3) + DoctorPublicProfilePage (3). Extended clinicHandlers.ts with search/public-profile MSW fakes + a findUserById export from authHandlers.ts.
+
+## 2026-07-31 — Epic 4 (Sprint 3→4 continuation) SPRINT_SNAPSHOT
+Backend: 151 tests, 89.16% instruction coverage.
+Frontend: 98 tests (unit/component), 91.88%/91.84% statement/line coverage, 13 e2e tests (11 pre-existing + 2 new Epic 4 flows).
+Both clear the 80% combined coverage gate.

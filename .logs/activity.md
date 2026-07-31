@@ -246,3 +246,58 @@ Final re-verification: backend `./gradlew test jacocoTestCoverageVerification` �
 **Sprint 3 Epic 3 (Doctor Search & Discovery, Stories 3.1+3.2) is now fully CLOSED** — backend + frontend + e2e recorded + both coverage gates cleared.
 Committed f77e11c, 5911b5a. PUSH (rule 7): `git push origin main` (78071bd..5911b5a, 12 commits). CI run 30560623242: GREEN (all jobs passed).
 Local state: docker containers (db/redis/backend) and the frontend dev server left running (same as end of Story 2.3) in case of immediate follow-up work.
+
+## 2026-07-31 — Epic 4 PLAN confirmed
+User confirmed the 8-batch plan: backend availability (4.1) -> double-booking guard (4.3) -> payment capture (5.1) -> booking orchestration (4.2) -> cancellation+reminders (4.4+4.5) -> frontend booking/payment UI -> frontend cancel/reschedule UI+tests -> verify+ship (e2e/video v0.5.0/push). Proceeding to EXECUTE, Batch 1.
+
+## 2026-07-31 — Epic 4 Batch 1 complete (Story 4.1)
+Backend `booking` module: AvailabilityRule (recurring weekly) + AvailabilityBlockedDate (exception dates, table `availability_exceptions`) + AvailabilitySlot entities/repos, AvailabilityService (role+ownership checks mirroring DoctorOnboardingService's pattern, generation algorithm expanding rules into concrete slots for a bounded [from,to) window in Africa/Casablanca timezone converted to UTC-stored Instants per Test Strategy's "UTC-stored, locale-displayed" rule, skips exception dates, de-duplicates against existing slots for idempotent re-runs, capped at 90 days per call), AvailabilityController (rules/exceptions CRUD-lite + generate + open-slots query, all under auth). Flyway V6.
+Verified: `./gradlew compileJava compileTestJava` clean, 12 new unit tests + 5 new integration tests (Testcontainers Postgres) all green, full suite 106/106 green (up from 89), 87.19% instruction coverage (up from 86.66%) — clears the 80% gate.
+Committed a61001c.
+
+## 2026-07-31 — Epic 4 Batch 2 complete (Story 4.3, highest-risk story)
+Appointment aggregate + DoubleBookingGuard (SELECT...FOR UPDATE row lock on AvailabilitySlot, catches DataIntegrityViolationException from the appointments EXCLUDE USING gist constraint (Flyway V7, btree_gist) and translates both failure paths to ConflictException). Adversarial concurrency suite proves both lines of defense on a real Postgres via two-thread races (ExecutorService+CountDownLatch): same-slot race (row lock) and overlapping-different-slot race (EXCLUDE constraint catches what the row lock structurally cannot — different rows, no lock contention). Hit and fixed one self-inflicted test bug: initially gave two slots identical starts_at, which tripped Batch 1's own availability_slots UNIQUE(doctor_profile_id,starts_at) constraint before reaching the EXCLUDE constraint at all — fixed by using overlapping-but-distinct times. Concurrency suite re-run 3x clean (no flakiness).
+Full suite: 112/112 green (up from 106), 86.5% instruction coverage (clears the 80% gate).
+Committed 0bb08d4.
+
+## 2026-07-31 — Epic 4 Batch 3 complete (Story 5.1)
+New `payment` module: Payment entity, PaymentGateway Strategy interface, MockCmiPaymentGatewayAdapter (always-succeeds mock — real CMI still has changeme placeholders in .env.example, same pattern as Epic 1's mock TURN provider). No webhook/PaymentController built: the mock is synchronous so there's nothing async to receive; deferred until a real CmiPaymentGatewayAdapter exists. PaymentService.capturePayment is idempotent by client-supplied idempotencyKey with a DataIntegrityViolationException fallback for the concurrent-insert race.
+Full suite: 121/121 green (up from 112), 86.4% instruction coverage (clears the 80% gate).
+Committed b5538fc.
+
+## 2026-07-31 — Epic 4 Batch 4 complete (Story 4.2)
+BookingService orchestrates DoubleBookingGuard (4.3) + PaymentService (5.1): reserve slot -> server-recomputed fee (no price field on the request DTO at all, so tampered-price is structurally impossible) -> capture payment -> confirm on success (+ publish BookingConfirmedEvent, no listener yet) or cancel+release-slot on failure. BookingController POST/GET /api/v1/booking/appointments. Full-stack integration test proves the double-booking rejection through the real HTTP+DB stack (409), not just at the service layer.
+Fast-follow flagged (not blocking): booking doesn't check doctor verification status yet — not in Story 4.2's AC, but a real gap (unapproved doctors' slots are technically bookable).
+Full suite: 128/128 green (up from 121), 88.27% instruction coverage (clears the 80% gate).
+Committed e30be71.
+
+## 2026-07-31 — Epic 4 Batch 5 complete (Stories 4.4 + 4.5)
+CancellationPolicy (inclusive boundary at exactly windowHours) + CancellationService (cancel always allowed, refund conditional). New `notification` module: SmsSender/EmailSender mocks + BookingNotificationListener (@Async @TransactionalEventListener AFTER_COMMIT) consuming BookingConfirmedEvent + new ReminderDueEvent from ReminderService's @Scheduled sweep (24h default lead time). First @EnableAsync/@EnableScheduling in the codebase (shared/config/AsyncSchedulingConfig).
+**Real bug found and fixed via the adversarial suite**: Postgres's GiST EXCLUDE constraint check can deadlock (CannotAcquireLockException) under concurrent overlapping inserts, not just cleanly reject (DataIntegrityViolationException) — DoubleBookingGuard's catch was too narrow, widened to DataAccessException, regression test added, re-confirmed clean across 5 reruns.
+Environment snag hit twice this batch (same OneDrive/build-dir issue logged 2026-07-27): Gradle's incremental build choked on "not a regular file" for both a stray bash.exe.stackdump under build/resources and later a .class file — both times `rm -rf build` (safe, generated dir only) resolved it immediately.
+Full suite: 151/151 green (up from 128), 89.16% instruction coverage (clears the 80% gate).
+Committed 05248d0.
+
+## 2026-07-31 — Epic 4 Batch 6 complete (frontend booking + payment UI)
+New features/booking: DoctorAvailabilityPage (rules/exceptions/generate), BookAppointmentPage (SlotPicker + confirm-and-pay), MyAppointmentsPage (read-only list). DoctorPublicProfilePage gained a patient-only "Book Appointment" link. Routes gated by RequireRole. Regenerated OpenAPI client (backend run via `docker compose up -d --build backend` on port 8090 for codegen + live verification). Full fr/ar i18n.
+Verified live end-to-end via Chrome: doctor sets weekly rule + blocks a date -> generates 48 slots correctly skipping the blocked date -> platform admin approves the profile -> patient searches, views public profile, books+pays (mock gateway), sees CONFIRMED -> appointment shows correctly in "Mes rendez-vous".
+Found and logged two pre-existing (not Epic-4-introduced) fast-follows in .logs/decisions.md: no auto-retry-on-401 causing hard-navigation races on every protected page, and Redis's missing host port mapping tripping up host-side `bootRun` against dockerized deps.
+tsc/oxlint/vite build clean. No automated tests yet (Batch 7).
+Committed 7dacee8.
+
+## 2026-07-31 — Epic 4 Batch 7 complete (cancel/reschedule UI + tests)
+MyAppointmentsPage: Cancel + Reschedule buttons on PENDING_PAYMENT/CONFIRMED appointments (hidden for CANCELLED/COMPLETED/NO_SHOW). Reschedule = cancel (existing endpoint) + navigate to /doctors/{id}/book, no new backend endpoint (matches the 2026-07-31 BRAINSTORM decision).
+New src/test/bookingHandlers.ts MSW fake (rules/exceptions/slots/appointments) + seedAvailabilitySlot/seedAppointment helpers, wired into mswServer.ts/setup.ts. Added clinicHandlers.findDoctorProfileByUserId for cross-reference.
+29 new tests covering all of Epic 4's frontend surface (schemas, both list+form components, GenerateSlotsButton, SlotPicker, DoctorAvailabilityPage, BookAppointmentPage incl. a TOCTOU slot-taken-mid-flow test, MyAppointmentsPage cancel/reschedule/status-gating). One flaky findByRole timeout hit and fixed (bumped timeout to 3000ms for a two-sequential-query page).
+Frontend total: 98 tests (up from 69), 91.88%/91.84% statement/line coverage (up from 90.71%/90.63%) — clears the 80% gate. tsc/oxlint/vite build clean.
+Committed bc8ce9f.
+
+## 2026-07-31 — Epic 4 Batch 8 complete (Verify + Ship)
+Playwright e2e: new e2e/epic-4-booking.spec.ts, 2 tests against the real backend —
+  1. full happy path: doctor sets availability + generates slots -> admin approves -> patient books+pays -> CONFIRMED -> cancels -> CANCELLED, buttons hidden -> re-searches and confirms the same slot is bookable again (proves CancellationService actually released it).
+  2. double-booking rejection: two independent browser contexts (real concurrent patients) select the same slot and click Confirm via Promise.all — exactly one gets CONFIRMED, the other gets the "slot was just booked" conflict message. Re-run 4x clean, no flakiness.
+Found and fixed two authoring bugs during setup: the slot-button locator regex assumed a zero-padded DD/MM/YYYY format but Playwright's default Chromium locale renders `toLocaleString()` as en-US M/D/YYYY; and `video: 'on'` in playwright.config.ts only auto-attaches to the default `page` fixture, not manually-created contexts, so the race test's two extra patient contexts needed `recordVideo` passed explicity to be captured.
+Full e2e suite: 13/13 green (11 pre-existing + 2 new).
+Video: `RECORDING_VERSION=0.5.0 npm run e2e:record` -> `.recordings/v0.5.0-2026-07-31.webm` (15 clips, all specs including both new-context sessions of the race test).
+Final re-verification: backend `./gradlew test jacocoTestCoverageVerification` — 151 tests, 89.16% instruction coverage. Frontend `tsc --noEmit`/`oxlint` clean, `vitest run --coverage` — 98 tests, 91.88%/91.84% statement/line coverage. Both clear the 80% gate.
+**Sprint 4 Epic 4 (Appointment Booking & Scheduling, Stories 4.1-4.5) + Epic 5 Story 5.1 (CMI payment capture, mocked) are now fully CLOSED** — backend + frontend + e2e recorded + coverage gates cleared.
