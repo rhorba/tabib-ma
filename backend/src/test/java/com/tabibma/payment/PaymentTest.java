@@ -45,4 +45,21 @@ class PaymentTest {
 
         assertThatThrownBy(payment::fail).isInstanceOf(ConflictException.class);
     }
+
+    @Test
+    void refund_setsRefundedStatusWhenSucceeded() {
+        Payment payment = new Payment(UUID.randomUUID(), BigDecimal.TEN, "key-5");
+        payment.succeed("CMI-999");
+
+        payment.refund();
+
+        assertThat(payment.getStatus()).isEqualTo(PaymentStatus.REFUNDED);
+    }
+
+    @Test
+    void refund_rejectsWhenNotSucceeded() {
+        Payment payment = new Payment(UUID.randomUUID(), BigDecimal.TEN, "key-6");
+
+        assertThatThrownBy(payment::refund).isInstanceOf(ConflictException.class);
+    }
 }

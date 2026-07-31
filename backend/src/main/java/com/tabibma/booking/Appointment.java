@@ -57,6 +57,9 @@ public class Appointment {
     @Column(name = "updated_at", nullable = false)
     private Instant updatedAt;
 
+    @Column(name = "reminder_sent_at")
+    private Instant reminderSentAt;
+
     protected Appointment() {
         // JPA
     }
@@ -125,6 +128,14 @@ public class Appointment {
 
     public Instant getUpdatedAt() {
         return updatedAt;
+    }
+
+    public Instant getReminderSentAt() {
+        return reminderSentAt;
+    }
+
+    public void markReminderSent() {
+        this.reminderSentAt = Instant.now();
     }
 
     public void confirm() {

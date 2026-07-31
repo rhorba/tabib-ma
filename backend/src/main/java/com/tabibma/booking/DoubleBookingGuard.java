@@ -2,7 +2,7 @@ package com.tabibma.booking;
 
 import com.tabibma.shared.exception.ConflictException;
 import com.tabibma.shared.exception.NotFoundException;
-import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -16,7 +16,13 @@ import java.util.UUID;
  *  2. The `appointments` table's {@code EXCLUDE USING gist} constraint (Flyway V7) rejects any
  *     overlapping-time insert for the same doctor even if it comes from a *different* slot row —
  *     a case the row lock alone cannot catch.
- * Both failure paths surface as the same {@link ConflictException} to the caller.
+ * Both failure paths surface as the same {@link ConflictException} to the caller. The second path
+ * catches the broad {@link DataAccessException}, not just {@code DataIntegrityViolationException}:
+ * two transactions concurrently inserting overlapping ranges can make Postgres's GiST exclusion
+ * check deadlock (surfaced as {@code CannotAcquireLockException}) instead of cleanly rejecting the
+ * second insert — found via the adversarial concurrency suite, not anticipated up front. Either
+ * way the insert failed because of contention on this exact invariant, so both map to the same
+ * ConflictException.
  */
 @Service
 public class DoubleBookingGuard {
@@ -47,7 +53,7 @@ public class DoubleBookingGuard {
             // saveAndFlush forces the INSERT (and the EXCLUDE constraint check) to run now, inside
             // this try block — a plain save() would defer the INSERT to commit, outside our reach.
             return appointmentRepository.saveAndFlush(appointment);
-        } catch (DataIntegrityViolationException e) {
+        } catch (DataAccessException e) {
             throw new ConflictException("This slot was just booked.");
         }
     }

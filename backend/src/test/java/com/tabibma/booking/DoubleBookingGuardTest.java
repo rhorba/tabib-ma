@@ -91,4 +91,22 @@ class DoubleBookingGuardTest {
         assertThatThrownBy(() -> guard.reserveSlot(UUID.randomUUID(), slotId))
                 .isInstanceOf(ConflictException.class);
     }
+
+    @Test
+    void reserveSlot_translatesDeadlockFromConcurrentExcludeCheckToConflict() {
+        // Regression test: Postgres's GiST exclusion-constraint check can deadlock (not just
+        // cleanly reject) when two transactions concurrently insert overlapping ranges — found via
+        // the real-Postgres adversarial suite (DoubleBookingConcurrencyIntegrationTest), not
+        // anticipated up front. CannotAcquireLockException is NOT a DataIntegrityViolationException.
+        UUID doctorProfileId = UUID.randomUUID();
+        Instant start = Instant.now();
+        AvailabilitySlot slot = new AvailabilitySlot(doctorProfileId, start, start.plusSeconds(1800), LocationType.IN_PERSON, null);
+        UUID slotId = UUID.randomUUID();
+        when(availabilitySlotRepository.findByIdForUpdate(slotId)).thenReturn(Optional.of(slot));
+        when(appointmentRepository.saveAndFlush(any(Appointment.class)))
+                .thenThrow(new org.springframework.dao.CannotAcquireLockException("deadlock detected"));
+
+        assertThatThrownBy(() -> guard.reserveSlot(UUID.randomUUID(), slotId))
+                .isInstanceOf(ConflictException.class);
+    }
 }

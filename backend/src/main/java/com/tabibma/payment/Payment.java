@@ -113,4 +113,11 @@ public class Payment {
         }
         this.status = PaymentStatus.FAILED;
     }
+
+    public void refund() {
+        if (status != PaymentStatus.SUCCEEDED) {
+            throw new ConflictException("Only a SUCCEEDED payment can be refunded.");
+        }
+        this.status = PaymentStatus.REFUNDED;
+    }
 }
