@@ -1,8 +1,31 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
+import { apiClient } from '@/shared/api/client'
+import { tokenStore } from '@/shared/api/tokenStore'
 import { AuthProvider, useAuth } from './AuthContext'
+
+async function registerAndLogin(userEventOptions?: Parameters<typeof userEvent.setup>[0]) {
+  await fetch('/api/v1/auth/register', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      email: 'amina@example.com',
+      password: 'correct-password',
+      role: 'PATIENT',
+      firstName: 'Amina',
+      lastName: 'Bennis',
+    }),
+  })
+
+  renderHarness()
+  await waitFor(() => expect(screen.getByTestId('status')).toHaveTextContent('unauthenticated'))
+
+  const user = userEvent.setup(userEventOptions)
+  await user.click(screen.getByRole('button', { name: 'login' }))
+  await waitFor(() => expect(screen.getByTestId('status')).toHaveTextContent('authenticated'))
+}
 
 function TestHarness() {
   const { status, user, login, logout } = useAuth()
@@ -109,5 +132,50 @@ describe('AuthProvider', () => {
 
     await waitFor(() => expect(screen.getByTestId('status')).toHaveTextContent('authenticated'))
     expect(screen.getByTestId('user')).toHaveTextContent('amina@example.com')
+  })
+
+  afterEach(() => {
+    vi.useRealTimers()
+  })
+
+  it(
+    'proactively refreshes the session before the access token expires',
+    async () => {
+      await registerAndLogin()
+      const firstRefreshToken = localStorage.getItem('tabibma-refresh-token')
+
+      // Simulating (rather than faking timers for) a token that's about to
+      // expire: this fires the same onSessionRefreshed notification a real
+      // login/refresh would, with a short enough expiry that AuthContext's
+      // *real* setTimeout lands well inside this test's timeout instead of
+      // the real 15-minute token lifetime authHandlers issues.
+      tokenStore.setAccessToken(tokenStore.getAccessToken(), 6_000)
+
+      await waitFor(
+        () => {
+          const refreshedToken = localStorage.getItem('tabibma-refresh-token')
+          expect(refreshedToken).toBeTruthy()
+          expect(refreshedToken).not.toBe(firstRefreshToken)
+        },
+        { timeout: 8_000 }
+      )
+      expect(screen.getByTestId('status')).toHaveTextContent('authenticated')
+      expect(screen.getByTestId('user')).toHaveTextContent('amina@example.com')
+    },
+    10_000
+  )
+
+  it('flips to unauthenticated when a non-auth request comes back 401', async () => {
+    await registerAndLogin()
+
+    // Simulate the access token going bad server-side (expired mid-session,
+    // revoked, etc.) without waiting for the real 15min expiry — apiClient's
+    // onResponse should catch the 401 and clear the session.
+    tokenStore.setAccessToken('a-tampered-token', 900_000)
+    await apiClient.GET('/api/v1/users/me')
+
+    await waitFor(() => expect(screen.getByTestId('status')).toHaveTextContent('unauthenticated'))
+    expect(screen.getByTestId('user')).toHaveTextContent('none')
+    expect(localStorage.getItem('tabibma-refresh-token')).toBeNull()
   })
 })
