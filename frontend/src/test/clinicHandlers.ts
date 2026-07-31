@@ -390,6 +390,13 @@ function decide(request: Request, status: 'APPROVED' | 'REJECTED') {
   return HttpResponse.json(toProfileResponse(profile))
 }
 
+// Shared with bookingHandlers.ts so the availability fakes can resolve "my
+// doctor profile" the same way the real backend's AvailabilityService does
+// (DoctorProfileRepository.findByUserId).
+export function findDoctorProfileByUserId(userId: string) {
+  return profiles.find((p) => p.userId === userId) ?? null
+}
+
 // Test-only helper mirroring the seed migration: lets tests create a doctor
 // profile directly without going through the create-profile UI first.
 export function seedDoctorProfile(profile: Omit<FakeDoctorProfile, 'id'>) {

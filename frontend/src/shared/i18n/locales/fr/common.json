@@ -268,12 +268,18 @@
       "title": "Mes rendez-vous",
       "empty": "Vous n'avez pas encore de rendez-vous.",
       "viewDoctor": "Voir le médecin",
+      "cancel": "Annuler",
+      "reschedule": "Reprogrammer",
       "status": {
         "pending_payment": "Paiement en attente",
         "confirmed": "Confirmé",
         "cancelled": "Annulé",
         "completed": "Terminé",
         "no_show": "Absence"
+      },
+      "errors": {
+        "alreadyDecided": "Ce rendez-vous ne peut plus être modifié.",
+        "generic": "Une erreur est survenue. Veuillez réessayer."
       }
     }
   }

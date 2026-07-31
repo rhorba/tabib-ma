@@ -268,12 +268,18 @@
       "title": "مواعيدي",
       "empty": "ليس لديك أي مواعيد بعد.",
       "viewDoctor": "عرض الطبيب",
+      "cancel": "إلغاء",
+      "reschedule": "إعادة الجدولة",
       "status": {
         "pending_payment": "الدفع قيد الانتظار",
         "confirmed": "مؤكد",
         "cancelled": "ملغى",
         "completed": "منتهٍ",
         "no_show": "غياب"
+      },
+      "errors": {
+        "alreadyDecided": "لم يعد بالإمكان تعديل هذا الموعد.",
+        "generic": "حدث خطأ ما. يرجى المحاولة مرة أخرى."
       }
     }
   }

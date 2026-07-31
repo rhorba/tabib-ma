@@ -5,6 +5,7 @@ import i18n, { defaultLanguage } from '@/shared/i18n/config'
 import { server } from './mswServer'
 import { resetAuthState } from './authHandlers'
 import { resetClinicState } from './clinicHandlers'
+import { resetBookingState } from './bookingHandlers'
 
 beforeAll(() => server.listen({ onUnhandledRequest: 'error' }))
 afterEach(async () => {
@@ -12,6 +13,7 @@ afterEach(async () => {
   server.resetHandlers()
   resetAuthState()
   resetClinicState()
+  resetBookingState()
   localStorage.clear()
   if (i18n.language !== defaultLanguage) {
     await i18n.changeLanguage(defaultLanguage)
