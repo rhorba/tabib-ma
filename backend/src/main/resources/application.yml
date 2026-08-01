@@ -45,6 +45,8 @@ app:
   notifications:
     reminder-lead-time-hours: ${REMINDER_LEAD_TIME_HOURS:24}
     reminder-sweep-interval-ms: ${REMINDER_SWEEP_INTERVAL_MS:900000}
+  consultation:
+    join-window-minutes: ${CONSULTATION_JOIN_WINDOW_MINUTES:10}
 
 management:
   endpoints:

@@ -37,6 +37,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/v1/auth/**").permitAll()
                         .requestMatchers("/actuator/health").permitAll()
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
+                        .requestMatchers("/ws/consultations/**").permitAll()
                         .requestMatchers("/api/v1/admin/platform/**").hasRole("PLATFORM_ADMIN")
                         .requestMatchers("/api/v1/admin/clinic/**").hasRole("CLINIC_ADMIN")
                         .anyRequest().authenticated())
