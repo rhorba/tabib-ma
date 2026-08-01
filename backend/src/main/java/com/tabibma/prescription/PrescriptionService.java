@@ -73,6 +73,13 @@ public class PrescriptionService {
         return objectStorageClient.load(prescription.getPdfStorageKey());
     }
 
+    /** "My Prescriptions" (UX doc §3, patient nav) — scoped by patientId only, same
+     * no-role-check-needed pattern as BookingService.listMyAppointments: a caller only ever gets
+     * back rows where they are the patient. */
+    public List<Prescription> getMine(UserContext principal) {
+        return prescriptionRepository.findAllByPatientId(principal.userId());
+    }
+
     private void assertOwner(UserContext principal, Prescription prescription) {
         boolean isPatient = prescription.getPatientId().equals(principal.userId());
         boolean isDoctor = prescription.getDoctorId().equals(principal.userId());

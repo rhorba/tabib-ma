@@ -165,4 +165,14 @@ class PrescriptionServiceTest {
 
         assertThat(service.loadPdf(new UserContext(patientId, "p@example.com", Role.PATIENT), id)).isSameAs(stream);
     }
+
+    @Test
+    void getMine_delegatesToRepositoryScopedByPatientId() {
+        Prescription prescription = new Prescription(consultationId, doctorId, patientId, null,
+                List.of(new PrescriptionItem("Amoxicillin", "500mg", null)), "key", java.time.Instant.now());
+        when(prescriptionRepository.findAllByPatientId(patientId)).thenReturn(List.of(prescription));
+
+        assertThat(service.getMine(new UserContext(patientId, "p@example.com", Role.PATIENT)))
+                .containsExactly(prescription);
+    }
 }

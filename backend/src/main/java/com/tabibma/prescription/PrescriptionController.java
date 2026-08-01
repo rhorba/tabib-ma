@@ -30,6 +30,11 @@ public class PrescriptionController {
         this.prescriptionService = prescriptionService;
     }
 
+    @GetMapping("/mine")
+    public List<PrescriptionResponse> getMine(@AuthenticationPrincipal UserContext principal) {
+        return prescriptionService.getMine(principal).stream().map(PrescriptionResponse::from).toList();
+    }
+
     @GetMapping("/{prescriptionId}")
     public PrescriptionResponse getById(@AuthenticationPrincipal UserContext principal,
                                          @PathVariable UUID prescriptionId) {
