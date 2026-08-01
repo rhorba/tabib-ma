@@ -84,3 +84,8 @@ Both clear the 80% combined coverage gate.
 Instruction coverage: 5032/5626 = 89% (594 missed)
 Gate: jacocoTestCoverageVerification (minimum 0.80 instruction) — PASSED
 197 tests total (up from 151 at Epic 4/5.1 close, plus the auth fast-follow's additions): adds Consultation/ConsultationStatus/ConsultationRepository, JoinWindowPolicy, TurnCredentialProvider+MockTurnCredentialProvider, SignalingTokenIssuer+JwtSignalingTokenIssuer, ConsultationBookingListener, ConsultationService/Controller, and the /ws/consultations WebSocket signaling relay (ConsultationSignalingHandler, SignalingHandshakeInterceptor). Unit + integration test coverage for all of the above.
+
+## 2026-08-01 — Epic 6+7 Batch 2 (backend: prescription module + Story 6.3 completion, coverage)
+Instruction coverage: 5786/6406 = 90% (620 missed)
+Gate: jacocoTestCoverageVerification (minimum 0.80 instruction) — PASSED
+210 tests total (up from 197 at Batch 1): adds Prescription/PrescriptionItem (immutable, no setters), PrescriptionRepository, PrescriptionPdfGenerator (Apache PDFBox), PrescriptionService (issue/correct/getById/loadPdf), PrescriptionController, and ConsultationService.complete() (Story 6.3, links consultation->prescription). Unit tests for all new classes + PrescriptionControllerIntegrationTest (real DB, full complete->prescribe->correct flow) + PrescriptionPdfGeneratorTest (parses the generated PDF back with PDFTextStripper to assert real content, not just non-empty bytes).
