@@ -279,3 +279,10 @@ Local state: Docker Desktop was stopped at the start of this session and had to 
 Carried-forward open items (unchanged): CNDP/Loi 09-08 filing (legal, blocks production launch), frontend bundle code-splitting (~203KB gzipped), Trivy Gradle-lockfile gap (2026-07-22), seeded PLATFORM_ADMIN/CLINIC_ADMIN need rotation/removal before production, Story 3.1's k6 10k-doctor load test (deferred 2026-07-30), Redis has no host port mapping in docker-compose.yml, booking doesn't check doctor verification status, no cancellation-confirmation notification.
 
 Resume by: confirm next priority with the user — likely Epic 6 (Video Consultation) or Epic 9 (Reviews), or clearing one of the fast-follows above. Follow the same UNDERSTAND -> BRAINSTORM -> PLAN gate sequence as every epic so far.
+
+## SESSION_START — 2026-08-01
+Resumed from 2026-07-31 (auto-retry-on-401 fix closed, pushed, CI green, working tree clean). User picked Epic 6 (Video Consultation) as next priority.
+
+UNDERSTAND: Reviewed docs/stories-tabib-ma.md Epic 6 (Stories 6.1 WebRTC join/join-window, 6.2 audio-only fallback, 6.3 consult+prescription-in-session) and architecture-tabib-ma.md `consultation` module design (Consultation 1:1 with Appointment, created only when CONFIRMED+VIDEO slot; `SignalingTokenIssuer`/`TurnCredentialProvider` Strategy interface — vendor TBD). Confirmed via .logs/decisions.md/risks.md: the Sprint-2 Twilio-vs-Daily.co vendor spike never actually resolved to a real vendor — established precedent instead (Twilio SMS, CMI payment) is mock adapters behind the Strategy interface. Reviewed ux-tabib-ma.md Flow 3 (video room states, 10s connect timeout before audio-only offer, poor-connection auto-suggest).
+
+Key scoping issue found: docs/stories-tabib-ma.md's dependency graph is circular as written — Story 6.3 depends on 7.1, and 7.1 depends on 6.3. Moving to BRAINSTORM to resolve this with the user (mirrors the Epic 4+5.1 bundling precedent from 2026-07-31).

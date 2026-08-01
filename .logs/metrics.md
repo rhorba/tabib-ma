@@ -79,3 +79,8 @@ Gate: ≥ 80% combined — PASSED
 Backend: 151 tests, 89.16% instruction coverage.
 Frontend: 98 tests (unit/component), 91.88%/91.84% statement/line coverage, 13 e2e tests (11 pre-existing + 2 new Epic 4 flows).
 Both clear the 80% combined coverage gate.
+
+## 2026-08-01 — Epic 6+7 Batch 1 (backend: consultation module, Story 6.1) coverage
+Instruction coverage: 5032/5626 = 89% (594 missed)
+Gate: jacocoTestCoverageVerification (minimum 0.80 instruction) — PASSED
+197 tests total (up from 151 at Epic 4/5.1 close, plus the auth fast-follow's additions): adds Consultation/ConsultationStatus/ConsultationRepository, JoinWindowPolicy, TurnCredentialProvider+MockTurnCredentialProvider, SignalingTokenIssuer+JwtSignalingTokenIssuer, ConsultationBookingListener, ConsultationService/Controller, and the /ws/consultations WebSocket signaling relay (ConsultationSignalingHandler, SignalingHandshakeInterceptor). Unit + integration test coverage for all of the above.
