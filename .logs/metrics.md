@@ -89,3 +89,9 @@ Gate: jacocoTestCoverageVerification (minimum 0.80 instruction) — PASSED
 Instruction coverage: 5786/6406 = 90% (620 missed)
 Gate: jacocoTestCoverageVerification (minimum 0.80 instruction) — PASSED
 210 tests total (up from 197 at Batch 1): adds Prescription/PrescriptionItem (immutable, no setters), PrescriptionRepository, PrescriptionPdfGenerator (Apache PDFBox), PrescriptionService (issue/correct/getById/loadPdf), PrescriptionController, and ConsultationService.complete() (Story 6.3, links consultation->prescription). Unit tests for all new classes + PrescriptionControllerIntegrationTest (real DB, full complete->prescribe->correct flow) + PrescriptionPdfGeneratorTest (parses the generated PDF back with PDFTextStripper to assert real content, not just non-empty bytes).
+
+## 2026-08-01 — Epic 6+7 Batch 3 (backend: Story 7.2 access control, coverage) — SPRINT_SNAPSHOT
+Instruction coverage: 5801/6421 = 90% (620 missed)
+Gate: jacocoTestCoverageVerification (minimum 0.80 instruction) — PASSED
+216 tests total (up from 210 at Batch 2): adds GET /api/v1/prescriptions/mine (PrescriptionService.getMine) + PrescriptionAccessControlIntegrationTest, the adversarial Story 7.2 suite against the real backend/DB — Patient A cannot GET, download, or (as a doctor) correct Patient B's prescription; "mine" listing is scoped per-patient; unauthenticated request rejected.
+Backend total across Epic 6+7 so far: 216 tests, 90% instruction coverage — clears the 80% gate. Backend portion of Epic 6 (6.1, 6.3) + Epic 7 (7.1, 7.2) is now feature-complete; frontend (Batches 4-6) and e2e (Batch 7) remain.
