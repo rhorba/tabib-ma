@@ -40,6 +40,11 @@ dependencies {
 
     implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.9'
 
+    // Prescription PDF generation (Story 7.1) — Apache 2.0 licensed, avoids the AGPL terms of
+    // iText's current major versions for a document type (medical prescriptions) we generate,
+    // not just render.
+    implementation 'org.apache.pdfbox:pdfbox:3.0.3'
+
     // Required by Spring Security's Argon2PasswordEncoder (docs/security-tabib-ma.md Section 3).
     runtimeOnly 'org.bouncycastle:bcprov-jdk18on:1.78.1'
 

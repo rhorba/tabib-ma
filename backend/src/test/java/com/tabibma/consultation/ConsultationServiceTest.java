@@ -7,6 +7,8 @@ import com.tabibma.clinic.DoctorProfile;
 import com.tabibma.clinic.DoctorProfileRepository;
 import com.tabibma.identity.Role;
 import com.tabibma.identity.UserContext;
+import com.tabibma.prescription.Prescription;
+import com.tabibma.prescription.PrescriptionService;
 import com.tabibma.shared.exception.ForbiddenException;
 import com.tabibma.shared.exception.NotFoundException;
 import org.junit.jupiter.api.BeforeEach;
@@ -24,6 +26,9 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -39,6 +44,8 @@ class ConsultationServiceTest {
     private SignalingTokenIssuer signalingTokenIssuer;
     @Mock
     private TurnCredentialProvider turnCredentialProvider;
+    @Mock
+    private PrescriptionService prescriptionService;
 
     private ConsultationService service;
 
@@ -52,7 +59,7 @@ class ConsultationServiceTest {
     @BeforeEach
     void setUp() {
         service = new ConsultationService(consultationRepository, appointmentRepository, doctorProfileRepository,
-                signalingTokenIssuer, turnCredentialProvider, 10);
+                signalingTokenIssuer, turnCredentialProvider, prescriptionService, 10);
 
         patientId = UUID.randomUUID();
         doctorUserId = UUID.randomUUID();
@@ -164,5 +171,42 @@ class ConsultationServiceTest {
         ConsultationService.ConsultationView view = service.getByAppointmentId(patientPrincipal(), appointment.getId());
 
         assertThat(view.joinable()).isTrue();
+    }
+
+    @Test
+    void complete_rejectsThePatient() {
+        UUID consultationId = UUID.randomUUID();
+        when(consultationRepository.findById(consultationId)).thenReturn(Optional.of(consultation));
+        when(appointmentRepository.findById(appointment.getId())).thenReturn(Optional.of(appointment));
+        when(doctorProfileRepository.findById(doctorProfileId)).thenReturn(Optional.of(doctorProfile));
+
+        assertThatThrownBy(() -> service.complete(patientPrincipal(), consultationId, List.of()))
+                .isInstanceOf(ForbiddenException.class);
+    }
+
+    @Test
+    void complete_issuesAPrescriptionAndMarksTheConsultationCompleted() {
+        UUID consultationId = UUID.randomUUID();
+        when(consultationRepository.findById(consultationId)).thenReturn(Optional.of(consultation));
+        when(appointmentRepository.findById(appointment.getId())).thenReturn(Optional.of(appointment));
+        when(doctorProfileRepository.findById(doctorProfileId)).thenReturn(Optional.of(doctorProfile));
+        Prescription prescription = mock(Prescription.class);
+        when(prescriptionService.issue(eq(consultationId), eq(doctorUserId), eq(patientId), any()))
+                .thenReturn(prescription);
+
+        ConsultationService.CompletionResult result = service.complete(doctorPrincipal(), consultationId, List.of());
+
+        assertThat(result.consultation().getStatus()).isEqualTo(ConsultationStatus.COMPLETED);
+        assertThat(result.prescription()).isSameAs(prescription);
+        verify(consultationRepository).save(consultation);
+    }
+
+    @Test
+    void complete_throwsNotFoundForAnUnknownConsultation() {
+        UUID consultationId = UUID.randomUUID();
+        when(consultationRepository.findById(consultationId)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> service.complete(doctorPrincipal(), consultationId, List.of()))
+                .isInstanceOf(NotFoundException.class);
     }
 }

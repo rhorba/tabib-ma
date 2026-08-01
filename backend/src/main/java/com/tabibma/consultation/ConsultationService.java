@@ -6,6 +6,9 @@ import com.tabibma.booking.AppointmentStatus;
 import com.tabibma.clinic.DoctorProfile;
 import com.tabibma.clinic.DoctorProfileRepository;
 import com.tabibma.identity.UserContext;
+import com.tabibma.prescription.Prescription;
+import com.tabibma.prescription.PrescriptionItem;
+import com.tabibma.prescription.PrescriptionService;
 import com.tabibma.shared.exception.ForbiddenException;
 import com.tabibma.shared.exception.NotFoundException;
 import org.springframework.beans.factory.annotation.Value;
@@ -31,6 +34,7 @@ public class ConsultationService {
     private final DoctorProfileRepository doctorProfileRepository;
     private final SignalingTokenIssuer signalingTokenIssuer;
     private final TurnCredentialProvider turnCredentialProvider;
+    private final PrescriptionService prescriptionService;
     private final JoinWindowPolicy joinWindowPolicy;
     private final int windowMarginMinutes;
 
@@ -39,12 +43,14 @@ public class ConsultationService {
                                 DoctorProfileRepository doctorProfileRepository,
                                 SignalingTokenIssuer signalingTokenIssuer,
                                 TurnCredentialProvider turnCredentialProvider,
+                                PrescriptionService prescriptionService,
                                 @Value("${app.consultation.join-window-minutes:10}") int windowMarginMinutes) {
         this.consultationRepository = consultationRepository;
         this.appointmentRepository = appointmentRepository;
         this.doctorProfileRepository = doctorProfileRepository;
         this.signalingTokenIssuer = signalingTokenIssuer;
         this.turnCredentialProvider = turnCredentialProvider;
+        this.prescriptionService = prescriptionService;
         this.joinWindowPolicy = new JoinWindowPolicy(windowMarginMinutes);
         this.windowMarginMinutes = windowMarginMinutes;
     }
@@ -87,6 +93,31 @@ public class ConsultationService {
         return new JoinResult(consultation, signalingToken, iceServers);
     }
 
+    /**
+     * Story 6.3: only the doctor can complete a consult, and doing so always issues a prescription
+     * in the same flow/transaction — there is no "complete without prescribing" path, matching the
+     * AC's "in one session" requirement.
+     */
+    @Transactional
+    public CompletionResult complete(UserContext principal, UUID consultationId, List<PrescriptionItem> items) {
+        Consultation consultation = consultationRepository.findById(consultationId)
+                .orElseThrow(() -> new NotFoundException("Consultation not found."));
+        Appointment appointment = appointmentRepository.findById(consultation.getAppointmentId())
+                .orElseThrow(() -> new NotFoundException("Appointment not found."));
+        DoctorProfile doctorProfile = doctorProfileRepository.findById(appointment.getDoctorProfileId())
+                .orElseThrow(() -> new NotFoundException("Doctor profile not found."));
+        if (!doctorProfile.getUserId().equals(principal.userId())) {
+            throw new ForbiddenException("Only the doctor can complete this consultation.");
+        }
+
+        Prescription prescription = prescriptionService.issue(consultationId, principal.userId(),
+                appointment.getPatientId(), items);
+        consultation.complete();
+        consultationRepository.save(consultation);
+
+        return new CompletionResult(consultation, prescription);
+    }
+
     private void authorizeParticipant(UserContext principal, Appointment appointment) {
         DoctorProfile doctorProfile = doctorProfileRepository.findById(appointment.getDoctorProfileId())
                 .orElseThrow(() -> new NotFoundException("Doctor profile not found."));
@@ -101,5 +132,8 @@ public class ConsultationService {
     }
 
     public record JoinResult(Consultation consultation, SignalingToken signalingToken, List<IceServer> iceServers) {
+    }
+
+    public record CompletionResult(Consultation consultation, Prescription prescription) {
     }
 }
