@@ -135,7 +135,10 @@ class DoctorSearchServiceTest {
 
         assertThat(response.firstName()).isEqualTo("Karim");
         assertThat(response.specialty()).isEqualTo("Neurology");
+        // Real review data is composed on top of this by review.PublicDoctorProfileController,
+        // not here — clinic must stay a dependency-free module (see DoctorSearchService).
         assertThat(response.averageRating()).isNull();
         assertThat(response.reviewCount()).isZero();
+        assertThat(response.recentReviews()).isEmpty();
     }
 }

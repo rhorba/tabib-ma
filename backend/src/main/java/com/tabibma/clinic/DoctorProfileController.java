@@ -2,7 +2,6 @@ package com.tabibma.clinic;
 
 import com.tabibma.clinic.dto.CreateDoctorProfileRequest;
 import com.tabibma.clinic.dto.DoctorProfileResponse;
-import com.tabibma.clinic.dto.DoctorPublicProfileResponse;
 import com.tabibma.clinic.dto.DoctorSearchResponse;
 import com.tabibma.clinic.dto.VerificationDocumentResponse;
 import com.tabibma.identity.UserContext;
@@ -73,8 +72,6 @@ public class DoctorProfileController {
                 .toList();
     }
 
-    @GetMapping("/{doctorProfileId}/public")
-    public DoctorPublicProfileResponse getPublicProfile(@PathVariable UUID doctorProfileId) {
-        return doctorSearchService.getPublicProfile(doctorProfileId);
-    }
+    // GET /{doctorProfileId}/public moved to review.PublicDoctorProfileController — see its
+    // class javadoc for why (composing review data here would create a module dependency cycle).
 }

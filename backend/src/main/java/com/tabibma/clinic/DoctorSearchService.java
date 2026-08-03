@@ -60,8 +60,12 @@ public class DoctorSearchService {
 
         User user = userRepository.findById(profile.getUserId()).orElse(null);
 
-        // No review module yet (Epic 9) — degrade gracefully per stories-tabib-ma.md Story 3.2's
-        // "reviews — degrade gracefully if none exist yet" note, rather than blocking this story on it.
+        // Review fields are left at their stub values here deliberately — this method must not
+        // depend on the review module (clinic is a dependency-free "leaf"; booking and
+        // consultation already depend on it, and review depends on booking for Story 9.1's own
+        // submission checks, so clinic -> review would cycle back through booking -> clinic).
+        // review.PublicDoctorProfileController composes the real averageRating/reviewCount/
+        // recentReviews on top of this response instead — see its class javadoc.
         return new DoctorPublicProfileResponse(
                 profile.getId(),
                 user != null ? user.getFirstName() : null,
@@ -71,7 +75,8 @@ public class DoctorSearchService {
                 profile.getBio(),
                 profile.getConsultationFeeMad(),
                 null,
-                0L);
+                0L,
+                List.of());
     }
 
     private static String blankToNull(String value) {
