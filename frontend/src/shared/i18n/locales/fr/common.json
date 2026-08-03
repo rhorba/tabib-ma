@@ -154,6 +154,11 @@
         "declined": "Refusée"
       }
     },
+    "dashboard": {
+      "title": "Tableau de bord",
+      "bookingVolumeLabel": "Rendez-vous réservés",
+      "revenueLabel": "Revenu (MAD)"
+    },
     "errors": {
       "alreadyInvited": "Cette adresse e-mail a déjà une invitation en attente.",
       "generic": "Une erreur est survenue. Veuillez réessayer."

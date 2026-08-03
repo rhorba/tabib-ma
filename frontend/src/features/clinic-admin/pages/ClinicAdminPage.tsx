@@ -33,6 +33,20 @@ function useMyClinic() {
   })
 }
 
+function useClinicDashboard(enabled: boolean) {
+  return useQuery({
+    queryKey: ['clinic', 'dashboard'],
+    queryFn: async () => {
+      const { data, error } = await apiClient.GET('/api/v1/clinic/clinics/dashboard')
+      if (error) {
+        throw error
+      }
+      return data ?? null
+    },
+    enabled,
+  })
+}
+
 function useClinicInvitations(clinicId: string | undefined) {
   return useQuery({
     queryKey: ['clinic', 'invitations', clinicId],
@@ -52,6 +66,7 @@ function useClinicInvitations(clinicId: string | undefined) {
 export function ClinicAdminPage() {
   const { t } = useTranslation()
   const clinicQuery = useMyClinic()
+  const dashboardQuery = useClinicDashboard(clinicQuery.data != null)
   const invitationsQuery = useClinicInvitations(clinicQuery.data?.id)
 
   return (
@@ -74,6 +89,24 @@ export function ClinicAdminPage() {
           )}
         </CardContent>
       </Card>
+
+      {clinicQuery.data && dashboardQuery.data && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg" role="heading" aria-level={2}>
+              {t('clinicAdmin.dashboard.title')}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <dl className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
+              <dt className="text-muted-foreground">{t('clinicAdmin.dashboard.bookingVolumeLabel')}</dt>
+              <dd>{dashboardQuery.data.bookingVolume}</dd>
+              <dt className="text-muted-foreground">{t('clinicAdmin.dashboard.revenueLabel')}</dt>
+              <dd>{dashboardQuery.data.revenueMad}</dd>
+            </dl>
+          </CardContent>
+        </Card>
+      )}
 
       {clinicQuery.data && (
         <Card>

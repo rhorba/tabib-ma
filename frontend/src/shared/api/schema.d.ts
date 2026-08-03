@@ -500,6 +500,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/clinic/clinics/dashboard": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getDashboard"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/booking/availability/slots": {
         parameters: {
             query?: never;
@@ -879,6 +895,11 @@ export interface components {
             specialty?: string;
             city?: string;
             consultationFeeMad?: number;
+        };
+        ClinicDashboardResponse: {
+            /** Format: int64 */
+            bookingVolume?: number;
+            revenueMad?: number;
         };
     };
     responses: never;
@@ -1703,6 +1724,26 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["ClinicResponse"];
+                };
+            };
+        };
+    };
+    getDashboard: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ClinicDashboardResponse"];
                 };
             };
         };
