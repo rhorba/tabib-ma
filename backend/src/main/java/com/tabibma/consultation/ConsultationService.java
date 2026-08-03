@@ -114,6 +114,12 @@ public class ConsultationService {
                 appointment.getPatientId(), items);
         consultation.complete();
         consultationRepository.save(consultation);
+        // Completing the *consultation* didn't used to complete the underlying
+        // *appointment* at all — AppointmentStatus.COMPLETED was reachable
+        // nowhere in the codebase, silently blocking Story 9.1 (a review needs
+        // a COMPLETED appointment to exist).
+        appointment.complete();
+        appointmentRepository.save(appointment);
 
         return new CompletionResult(consultation, prescription);
     }

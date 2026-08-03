@@ -199,6 +199,11 @@ class ConsultationServiceTest {
         assertThat(result.consultation().getStatus()).isEqualTo(ConsultationStatus.COMPLETED);
         assertThat(result.prescription()).isSameAs(prescription);
         verify(consultationRepository).save(consultation);
+        // Story 9.1 needs a COMPLETED *appointment* to review — completing the
+        // consultation must complete the underlying appointment too, not just
+        // the Consultation record.
+        assertThat(appointment.getStatus()).isEqualTo(com.tabibma.booking.AppointmentStatus.COMPLETED);
+        verify(appointmentRepository).save(appointment);
     }
 
     @Test

@@ -151,4 +151,11 @@ public class Appointment {
         }
         this.status = AppointmentStatus.CANCELLED;
     }
+
+    public void complete() {
+        if (status != AppointmentStatus.CONFIRMED) {
+            throw new ConflictException("Only a CONFIRMED appointment can be completed.");
+        }
+        this.status = AppointmentStatus.COMPLETED;
+    }
 }
