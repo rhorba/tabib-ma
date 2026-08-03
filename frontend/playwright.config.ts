@@ -15,5 +15,19 @@ export default defineConfig({
     trace: 'retain-on-failure',
     video: 'on',
   },
-  projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }],
+  projects: [
+    {
+      name: 'chromium',
+      use: {
+        ...devices['Desktop Chrome'],
+        // Story 6.1's video-join e2e needs a real (fake) camera/mic so
+        // getUserMedia resolves instead of prompting — same approach as any
+        // WebRTC testing in headless Chromium.
+        permissions: ['camera', 'microphone'],
+        launchOptions: {
+          args: ['--use-fake-device-for-media-stream', '--use-fake-ui-for-media-stream'],
+        },
+      },
+    },
+  ],
 })
