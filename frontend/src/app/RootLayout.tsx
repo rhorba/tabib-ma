@@ -29,9 +29,14 @@ function AuthNav() {
           </>
         )}
         {user.role === 'PATIENT' && (
-          <Link to="/appointments" className="text-sm font-medium text-foreground hover:text-primary">
-            {t('nav.myAppointments')}
-          </Link>
+          <>
+            <Link to="/appointments" className="text-sm font-medium text-foreground hover:text-primary">
+              {t('nav.myAppointments')}
+            </Link>
+            <Link to="/prescriptions" className="text-sm font-medium text-foreground hover:text-primary">
+              {t('nav.myPrescriptions')}
+            </Link>
+          </>
         )}
         {user.role === 'PLATFORM_ADMIN' && (
           <Link

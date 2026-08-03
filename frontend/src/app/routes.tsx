@@ -10,6 +10,7 @@ import { DoctorAvailabilityPage } from '@/features/booking/pages/DoctorAvailabil
 import { BookAppointmentPage } from '@/features/booking/pages/BookAppointmentPage'
 import { MyAppointmentsPage } from '@/features/booking/pages/MyAppointmentsPage'
 import { ConsultationPage } from '@/features/consultation/pages/ConsultationPage'
+import { MyPrescriptionsPage } from '@/features/prescription/pages/MyPrescriptionsPage'
 import { RequireRole } from '@/shared/components/RequireRole'
 import { RootLayout } from './RootLayout'
 import { HomePage } from './HomePage'
@@ -46,6 +47,7 @@ export const router = createBrowserRouter([
         children: [
           { path: 'doctors/:doctorProfileId/book', element: <BookAppointmentPage /> },
           { path: 'appointments', element: <MyAppointmentsPage /> },
+          { path: 'prescriptions', element: <MyPrescriptionsPage /> },
         ],
       },
       {
