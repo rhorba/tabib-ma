@@ -46,13 +46,13 @@ export const router = createBrowserRouter([
         element: <RequireRole roles={['PATIENT']} />,
         children: [
           { path: 'doctors/:doctorProfileId/book', element: <BookAppointmentPage /> },
-          { path: 'appointments', element: <MyAppointmentsPage /> },
           { path: 'prescriptions', element: <MyPrescriptionsPage /> },
         ],
       },
       {
         element: <RequireRole roles={['PATIENT', 'DOCTOR']} />,
         children: [
+          { path: 'appointments', element: <MyAppointmentsPage /> },
           { path: 'appointments/:appointmentId/consultation', element: <ConsultationPage /> },
         ],
       },

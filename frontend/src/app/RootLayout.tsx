@@ -26,6 +26,9 @@ function AuthNav() {
             <Link to="/doctor/availability" className="text-sm font-medium text-foreground hover:text-primary">
               {t('nav.availability')}
             </Link>
+            <Link to="/appointments" className="text-sm font-medium text-foreground hover:text-primary">
+              {t('nav.myAppointments')}
+            </Link>
           </>
         )}
         {user.role === 'PATIENT' && (

@@ -197,12 +197,13 @@ test.describe('Epic 6+7: video consultation + prescriptions', () => {
 
     await login(doctorPage, doctorEmail, PASSWORD)
     await registerPatient(patientPage, 'Youssef')
-    const appointment = await bookFirstSlot(patientPage, specialty)
+    await bookFirstSlot(patientPage, specialty)
 
-    // Doctor has no appointments dashboard yet (flagged as a fast-follow when
-    // Batch 4 built ConsultationPage) — reach it directly with the id captured
-    // from the booking response, exactly as planned for this e2e batch.
-    await doctorPage.goto(`/appointments/${appointment.id}/consultation`)
+    // The doctor-appointments dashboard fast-follow (flagged in Batches 4 and
+    // 7) is closed — the doctor reaches this the same way the patient does,
+    // via their own "Mes rendez-vous" nav link, not a direct URL.
+    await doctorPage.getByRole('link', { name: 'Mes rendez-vous' }).click()
+    await doctorPage.getByRole('link', { name: 'Rejoindre la vidéo' }).click()
     await doctorPage.getByRole('button', { name: 'Rejoindre la consultation vidéo' }).click()
 
     await patientPage.getByRole('link', { name: 'Voir mes rendez-vous' }).click()

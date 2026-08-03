@@ -6,6 +6,7 @@ import { Alert, AlertDescription } from '@/shared/components/ui/alert'
 import { Button } from '@/shared/components/ui/button'
 import { apiClient } from '@/shared/api/client'
 import { getApiErrorCode } from '@/shared/api/errors'
+import { useAuth } from '@/features/auth/AuthContext'
 
 const STATUS_STYLES: Record<string, string> = {
   PENDING_PAYMENT: 'bg-amber-100 text-amber-800',
@@ -34,9 +35,14 @@ function useMyAppointments() {
 
 export function MyAppointmentsPage() {
   const { t } = useTranslation()
+  const { user } = useAuth()
   const queryClient = useQueryClient()
   const navigate = useNavigate()
   const appointmentsQuery = useMyAppointments()
+  // CancellationService only ever authorizes the patient who booked the
+  // appointment (backend 403s a doctor's cancel attempt) — a doctor's view
+  // of their own appointments is read-only, plus the Join Video link below.
+  const canManage = user?.role === 'PATIENT'
 
   const cancelAppointment = async (appointmentId: string) => {
     const { error } = await apiClient.POST('/api/v1/booking/appointments/{appointmentId}/cancel', {
@@ -97,12 +103,14 @@ export function MyAppointmentsPage() {
             >
               <div className="grid gap-1">
                 <span>{appointment.startsAt && new Date(appointment.startsAt).toLocaleString()}</span>
-                <Link
-                  to={`/doctors/${appointment.doctorProfileId}`}
-                  className="text-primary hover:underline"
-                >
-                  {t('booking.myAppointments.viewDoctor')}
-                </Link>
+                {canManage && (
+                  <Link
+                    to={`/doctors/${appointment.doctorProfileId}`}
+                    className="text-primary hover:underline"
+                  >
+                    {t('booking.myAppointments.viewDoctor')}
+                  </Link>
+                )}
               </div>
               <div className="flex items-center gap-3">
                 <span
@@ -118,7 +126,7 @@ export function MyAppointmentsPage() {
                     {t('booking.myAppointments.joinVideo')}
                   </Link>
                 )}
-                {CANCELLABLE_STATUSES.has(appointment.status ?? '') && (
+                {canManage && CANCELLABLE_STATUSES.has(appointment.status ?? '') && (
                   <div className="flex gap-2">
                     <Button
                       type="button"

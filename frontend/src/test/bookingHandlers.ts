@@ -220,6 +220,13 @@ export const bookingHandlers = [
   http.get(/\/api\/v1\/booking\/appointments$/, ({ request }) => {
     const user = getAuthenticatedUser(request)
     if (!user) return errorResponse(401, 'UNAUTHORIZED', 'Authentication is required.')
+    if (user.role === 'DOCTOR') {
+      const profile = findDoctorProfileByUserId(user.id)
+      if (!profile) return errorResponse(404, 'NOT_FOUND', "You don't have a doctor profile yet.")
+      return HttpResponse.json(
+        appointments.filter((a) => a.doctorProfileId === profile.id).map(toAppointmentResponse)
+      )
+    }
     return HttpResponse.json(appointments.filter((a) => a.patientId === user.id).map(toAppointmentResponse))
   }),
 

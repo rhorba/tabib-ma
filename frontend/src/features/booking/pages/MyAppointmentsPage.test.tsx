@@ -4,6 +4,7 @@ import { describe, expect, it } from 'vitest'
 import { renderWithProviders, screen } from '@/test/renderWithProviders'
 import { loginAs } from '@/test/loginAs'
 import { seedAppointment, seedAvailabilitySlot } from '@/test/bookingHandlers'
+import { seedDoctorProfile } from '@/test/clinicHandlers'
 import { MyAppointmentsPage } from './MyAppointmentsPage'
 
 function renderPage() {
@@ -128,5 +129,40 @@ describe('MyAppointmentsPage', () => {
     await user.click(await screen.findByRole('button', { name: /reprogrammer/i }))
 
     expect(await screen.findByText('booking page')).toBeInTheDocument()
+  })
+
+  it("shows a doctor's own appointments read-only, with no cancel/reschedule/view-doctor actions", async () => {
+    loginAs({ email: 'd@example.com', password: 'x', role: 'DOCTOR', firstName: 'A', lastName: 'B' })
+    const profile = seedDoctorProfile({
+      userId: '1',
+      specialty: 'Cardiologie',
+      consultationFeeMad: 300,
+      city: 'Rabat',
+      verificationStatus: 'APPROVED',
+    })
+    const slot = seedAvailabilitySlot({
+      doctorProfileId: profile.id,
+      startsAt: '2026-08-03T09:00:00Z',
+      endsAt: '2026-08-03T09:30:00Z',
+      locationType: 'VIDEO',
+      booked: true,
+    })
+    seedAppointment({
+      patientId: '2',
+      doctorProfileId: profile.id,
+      availabilitySlotId: slot.id,
+      startsAt: slot.startsAt,
+      endsAt: slot.endsAt,
+      locationType: 'VIDEO',
+      status: 'CONFIRMED',
+      cancellationWindowHours: 24,
+    })
+    renderPage()
+
+    expect(await screen.findByText(/confirmé/i)).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: /rejoindre la vidéo/i })).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /annuler/i })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /reprogrammer/i })).not.toBeInTheDocument()
+    expect(screen.queryByRole('link', { name: /voir le médecin/i })).not.toBeInTheDocument()
   })
 })
