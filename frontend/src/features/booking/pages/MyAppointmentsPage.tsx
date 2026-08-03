@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { Link, useNavigate } from 'react-router'
@@ -7,6 +8,7 @@ import { Button } from '@/shared/components/ui/button'
 import { apiClient } from '@/shared/api/client'
 import { getApiErrorCode } from '@/shared/api/errors'
 import { useAuth } from '@/features/auth/AuthContext'
+import { ReviewForm } from '@/features/review/components/ReviewForm'
 
 const STATUS_STYLES: Record<string, string> = {
   PENDING_PAYMENT: 'bg-amber-100 text-amber-800',
@@ -33,16 +35,35 @@ function useMyAppointments() {
   })
 }
 
+// Story 9.1: knowing which appointments already have a review (rather than trying
+// once and reading the 409) is what lets the "Leave a review" button disappear
+// correctly, including after a hard reload.
+function useMyReviews() {
+  return useQuery({
+    queryKey: ['reviews', 'mine'],
+    queryFn: async () => {
+      const { data, error } = await apiClient.GET('/api/v1/reviews/mine')
+      if (error) {
+        throw error
+      }
+      return data ?? []
+    },
+  })
+}
+
 export function MyAppointmentsPage() {
   const { t } = useTranslation()
   const { user } = useAuth()
   const queryClient = useQueryClient()
   const navigate = useNavigate()
   const appointmentsQuery = useMyAppointments()
+  const reviewsQuery = useMyReviews()
+  const [openReviewFor, setOpenReviewFor] = useState<string | null>(null)
   // CancellationService only ever authorizes the patient who booked the
   // appointment (backend 403s a doctor's cancel attempt) — a doctor's view
   // of their own appointments is read-only, plus the Join Video link below.
   const canManage = user?.role === 'PATIENT'
+  const reviewedAppointmentIds = new Set((reviewsQuery.data ?? []).map((r) => r.appointmentId))
 
   const cancelAppointment = async (appointmentId: string) => {
     const { error } = await apiClient.POST('/api/v1/booking/appointments/{appointmentId}/cancel', {
@@ -97,63 +118,80 @@ export function MyAppointmentsPage() {
       {appointmentsQuery.data && appointmentsQuery.data.length > 0 ? (
         <ul className="grid gap-3">
           {appointmentsQuery.data.map((appointment) => (
-            <li
-              key={appointment.id}
-              className="flex items-center justify-between gap-3 rounded-md border border-border px-4 py-3 text-sm"
-            >
-              <div className="grid gap-1">
-                <span>{appointment.startsAt && new Date(appointment.startsAt).toLocaleString()}</span>
-                {canManage && (
-                  <Link
-                    to={`/doctors/${appointment.doctorProfileId}`}
-                    className="text-primary hover:underline"
-                  >
-                    {t('booking.myAppointments.viewDoctor')}
-                  </Link>
-                )}
-              </div>
-              <div className="flex items-center gap-3">
-                <span
-                  className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${STATUS_STYLES[appointment.status ?? 'PENDING_PAYMENT']}`}
-                >
-                  {t(`booking.myAppointments.status.${(appointment.status ?? 'PENDING_PAYMENT').toLowerCase()}`)}
-                </span>
-                {appointment.locationType === 'VIDEO' && appointment.status === 'CONFIRMED' && (
-                  <Link
-                    to={`/appointments/${appointment.id}/consultation`}
-                    className="text-sm font-medium text-primary hover:underline"
-                  >
-                    {t('booking.myAppointments.joinVideo')}
-                  </Link>
-                )}
-                {canManage && CANCELLABLE_STATUSES.has(appointment.status ?? '') && (
-                  <div className="flex gap-2">
-                    <Button
-                      type="button"
-                      size="sm"
-                      variant="outline"
-                      disabled={cancelMutation.isPending || rescheduleMutation.isPending}
-                      onClick={() => cancelMutation.mutate(appointment.id!)}
+            <li key={appointment.id} className="grid gap-3 rounded-md border border-border px-4 py-3 text-sm">
+              <div className="flex items-center justify-between gap-3">
+                <div className="grid gap-1">
+                  <span>{appointment.startsAt && new Date(appointment.startsAt).toLocaleString()}</span>
+                  {canManage && (
+                    <Link
+                      to={`/doctors/${appointment.doctorProfileId}`}
+                      className="text-primary hover:underline"
                     >
-                      {t('booking.myAppointments.cancel')}
-                    </Button>
-                    <Button
-                      type="button"
-                      size="sm"
-                      variant="outline"
-                      disabled={cancelMutation.isPending || rescheduleMutation.isPending}
-                      onClick={() =>
-                        rescheduleMutation.mutate({
-                          id: appointment.id!,
-                          doctorProfileId: appointment.doctorProfileId!,
-                        })
-                      }
+                      {t('booking.myAppointments.viewDoctor')}
+                    </Link>
+                  )}
+                </div>
+                <div className="flex items-center gap-3">
+                  <span
+                    className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${STATUS_STYLES[appointment.status ?? 'PENDING_PAYMENT']}`}
+                  >
+                    {t(`booking.myAppointments.status.${(appointment.status ?? 'PENDING_PAYMENT').toLowerCase()}`)}
+                  </span>
+                  {appointment.locationType === 'VIDEO' && appointment.status === 'CONFIRMED' && (
+                    <Link
+                      to={`/appointments/${appointment.id}/consultation`}
+                      className="text-sm font-medium text-primary hover:underline"
                     >
-                      {t('booking.myAppointments.reschedule')}
-                    </Button>
-                  </div>
-                )}
+                      {t('booking.myAppointments.joinVideo')}
+                    </Link>
+                  )}
+                  {canManage && CANCELLABLE_STATUSES.has(appointment.status ?? '') && (
+                    <div className="flex gap-2">
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="outline"
+                        disabled={cancelMutation.isPending || rescheduleMutation.isPending}
+                        onClick={() => cancelMutation.mutate(appointment.id!)}
+                      >
+                        {t('booking.myAppointments.cancel')}
+                      </Button>
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="outline"
+                        disabled={cancelMutation.isPending || rescheduleMutation.isPending}
+                        onClick={() =>
+                          rescheduleMutation.mutate({
+                            id: appointment.id!,
+                            doctorProfileId: appointment.doctorProfileId!,
+                          })
+                        }
+                      >
+                        {t('booking.myAppointments.reschedule')}
+                      </Button>
+                    </div>
+                  )}
+                  {canManage && appointment.status === 'COMPLETED' && (
+                    reviewedAppointmentIds.has(appointment.id ?? '') ? (
+                      <span className="text-xs text-muted-foreground">{t('review.form.alreadySubmitted')}</span>
+                    ) : (
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="outline"
+                        onClick={() => setOpenReviewFor(openReviewFor === appointment.id ? null : appointment.id!)}
+                      >
+                        {t('review.form.cta')}
+                      </Button>
+                    )
+                  )}
+                </div>
               </div>
+
+              {openReviewFor === appointment.id && (
+                <ReviewForm appointmentId={appointment.id!} onSubmitted={() => setOpenReviewFor(null)} />
+              )}
             </li>
           ))}
         </ul>

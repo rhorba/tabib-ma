@@ -68,7 +68,10 @@ export function DoctorPublicProfilePage() {
             <dt className="text-muted-foreground">{t('doctorPublicProfile.ratingLabel')}</dt>
             <dd>
               {profile.averageRating != null
-                ? t('doctorPublicProfile.reviewCount', { count: profile.reviewCount ?? 0 })
+                ? t('doctorPublicProfile.ratingSummary', {
+                    average: profile.averageRating.toFixed(1),
+                    count: profile.reviewCount ?? 0,
+                  })
                 : t('doctorPublicProfile.noRating')}
             </dd>
           </dl>
@@ -79,6 +82,24 @@ export function DoctorPublicProfilePage() {
         <Button asChild>
           <Link to={`/doctors/${doctorProfileId}/book`}>{t('doctorPublicProfile.bookAppointment')}</Link>
         </Button>
+      )}
+      {profile.recentReviews && profile.recentReviews.length > 0 && (
+        <div className="grid gap-2">
+          <h2 className="text-sm font-semibold text-foreground">{t('doctorPublicProfile.reviewsHeading')}</h2>
+          <ul className="grid gap-2">
+            {profile.recentReviews.map((review, index) => (
+              <li key={index} className="rounded-md border border-border p-3 text-sm">
+                <div className="flex items-center justify-between gap-3">
+                  <span className="font-medium text-foreground">
+                    {review.patientFirstName ?? t('doctorPublicProfile.anonymousReviewer')}
+                  </span>
+                  <span className="text-muted-foreground">{review.rating}/5</span>
+                </div>
+                {review.comment && <p className="mt-1 text-muted-foreground">{review.comment}</p>}
+              </li>
+            ))}
+          </ul>
+        </div>
       )}
       <Link to="/search" className="text-sm font-medium text-primary hover:underline">
         {t('doctorPublicProfile.backToSearch')}

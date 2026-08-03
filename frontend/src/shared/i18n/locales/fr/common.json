@@ -181,7 +181,9 @@
     "cityLabel": "Ville",
     "ratingLabel": "Note",
     "noRating": "Pas encore d'avis",
-    "reviewCount": "{{count}} avis",
+    "ratingSummary": "{{average}}/5 ({{count}} avis)",
+    "reviewsHeading": "Avis récents",
+    "anonymousReviewer": "Patient",
     "notFound": "Ce médecin n'est pas disponible.",
     "bookAppointment": "Prendre rendez-vous"
   },
@@ -370,6 +372,21 @@
       "medications": "Médicaments",
       "dosage": "Posologie",
       "instructions": "Instructions"
+    }
+  },
+  "review": {
+    "form": {
+      "cta": "Laisser un avis",
+      "ratingLabel": "Note",
+      "starLabel": "{{value}} étoile(s)",
+      "commentLabel": "Commentaire (optionnel)",
+      "submit": "Envoyer l'avis",
+      "submitting": "Envoi en cours…",
+      "alreadySubmitted": "Avis envoyé",
+      "errors": {
+        "ratingRequired": "Veuillez choisir une note.",
+        "generic": "Une erreur est survenue. Veuillez réessayer."
+      }
     }
   }
 }

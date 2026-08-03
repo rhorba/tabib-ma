@@ -181,7 +181,9 @@
     "cityLabel": "المدينة",
     "ratingLabel": "التقييم",
     "noRating": "لا توجد تقييمات بعد",
-    "reviewCount": "{{count}} تقييم",
+    "ratingSummary": "{{average}}/5 ({{count}} تقييم)",
+    "reviewsHeading": "أحدث التقييمات",
+    "anonymousReviewer": "مريض",
     "notFound": "هذا الطبيب غير متاح.",
     "bookAppointment": "احجز موعدًا"
   },
@@ -370,6 +372,21 @@
       "medications": "الأدوية",
       "dosage": "الجرعة",
       "instructions": "التعليمات"
+    }
+  },
+  "review": {
+    "form": {
+      "cta": "أضف تقييمًا",
+      "ratingLabel": "التقييم",
+      "starLabel": "{{value}} نجوم",
+      "commentLabel": "تعليق (اختياري)",
+      "submit": "إرسال التقييم",
+      "submitting": "جارٍ الإرسال…",
+      "alreadySubmitted": "تم إرسال التقييم",
+      "errors": {
+        "ratingRequired": "يرجى اختيار تقييم.",
+        "generic": "حدث خطأ ما. يرجى المحاولة مرة أخرى."
+      }
     }
   }
 }

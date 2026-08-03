@@ -4,6 +4,22 @@
  */
 
 export interface paths {
+    "/api/v1/reviews": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["submit"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/prescriptions/{prescriptionId}/correct": {
         parameters: {
             query?: never;
@@ -324,6 +340,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/reviews/mine": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getMine"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/prescriptions/{prescriptionId}": {
         parameters: {
             query?: never;
@@ -363,7 +395,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get: operations["getMine"];
+        get: operations["getMine_1"];
         put?: never;
         post?: never;
         delete?: never;
@@ -552,6 +584,26 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        SubmitReviewRequest: {
+            /** Format: uuid */
+            appointmentId: string;
+            /** Format: int32 */
+            rating?: number;
+            comment?: string;
+        };
+        ReviewResponse: {
+            /** Format: uuid */
+            id?: string;
+            /** Format: uuid */
+            appointmentId?: string;
+            /** Format: uuid */
+            doctorProfileId?: string;
+            /** Format: int32 */
+            rating?: number;
+            comment?: string;
+            /** Format: date-time */
+            createdAt?: string;
+        };
         CorrectPrescriptionRequest: {
             items: components["schemas"]["PrescriptionItemRequest"][];
         };
@@ -798,6 +850,15 @@ export interface components {
             averageRating?: number;
             /** Format: int64 */
             reviewCount?: number;
+            recentReviews?: components["schemas"]["ReviewEntry"][];
+        };
+        ReviewEntry: {
+            patientFirstName?: string;
+            /** Format: int32 */
+            rating?: number;
+            comment?: string;
+            /** Format: date-time */
+            createdAt?: string;
         };
         DoctorSearchResponse: {
             results?: components["schemas"]["DoctorSearchResultResponse"][];
@@ -828,6 +889,30 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    submit: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SubmitReviewRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ReviewResponse"];
+                };
+            };
+        };
+    };
     correct: {
         parameters: {
             query?: never;
@@ -1409,6 +1494,26 @@ export interface operations {
             };
         };
     };
+    getMine: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ReviewResponse"][];
+                };
+            };
+        };
+    };
     getById: {
         parameters: {
             query?: never;
@@ -1453,7 +1558,7 @@ export interface operations {
             };
         };
     };
-    getMine: {
+    getMine_1: {
         parameters: {
             query?: never;
             header?: never;
