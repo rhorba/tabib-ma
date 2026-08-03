@@ -125,4 +125,26 @@ class BookingServiceTest {
 
         assertThat(service.listMyAppointments(patient)).containsExactly(appointment);
     }
+
+    @Test
+    void listMyAppointments_forADoctorListsByTheirOwnDoctorProfileId() {
+        UserContext doctor = new UserContext(UUID.randomUUID(), "d@example.com", Role.DOCTOR);
+        DoctorProfile doctorProfile = new DoctorProfile(doctor.userId(), "Cardiology", "bio", new BigDecimal("250.00"), "Rabat");
+        Appointment appointment = pendingAppointment(UUID.randomUUID(), UUID.randomUUID());
+        when(doctorProfileRepository.findByUserId(doctor.userId())).thenReturn(Optional.of(doctorProfile));
+        when(appointmentRepository.findAllByDoctorProfileId(any())).thenReturn(List.of(appointment));
+
+        assertThat(service.listMyAppointments(doctor)).containsExactly(appointment);
+        verify(appointmentRepository).findAllByDoctorProfileId(doctorProfile.getId());
+        verify(appointmentRepository, never()).findAllByPatientId(any());
+    }
+
+    @Test
+    void listMyAppointments_rejectsADoctorWithNoProfileYet() {
+        UserContext doctor = new UserContext(UUID.randomUUID(), "d@example.com", Role.DOCTOR);
+        when(doctorProfileRepository.findByUserId(doctor.userId())).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> service.listMyAppointments(doctor))
+                .isInstanceOf(com.tabibma.shared.exception.NotFoundException.class);
+    }
 }

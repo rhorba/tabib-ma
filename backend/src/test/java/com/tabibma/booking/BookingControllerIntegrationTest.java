@@ -93,6 +93,41 @@ class BookingControllerIntegrationTest extends AbstractIntegrationTest {
                 .andExpect(status().isConflict());
     }
 
+    @Test
+    void listMine_returnsTheDoctorsOwnAppointmentsNotAnotherDoctors() throws Exception {
+        String doctorEmail = "booking-doctor4@example.com";
+        registerAndLogin(doctorEmail, "DOCTOR");
+        String doctorToken = login(doctorEmail);
+        String slotId = createSingleOpenSlot(doctorToken, DayOfWeek.THURSDAY);
+
+        String patientEmail = "booking-patient4@example.com";
+        registerAndLogin(patientEmail, "PATIENT");
+        String patientToken = login(patientEmail);
+        var bookResult = mockMvc.perform(post("/api/v1/booking/appointments")
+                        .header("Authorization", "Bearer " + patientToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"availabilitySlotId\":\"%s\"}".formatted(slotId)))
+                .andExpect(status().isCreated())
+                .andReturn();
+        String appointmentId = objectMapper.readTree(bookResult.getResponse().getContentAsString()).get("id").asText();
+
+        mockMvc.perform(get("/api/v1/booking/appointments")
+                        .header("Authorization", "Bearer " + doctorToken))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].id").value(appointmentId))
+                .andExpect(jsonPath("$[0].status").value("CONFIRMED"));
+
+        String otherDoctorEmail = "booking-doctor5@example.com";
+        registerAndLogin(otherDoctorEmail, "DOCTOR");
+        String otherDoctorToken = login(otherDoctorEmail);
+        createProfile(otherDoctorToken, "Dermatology", "Marrakech");
+
+        mockMvc.perform(get("/api/v1/booking/appointments")
+                        .header("Authorization", "Bearer " + otherDoctorToken))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").isEmpty());
+    }
+
     /** Creates a doctor profile, one Monday-only rule, and generates exactly one open slot for the
      * next occurrence of the given day of week. */
     private String createSingleOpenSlot(String doctorToken, DayOfWeek dayOfWeek) throws Exception {

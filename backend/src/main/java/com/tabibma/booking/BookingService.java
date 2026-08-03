@@ -76,6 +76,11 @@ public class BookingService {
     }
 
     public List<Appointment> listMyAppointments(UserContext principal) {
+        if (principal.role() == Role.DOCTOR) {
+            DoctorProfile profile = doctorProfileRepository.findByUserId(principal.userId())
+                    .orElseThrow(() -> new NotFoundException("You don't have a doctor profile yet."));
+            return appointmentRepository.findAllByDoctorProfileId(profile.getId());
+        }
         return appointmentRepository.findAllByPatientId(principal.userId());
     }
 
