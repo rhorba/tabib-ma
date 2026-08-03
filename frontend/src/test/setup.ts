@@ -6,6 +6,8 @@ import { server } from './mswServer'
 import { resetAuthState } from './authHandlers'
 import { resetClinicState } from './clinicHandlers'
 import { resetBookingState } from './bookingHandlers'
+import { resetConsultationState } from './consultationHandlers'
+import { resetPrescriptionState } from './prescriptionHandlers'
 
 beforeAll(() => server.listen({ onUnhandledRequest: 'error' }))
 afterEach(async () => {
@@ -14,6 +16,8 @@ afterEach(async () => {
   resetAuthState()
   resetClinicState()
   resetBookingState()
+  resetConsultationState()
+  resetPrescriptionState()
   localStorage.clear()
   if (i18n.language !== defaultLanguage) {
     await i18n.changeLanguage(defaultLanguage)
