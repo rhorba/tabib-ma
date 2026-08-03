@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest'
 import { renderWithProviders, screen } from '@/test/renderWithProviders'
 import { loginAs } from '@/test/loginAs'
 import { seedDoctorProfile } from '@/test/clinicHandlers'
+import { seedReview } from '@/test/reviewHandlers'
 import { DoctorPublicProfilePage } from './DoctorPublicProfilePage'
 
 function renderAt(path: string) {
@@ -52,5 +53,30 @@ describe('DoctorPublicProfilePage', () => {
     expect(screen.getByText('Meknes')).toBeInTheDocument()
     expect(screen.getByText('Experienced neurologist')).toBeInTheDocument()
     expect(screen.getByText(/pas encore d'avis/i)).toBeInTheDocument()
+  })
+
+  it('shows the real average rating and recent review comments once reviews exist', async () => {
+    loginAs({ email: 'p@example.com', password: 'x', role: 'PATIENT', firstName: 'A', lastName: 'B' })
+    const profile = seedDoctorProfile({
+      userId: '1',
+      specialty: 'Neurologie',
+      consultationFeeMad: 250,
+      city: 'Meknes',
+      verificationStatus: 'APPROVED',
+    })
+    seedReview({
+      appointmentId: 'appt-1',
+      patientId: '2',
+      doctorProfileId: profile.id,
+      rating: 5,
+      comment: 'Excellent suivi',
+    })
+    seedReview({ appointmentId: 'appt-2', patientId: '3', doctorProfileId: profile.id, rating: 3 })
+    renderAt(`/doctors/${profile.id}`)
+
+    expect(await screen.findByText('4.0/5 (2 avis)')).toBeInTheDocument()
+    expect(screen.getByText('Excellent suivi')).toBeInTheDocument()
+    expect(screen.getByText('5/5')).toBeInTheDocument()
+    expect(screen.getByText('3/5')).toBeInTheDocument()
   })
 })

@@ -1,5 +1,8 @@
 import { http, HttpResponse } from 'msw'
 import { findUserById, getAuthenticatedUser } from './authHandlers'
+import { getReviewSummaryFor } from './reviewHandlers'
+
+const RECENT_REVIEWS_LIMIT = 5
 
 // A tiny in-memory fake of the clinic module's doctor-profile/verification-queue
 // contract — close enough to exercise the frontend's request/response handling,
@@ -81,6 +84,7 @@ function toSearchResultResponse(profile: FakeDoctorProfile) {
 
 function toPublicProfileResponse(profile: FakeDoctorProfile) {
   const owner = findUserById(profile.userId)
+  const reviews = getReviewSummaryFor(profile.id, RECENT_REVIEWS_LIMIT)
   return {
     doctorProfileId: profile.id,
     firstName: owner?.firstName ?? null,
@@ -89,8 +93,9 @@ function toPublicProfileResponse(profile: FakeDoctorProfile) {
     city: profile.city,
     bio: profile.bio ?? null,
     consultationFeeMad: profile.consultationFeeMad,
-    averageRating: null,
-    reviewCount: 0,
+    averageRating: reviews.averageRating,
+    reviewCount: reviews.reviewCount,
+    recentReviews: reviews.recentReviews,
   }
 }
 

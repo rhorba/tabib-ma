@@ -5,6 +5,7 @@ import { renderWithProviders, screen } from '@/test/renderWithProviders'
 import { loginAs } from '@/test/loginAs'
 import { seedAppointment, seedAvailabilitySlot } from '@/test/bookingHandlers'
 import { seedDoctorProfile } from '@/test/clinicHandlers'
+import { seedReview } from '@/test/reviewHandlers'
 import { MyAppointmentsPage } from './MyAppointmentsPage'
 
 function renderPage() {
@@ -164,5 +165,61 @@ describe('MyAppointmentsPage', () => {
     expect(screen.queryByRole('button', { name: /annuler/i })).not.toBeInTheDocument()
     expect(screen.queryByRole('button', { name: /reprogrammer/i })).not.toBeInTheDocument()
     expect(screen.queryByRole('link', { name: /voir le médecin/i })).not.toBeInTheDocument()
+  })
+
+  it('offers to leave a review for a COMPLETED appointment and hides the button once submitted', async () => {
+    loginAs({ email: 'p@example.com', password: 'x', role: 'PATIENT', firstName: 'A', lastName: 'B' })
+    const slot = seedAvailabilitySlot({
+      doctorProfileId: 'doc-1',
+      startsAt: '2026-08-03T09:00:00Z',
+      endsAt: '2026-08-03T09:30:00Z',
+      locationType: 'VIDEO',
+      booked: true,
+    })
+    seedAppointment({
+      patientId: '1',
+      doctorProfileId: 'doc-1',
+      availabilitySlotId: slot.id,
+      startsAt: slot.startsAt,
+      endsAt: slot.endsAt,
+      locationType: 'VIDEO',
+      status: 'COMPLETED',
+      cancellationWindowHours: 24,
+    })
+    renderPage()
+    const user = userEvent.setup()
+
+    await user.click(await screen.findByRole('button', { name: /laisser un avis/i }))
+    await user.click(screen.getAllByRole('radio', { name: /étoile/i })[4])
+    await user.click(screen.getByRole('button', { name: /envoyer l'avis/i }))
+
+    expect(await screen.findByText(/avis envoyé/i)).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /laisser un avis/i })).not.toBeInTheDocument()
+  })
+
+  it('shows "already submitted" instead of the review button for an already-reviewed appointment', async () => {
+    loginAs({ email: 'p@example.com', password: 'x', role: 'PATIENT', firstName: 'A', lastName: 'B' })
+    const slot = seedAvailabilitySlot({
+      doctorProfileId: 'doc-1',
+      startsAt: '2026-08-03T09:00:00Z',
+      endsAt: '2026-08-03T09:30:00Z',
+      locationType: 'IN_PERSON',
+      booked: true,
+    })
+    const appointment = seedAppointment({
+      patientId: '1',
+      doctorProfileId: 'doc-1',
+      availabilitySlotId: slot.id,
+      startsAt: slot.startsAt,
+      endsAt: slot.endsAt,
+      locationType: 'IN_PERSON',
+      status: 'COMPLETED',
+      cancellationWindowHours: 24,
+    })
+    seedReview({ appointmentId: appointment.id, patientId: '1', doctorProfileId: 'doc-1', rating: 4 })
+    renderPage()
+
+    expect(await screen.findByText(/avis envoyé/i)).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /laisser un avis/i })).not.toBeInTheDocument()
   })
 })

@@ -8,6 +8,7 @@ import { resetClinicState } from './clinicHandlers'
 import { resetBookingState } from './bookingHandlers'
 import { resetConsultationState } from './consultationHandlers'
 import { resetPrescriptionState } from './prescriptionHandlers'
+import { resetReviewState } from './reviewHandlers'
 
 beforeAll(() => server.listen({ onUnhandledRequest: 'error' }))
 afterEach(async () => {
@@ -18,6 +19,7 @@ afterEach(async () => {
   resetBookingState()
   resetConsultationState()
   resetPrescriptionState()
+  resetReviewState()
   localStorage.clear()
   if (i18n.language !== defaultLanguage) {
     await i18n.changeLanguage(defaultLanguage)
