@@ -332,3 +332,20 @@ User picked this over Epic 8/9. Turned out to be a real backend gap, not just a 
 Local state: docker containers (db/redis/backend, backend rebuilt this session) and frontend dev server still running. Working tree clean.
 
 Resume by: confirm next priority with the user — Epic 8 (Clinic Admin Dashboard), Epic 9 (Reviews), or another fast-follow. Follow the same UNDERSTAND -> BRAINSTORM -> PLAN gate sequence as every epic so far.
+
+## 2026-08-03 (continued) — Epic 9 (Ratings & Reviews) CLOSED
+User picked Epic 9. UNDERSTAND found the AC's own `review` module was already half-anticipated (DoctorPublicProfileResponse's averageRating/reviewCount stub, with a "no review module yet" comment pointing at this exact epic) but also found a blocking gap: `AppointmentStatus.COMPLETED` was never actually set anywhere in the backend — completing a video consult only completed the `Consultation`, never the underlying `Appointment` — so Story 9.1's AC was unreachable without fixing that first. BRAINSTORM: user picked aggregate rating + a list of recent review comments (not aggregate-only) for the doctor public profile. PLAN (6 batches) confirmed.
+
+Done this session (commits 8098352, 54fb3f5, ed2bb02, 64fd987, 565ca24 + docs):
+  - **Batch 1**: `Appointment.complete()` (mirrors `cancel()`'s guard) + `ConsultationService.complete()` now calls it.
+  - **Batch 2**: Flyway V12 + `review` module (Review/ReviewRepository/ReviewService/ReviewController — submit + getMine). Rating column is `INTEGER`, not the DB doc's `SMALLINT` (Hibernate's default `int` mapping needs it).
+  - **Batch 3**: real averageRating/reviewCount/recentReviews on the doctor public-profile endpoint. **Found and fixed two genuine ArchitectureTest cycle violations** while wiring this the obvious way (clinic calling review directly): clinic -> review -> booking -> clinic, plus a second cycle purely from the DTO's field type referencing a review-module type. Fixed by keeping `clinic` fully dependency-free and moving the enriched `/public` endpoint into a new `review.PublicDoctorProfileController` (same URL, different owning package). Full writeup in `.logs/decisions.md` — worth reading before extending any module's public DTOs in future epics.
+  - **Batch 4**: `ReviewForm` (star-rating + comment) on `MyAppointmentsPage` for COMPLETED patient appointments; `DoctorPublicProfilePage` un-stubbed. Live-verified in Chrome (force-completed a test appointment directly in the dev DB — the practical way to reach COMPLETED outside the full video flow).
+  - **Batch 5**: `reviewHandlers.ts` MSW fake + tests across `ReviewForm`/`MyAppointmentsPage`/`DoctorPublicProfilePage`.
+  - **Batch 6**: Backend 235 tests/91.06% coverage (ArchitectureTest green), frontend 139 tests/82.59%/83.05%, full 15-test e2e suite re-confirmed green (no regression from `MyAppointmentsPage`'s structural changes). No dedicated e2e/video batch — Minimal test tier per the Test Strategy doc, decided at PLAN time.
+
+**Sprint 6 Epic 9 (Ratings & Reviews, Story 9.1) is now fully CLOSED** — backend + frontend + coverage gates cleared + e2e suite confirmed clean, pending final push/CI confirmation this turn.
+
+Local state: docker containers (db/redis/backend, backend rebuilt twice this session) and frontend dev server still running. Working tree clean.
+
+Resume by: confirm next priority with the user — Epic 8 (Clinic Admin Dashboard), Epic 10 (Platform Admin — Disputes & Health), or a fast-follow (frontend bundle code-splitting, Trivy Gradle-lockfile gap, seeded admin rotation, Story 3.1's k6 load test, Redis host port mapping, booking's missing doctor-verification check, no cancellation-confirmation notification, the UX doc's unbuilt "skip prescription" branch). Follow the same UNDERSTAND -> BRAINSTORM -> PLAN gate sequence as every epic so far.
