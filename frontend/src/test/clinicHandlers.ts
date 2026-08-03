@@ -37,11 +37,17 @@ type FakeInvitation = {
   status: 'PENDING' | 'ACCEPTED' | 'DECLINED'
   createdAt: string
 }
+type FakeDashboard = {
+  clinicId: string
+  bookingVolume: number
+  revenueMad: number
+}
 
 let profiles: FakeDoctorProfile[] = []
 let documents: FakeDocument[] = []
 let clinics: FakeClinic[] = []
 let invitations: FakeInvitation[] = []
+let dashboards: FakeDashboard[] = []
 let nextProfileId = 1
 let nextDocumentId = 1
 let nextClinicId = 1
@@ -52,6 +58,7 @@ export function resetClinicState() {
   documents = []
   clinics = []
   invitations = []
+  dashboards = []
   nextProfileId = 1
   nextDocumentId = 1
   nextClinicId = 1
@@ -273,6 +280,22 @@ export const clinicHandlers = [
     return HttpResponse.json(toClinicResponse(clinic), { status: 201 })
   }),
 
+  http.get(/\/api\/v1\/clinic\/clinics\/dashboard$/, ({ request }) => {
+    const user = getAuthenticatedUser(request)
+    if (!user) {
+      return errorResponse(401, 'UNAUTHORIZED', 'Authentication is required.')
+    }
+    const clinic = clinics.find((c) => c.adminUserId === user.id)
+    if (!clinic) {
+      return errorResponse(404, 'NOT_FOUND', "You don't have a clinic yet.")
+    }
+    const dashboard = dashboards.find((d) => d.clinicId === clinic.id)
+    return HttpResponse.json({
+      bookingVolume: dashboard?.bookingVolume ?? 0,
+      revenueMad: dashboard?.revenueMad ?? 0,
+    })
+  }),
+
   http.get(/\/api\/v1\/clinic\/clinics\/me$/, ({ request }) => {
     const user = getAuthenticatedUser(request)
     if (!user) {
@@ -430,4 +453,12 @@ export function seedClinicInvitation(invitation: Omit<FakeInvitation, 'id' | 'cr
   }
   invitations.push(fakeInvitation)
   return fakeInvitation
+}
+
+// Test-only helper: lets tests seed the clinic-wide dashboard aggregate
+// directly, without seeding the underlying appointments/payments the real
+// ClinicDashboardService derives it from.
+export function seedClinicDashboard(dashboard: FakeDashboard) {
+  dashboards.push(dashboard)
+  return dashboard
 }

@@ -393,3 +393,10 @@ tsc/oxlint clean. Committed (1d5f8c6, 36e9add, 48ddd01) but **not yet pushed** �
 Local state: docker containers (db/redis/backend, backend rebuilt) and frontend dev server (port 5173) left running. Test data left in the dev DB from this session's live verification (doctor `dashboard-verify-doctor@example.com` / `Sup3rSecret!`, patient `dashboard-verify-patient2@example.com` / `Sup3rSecret!`, both affiliated with/booked against the seeded `Cabinet Al Amal` clinic) — harmless, matches how every prior session has left its own test accounts in place.
 
 Resume by: continue Epic 8 EXECUTE at Batch 3 — write Vitest tests for the dashboard card on `ClinicAdminPage` (extend `clinicHandlers.ts`'s MSW fake with a dashboard endpoint + seed helper), run the frontend coverage check, then Batch 4: one Playwright e2e smoke test (clinic admin sees a real booking reflected in the dashboard — the manual flow just verified live can be scripted directly), video recording (next version would be v0.7.0), final coverage re-check both sides, commit, push, and monitor CI. Nothing needs to be re-decided — BRAINSTORM/PLAN are already settled (see `.logs/decisions.md` 2026-08-03).
+
+## 2026-08-04 — Epic 8 Batch 3 complete (frontend dashboard tests)
+Extended `clinicHandlers.ts` with a `GET /api/v1/clinic/clinics/dashboard` MSW fake (401 unauthenticated, 404 no-clinic, zero-state when no dashboard seeded) and a `seedClinicDashboard` test helper. Added 2 new `ClinicAdminPage` tests: zero-state rendering and a seeded non-zero bookingVolume/revenueMad case. Full frontend suite: 141 tests green, coverage 82.6%/83.05% (statements/lines) — clears the 80% gate, up slightly from 82.02%/82.51% at Epic 6+7 close. `tsc -b` and `oxlint` both clean.
+
+**NOT DONE**: Batch 4 (Playwright e2e smoke test, video v0.7.0, final backend+frontend coverage re-confirmation, commit, push, CI monitor).
+
+Resume by: continue Epic 8 EXECUTE at Batch 4 — write one Playwright e2e smoke test (clinic admin sees a real booking reflected in the dashboard), record video v0.7.0, re-confirm backend+frontend coverage, commit, push origin main, monitor CI per rule 11.

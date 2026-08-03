@@ -95,3 +95,9 @@ Instruction coverage: 5801/6421 = 90% (620 missed)
 Gate: jacocoTestCoverageVerification (minimum 0.80 instruction) — PASSED
 216 tests total (up from 210 at Batch 2): adds GET /api/v1/prescriptions/mine (PrescriptionService.getMine) + PrescriptionAccessControlIntegrationTest, the adversarial Story 7.2 suite against the real backend/DB — Patient A cannot GET, download, or (as a doctor) correct Patient B's prescription; "mine" listing is scoped per-patient; unauthenticated request rejected.
 Backend total across Epic 6+7 so far: 216 tests, 90% instruction coverage — clears the 80% gate. Backend portion of Epic 6 (6.1, 6.3) + Epic 7 (7.1, 7.2) is now feature-complete; frontend (Batches 4-6) and e2e (Batch 7) remain.
+
+## 2026-08-04 — Epic 8 Batch 3 (frontend automated tests: clinic dashboard card) coverage
+Statements: 82.6% (717/868) | Branches: 72.1% (442/613) | Functions: 86.52% (244/282) | Lines: 83.05% (706/850)
+Scope: src/features/**+src/shared/** (same exclusions as prior batches).
+Gate: ≥ 80% combined — PASSED
+141 tests total: adds 2 new ClinicAdminPage tests (dashboard zero-state, dashboard with bookings) + a seedClinicDashboard test helper/GET .../dashboard MSW fake in clinicHandlers.ts. tsc -b and oxlint both clean.
