@@ -12,7 +12,8 @@
     "clinicAdmin": "Ma clinique",
     "search": "Rechercher un médecin",
     "availability": "Mes disponibilités",
-    "myAppointments": "Mes rendez-vous"
+    "myAppointments": "Mes rendez-vous",
+    "myPrescriptions": "Mes ordonnances"
   },
   "home": {
     "title": "Tabib.ma",
@@ -280,7 +281,95 @@
       "errors": {
         "alreadyDecided": "Ce rendez-vous ne peut plus être modifié.",
         "generic": "Une erreur est survenue. Veuillez réessayer."
+      },
+      "joinVideo": "Rejoindre la vidéo"
+    }
+  },
+  "consultation": {
+    "room": {
+      "title": "Salle de consultation vidéo",
+      "backToAppointments": "Retour à mes rendez-vous",
+      "loadingStatus": "Chargement…",
+      "notFound": "Aucune consultation vidéo n'existe pour ce rendez-vous.",
+      "notAConfirmedAppointment": "Ce rendez-vous n'est plus confirmé.",
+      "joinTooEarly": "La salle vidéo n'est pas disponible actuellement.",
+      "joinOpensNote": "Elle est ouverte de 10 minutes avant à 10 minutes après l'heure du rendez-vous.",
+      "join": "Rejoindre la consultation vidéo",
+      "joining": "Connexion…",
+      "connecting": "Connexion en cours…",
+      "connectingHint": "Cela peut prendre quelques secondes.",
+      "waitingForPeer": "En attente que l'autre participant rejoigne…",
+      "connected": "Connecté",
+      "endCall": "Terminer l'appel",
+      "mute": "Couper le micro",
+      "unmute": "Réactiver le micro",
+      "switchToAudio": "Passer en audio seul",
+      "audioOnlyActive": "Mode audio seul activé",
+      "localVideoLabel": "Votre caméra",
+      "remoteVideoLabel": "Caméra de l'autre participant",
+      "poorConnection": {
+        "message": "Connexion instable détectée.",
+        "suggestion": "Passer en audio seul pour éviter les coupures ?",
+        "accept": "Passer en audio",
+        "dismiss": "Continuer en vidéo"
+      },
+      "connectTimeout": {
+        "message": "La connexion prend plus de temps que prévu.",
+        "suggestion": "Essayer l'audio seul en attendant ?"
+      },
+      "permissionDenied": {
+        "title": "Accès à la caméra/micro refusé",
+        "message": "Autorisez l'accès à la caméra et au microphone dans les paramètres de votre navigateur, puis réessayez.",
+        "retry": "Réessayer"
+      },
+      "peerLeft": "L'autre participant a quitté l'appel.",
+      "ended": "Appel terminé.",
+      "error": {
+        "generic": "Une erreur est survenue pendant la consultation.",
+        "notFound": "Consultation introuvable."
+      },
+      "status": {
+        "scheduled": "Programmée",
+        "in_progress": "En cours",
+        "completed": "Terminée",
+        "cancelled": "Annulée"
       }
+    },
+    "complete": {
+      "title": "Terminer la consultation et prescrire",
+      "prompt": "Ajoutez au moins un médicament pour terminer la consultation.",
+      "addItem": "Ajouter un médicament",
+      "removeItem": "Retirer",
+      "medicationLabel": "Médicament",
+      "dosageLabel": "Posologie",
+      "instructionsLabel": "Instructions (optionnel)",
+      "submit": "Terminer et envoyer l'ordonnance",
+      "submitting": "Envoi en cours…",
+      "success": "Consultation terminée et ordonnance envoyée.",
+      "errors": {
+        "itemsRequired": "Ajoutez au moins un médicament.",
+        "medicationRequired": "Le nom du médicament est requis.",
+        "dosageRequired": "La posologie est requise.",
+        "generic": "Une erreur est survenue. Veuillez réessayer."
+      }
+    }
+  },
+  "prescription": {
+    "myPrescriptions": {
+      "title": "Mes ordonnances",
+      "empty": "Vous n'avez pas encore d'ordonnance.",
+      "issuedOn": "Émise le {{date}}",
+      "download": "Télécharger le PDF",
+      "correctedNotice": "Cette ordonnance a été corrigée par une version plus récente.",
+      "errors": {
+        "generic": "Une erreur est survenue. Veuillez réessayer."
+      }
+    },
+    "detail": {
+      "title": "Ordonnance",
+      "medications": "Médicaments",
+      "dosage": "Posologie",
+      "instructions": "Instructions"
     }
   }
 }

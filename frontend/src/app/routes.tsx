@@ -9,6 +9,7 @@ import { DoctorPublicProfilePage } from '@/features/search/pages/DoctorPublicPro
 import { DoctorAvailabilityPage } from '@/features/booking/pages/DoctorAvailabilityPage'
 import { BookAppointmentPage } from '@/features/booking/pages/BookAppointmentPage'
 import { MyAppointmentsPage } from '@/features/booking/pages/MyAppointmentsPage'
+import { ConsultationPage } from '@/features/consultation/pages/ConsultationPage'
 import { RequireRole } from '@/shared/components/RequireRole'
 import { RootLayout } from './RootLayout'
 import { HomePage } from './HomePage'
@@ -45,6 +46,12 @@ export const router = createBrowserRouter([
         children: [
           { path: 'doctors/:doctorProfileId/book', element: <BookAppointmentPage /> },
           { path: 'appointments', element: <MyAppointmentsPage /> },
+        ],
+      },
+      {
+        element: <RequireRole roles={['PATIENT', 'DOCTOR']} />,
+        children: [
+          { path: 'appointments/:appointmentId/consultation', element: <ConsultationPage /> },
         ],
       },
     ],

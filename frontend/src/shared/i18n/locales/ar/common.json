@@ -12,7 +12,8 @@
     "clinicAdmin": "عيادتي",
     "search": "البحث عن طبيب",
     "availability": "أوقات تواجدي",
-    "myAppointments": "مواعيدي"
+    "myAppointments": "مواعيدي",
+    "myPrescriptions": "وصفاتي الطبية"
   },
   "home": {
     "title": "Tabib.ma",
@@ -280,7 +281,95 @@
       "errors": {
         "alreadyDecided": "لم يعد بالإمكان تعديل هذا الموعد.",
         "generic": "حدث خطأ ما. يرجى المحاولة مرة أخرى."
+      },
+      "joinVideo": "الانضمام إلى الفيديو"
+    }
+  },
+  "consultation": {
+    "room": {
+      "title": "غرفة الاستشارة بالفيديو",
+      "backToAppointments": "العودة إلى مواعيدي",
+      "loadingStatus": "جارٍ التحميل…",
+      "notFound": "لا توجد استشارة فيديو لهذا الموعد.",
+      "notAConfirmedAppointment": "هذا الموعد لم يعد مؤكدًا.",
+      "joinTooEarly": "غرفة الفيديو غير متاحة حاليًا.",
+      "joinOpensNote": "تكون متاحة من 10 دقائق قبل موعد الاستشارة إلى 10 دقائق بعده.",
+      "join": "الانضمام إلى الاستشارة بالفيديو",
+      "joining": "جارٍ الاتصال…",
+      "connecting": "جارٍ الاتصال…",
+      "connectingHint": "قد يستغرق ذلك بضع ثوانٍ.",
+      "waitingForPeer": "في انتظار انضمام الطرف الآخر…",
+      "connected": "متصل",
+      "endCall": "إنهاء المكالمة",
+      "mute": "كتم الميكروفون",
+      "unmute": "إعادة تفعيل الميكروفون",
+      "switchToAudio": "التحويل إلى صوت فقط",
+      "audioOnlyActive": "وضع الصوت فقط مفعّل",
+      "localVideoLabel": "كاميرتك",
+      "remoteVideoLabel": "كاميرا الطرف الآخر",
+      "poorConnection": {
+        "message": "تم اكتشاف اتصال غير مستقر.",
+        "suggestion": "هل تريد التحويل إلى صوت فقط لتجنب الانقطاع؟",
+        "accept": "التحويل إلى صوت",
+        "dismiss": "المتابعة بالفيديو"
+      },
+      "connectTimeout": {
+        "message": "الاتصال يستغرق وقتًا أطول من المعتاد.",
+        "suggestion": "هل تريد تجربة الصوت فقط في هذه الأثناء؟"
+      },
+      "permissionDenied": {
+        "title": "تم رفض الوصول إلى الكاميرا/الميكروفون",
+        "message": "يرجى السماح بالوصول إلى الكاميرا والميكروفون من إعدادات المتصفح، ثم إعادة المحاولة.",
+        "retry": "إعادة المحاولة"
+      },
+      "peerLeft": "غادر الطرف الآخر المكالمة.",
+      "ended": "انتهت المكالمة.",
+      "error": {
+        "generic": "حدث خطأ أثناء الاستشارة.",
+        "notFound": "الاستشارة غير موجودة."
+      },
+      "status": {
+        "scheduled": "مبرمجة",
+        "in_progress": "جارية",
+        "completed": "منتهية",
+        "cancelled": "ملغاة"
       }
+    },
+    "complete": {
+      "title": "إنهاء الاستشارة ووصف الدواء",
+      "prompt": "أضف دواءً واحدًا على الأقل لإنهاء الاستشارة.",
+      "addItem": "إضافة دواء",
+      "removeItem": "إزالة",
+      "medicationLabel": "الدواء",
+      "dosageLabel": "الجرعة",
+      "instructionsLabel": "تعليمات (اختياري)",
+      "submit": "إنهاء وإرسال الوصفة الطبية",
+      "submitting": "جارٍ الإرسال…",
+      "success": "تم إنهاء الاستشارة وإرسال الوصفة الطبية.",
+      "errors": {
+        "itemsRequired": "أضف دواءً واحدًا على الأقل.",
+        "medicationRequired": "اسم الدواء مطلوب.",
+        "dosageRequired": "الجرعة مطلوبة.",
+        "generic": "حدث خطأ ما. يرجى المحاولة مرة أخرى."
+      }
+    }
+  },
+  "prescription": {
+    "myPrescriptions": {
+      "title": "وصفاتي الطبية",
+      "empty": "ليس لديك أي وصفة طبية بعد.",
+      "issuedOn": "صدرت في {{date}}",
+      "download": "تحميل PDF",
+      "correctedNotice": "تم تصحيح هذه الوصفة الطبية بنسخة أحدث.",
+      "errors": {
+        "generic": "حدث خطأ ما. يرجى المحاولة مرة أخرى."
+      }
+    },
+    "detail": {
+      "title": "الوصفة الطبية",
+      "medications": "الأدوية",
+      "dosage": "الجرعة",
+      "instructions": "التعليمات"
     }
   }
 }

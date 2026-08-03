@@ -110,6 +110,14 @@ export function MyAppointmentsPage() {
                 >
                   {t(`booking.myAppointments.status.${(appointment.status ?? 'PENDING_PAYMENT').toLowerCase()}`)}
                 </span>
+                {appointment.locationType === 'VIDEO' && appointment.status === 'CONFIRMED' && (
+                  <Link
+                    to={`/appointments/${appointment.id}/consultation`}
+                    className="text-sm font-medium text-primary hover:underline"
+                  >
+                    {t('booking.myAppointments.joinVideo')}
+                  </Link>
+                )}
                 {CANCELLABLE_STATUSES.has(appointment.status ?? '') && (
                   <div className="flex gap-2">
                     <Button
