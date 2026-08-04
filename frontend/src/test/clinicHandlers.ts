@@ -42,16 +42,25 @@ type FakeDashboard = {
   bookingVolume: number
   revenueMad: number
 }
+type FakeResource = {
+  id: string
+  clinicId: string
+  type: 'ROOM' | 'EQUIPMENT'
+  name: string
+  active: boolean
+}
 
 let profiles: FakeDoctorProfile[] = []
 let documents: FakeDocument[] = []
 let clinics: FakeClinic[] = []
 let invitations: FakeInvitation[] = []
 let dashboards: FakeDashboard[] = []
+let resources: FakeResource[] = []
 let nextProfileId = 1
 let nextDocumentId = 1
 let nextClinicId = 1
 let nextInvitationId = 1
+let nextResourceId = 1
 
 export function resetClinicState() {
   profiles = []
@@ -59,10 +68,12 @@ export function resetClinicState() {
   clinics = []
   invitations = []
   dashboards = []
+  resources = []
   nextProfileId = 1
   nextDocumentId = 1
   nextClinicId = 1
   nextInvitationId = 1
+  nextResourceId = 1
 }
 
 function errorResponse(status: number, code: string, message: string) {
@@ -119,6 +130,11 @@ function toClinicResponse(clinic: FakeClinic) {
 function toInvitationResponse(invitation: FakeInvitation, clinicName?: string) {
   const { id, clinicId, invitedEmail, status, createdAt } = invitation
   return { id, clinicId, clinicName: clinicName ?? null, invitedEmail, status, createdAt }
+}
+
+function toResourceResponse(resource: FakeResource) {
+  const { id, clinicId, type, name, active } = resource
+  return { id, clinicId, type, name, active }
 }
 
 function pathSegment(request: Request, indexFromEnd: number) {
@@ -358,6 +374,68 @@ export const clinicHandlers = [
     )
   }),
 
+  http.post(/\/api\/v1\/clinic\/clinics\/[^/]+\/resources$/, async ({ request }) => {
+    const user = getAuthenticatedUser(request)
+    if (!user) {
+      return errorResponse(401, 'UNAUTHORIZED', 'Authentication is required.')
+    }
+    const clinicId = pathSegment(request, 2)
+    const clinic = clinics.find((c) => c.id === clinicId)
+    if (!clinic) {
+      return errorResponse(404, 'NOT_FOUND', 'Clinic not found.')
+    }
+    if (clinic.adminUserId !== user.id) {
+      return errorResponse(403, 'FORBIDDEN', 'You can only manage your own clinic.')
+    }
+    const body = (await request.json()) as { type: 'ROOM' | 'EQUIPMENT'; name: string }
+    const resource: FakeResource = {
+      id: String(nextResourceId++),
+      clinicId,
+      active: true,
+      ...body,
+    }
+    resources.push(resource)
+    return HttpResponse.json(toResourceResponse(resource), { status: 201 })
+  }),
+
+  http.get(/\/api\/v1\/clinic\/clinics\/[^/]+\/resources$/, ({ request }) => {
+    const user = getAuthenticatedUser(request)
+    if (!user) {
+      return errorResponse(401, 'UNAUTHORIZED', 'Authentication is required.')
+    }
+    const clinicId = pathSegment(request, 2)
+    const clinic = clinics.find((c) => c.id === clinicId)
+    if (!clinic) {
+      return errorResponse(404, 'NOT_FOUND', 'Clinic not found.')
+    }
+    if (clinic.adminUserId !== user.id) {
+      return errorResponse(403, 'FORBIDDEN', 'You can only manage your own clinic.')
+    }
+    return HttpResponse.json(resources.filter((r) => r.clinicId === clinicId).map(toResourceResponse))
+  }),
+
+  http.patch(/\/api\/v1\/clinic\/clinics\/[^/]+\/resources\/[^/]+\/deactivate$/, ({ request }) => {
+    const user = getAuthenticatedUser(request)
+    if (!user) {
+      return errorResponse(401, 'UNAUTHORIZED', 'Authentication is required.')
+    }
+    const clinicId = pathSegment(request, 4)
+    const resourceId = pathSegment(request, 2)
+    const clinic = clinics.find((c) => c.id === clinicId)
+    if (!clinic) {
+      return errorResponse(404, 'NOT_FOUND', 'Clinic not found.')
+    }
+    if (clinic.adminUserId !== user.id) {
+      return errorResponse(403, 'FORBIDDEN', 'You can only manage your own clinic.')
+    }
+    const resource = resources.find((r) => r.id === resourceId && r.clinicId === clinicId)
+    if (!resource) {
+      return errorResponse(404, 'NOT_FOUND', 'Resource not found.')
+    }
+    resource.active = false
+    return HttpResponse.json(toResourceResponse(resource))
+  }),
+
   http.get(/\/api\/v1\/clinic\/invitations\/me$/, ({ request }) => {
     const user = getAuthenticatedUser(request)
     if (!user) {
@@ -461,4 +539,13 @@ export function seedClinicInvitation(invitation: Omit<FakeInvitation, 'id' | 'cr
 export function seedClinicDashboard(dashboard: FakeDashboard) {
   dashboards.push(dashboard)
   return dashboard
+}
+
+// Test-only helper: lets tests seed a clinic resource directly without going
+// through the create-resource UI first (e.g. to test ClinicResourceList's
+// deactivate flow in isolation).
+export function seedClinicResource(resource: Omit<FakeResource, 'id'>) {
+  const fakeResource: FakeResource = { id: String(nextResourceId++), ...resource }
+  resources.push(fakeResource)
+  return fakeResource
 }

@@ -17,5 +17,14 @@ export function inviteDoctorSchema(t: TFunction) {
   })
 }
 
+// Mirrors backend/.../clinic/dto/CreateClinicResourceRequest.java.
+export function createClinicResourceSchema(t: TFunction) {
+  return z.object({
+    type: z.enum(['ROOM', 'EQUIPMENT']),
+    name: z.string().min(1, t('clinicAdmin.resources.validation.nameRequired')),
+  })
+}
+
 export type CreateClinicFormValues = z.infer<ReturnType<typeof createClinicSchema>>
 export type InviteDoctorFormValues = z.infer<ReturnType<typeof inviteDoctorSchema>>
+export type CreateClinicResourceFormValues = z.infer<ReturnType<typeof createClinicResourceSchema>>

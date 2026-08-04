@@ -148,6 +148,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/clinic/clinics/{clinicId}/resources": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["listResources"];
+        put?: never;
+        post: operations["createResource"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/clinic/clinics/{clinicId}/invitations": {
         parameters: {
             query?: never;
@@ -324,6 +340,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/clinic/clinics/{clinicId}/resources/{resourceId}/deactivate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch: operations["deactivateResource"];
+        trace?: never;
+    };
     "/api/v1/users/me": {
         parameters: {
             query?: never;
@@ -476,6 +508,22 @@ export interface paths {
             cookie?: never;
         };
         get: operations["getMyProfile"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/clinic/clinics/resources/utilization": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getUtilization"];
         put?: never;
         post?: never;
         delete?: never;
@@ -719,6 +767,21 @@ export interface components {
             city?: string;
             address?: string;
         };
+        CreateClinicResourceRequest: {
+            /** @enum {string} */
+            type: "ROOM" | "EQUIPMENT";
+            name: string;
+        };
+        ClinicResourceResponse: {
+            /** Format: uuid */
+            id?: string;
+            /** Format: uuid */
+            clinicId?: string;
+            /** @enum {string} */
+            type?: "ROOM" | "EQUIPMENT";
+            name?: string;
+            active?: boolean;
+        };
         InviteDoctorRequest: {
             email: string;
         };
@@ -733,6 +796,7 @@ export interface components {
             locationType: "IN_PERSON" | "VIDEO";
             /** Format: uuid */
             clinicId?: string;
+            resourceIds?: string[];
         };
         AvailabilityRuleResponse: {
             /** Format: uuid */
@@ -748,6 +812,7 @@ export interface components {
             /** Format: uuid */
             clinicId?: string;
             active?: boolean;
+            resourceIds?: string[];
         };
         GenerateSlotsRequest: {
             /** Format: date */
@@ -895,6 +960,23 @@ export interface components {
             specialty?: string;
             city?: string;
             consultationFeeMad?: number;
+        };
+        AllocationWindow: {
+            /** Format: uuid */
+            appointmentId?: string;
+            /** Format: date-time */
+            startsAt?: string;
+            /** Format: date-time */
+            endsAt?: string;
+        };
+        ResourceUtilizationResponse: {
+            /** Format: uuid */
+            resourceId?: string;
+            resourceName?: string;
+            /** @enum {string} */
+            type?: "ROOM" | "EQUIPMENT";
+            active?: boolean;
+            allocations?: components["schemas"]["AllocationWindow"][];
         };
         ClinicDashboardResponse: {
             /** Format: int64 */
@@ -1149,6 +1231,54 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["ClinicResponse"];
+                };
+            };
+        };
+    };
+    listResources: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                clinicId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ClinicResourceResponse"][];
+                };
+            };
+        };
+    };
+    createResource: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                clinicId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateClinicResourceRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ClinicResourceResponse"];
                 };
             };
         };
@@ -1495,6 +1625,29 @@ export interface operations {
             };
         };
     };
+    deactivateResource: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                clinicId: string;
+                resourceId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ClinicResourceResponse"];
+                };
+            };
+        };
+    };
     me: {
         parameters: {
             query?: never;
@@ -1704,6 +1857,26 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["DoctorProfileResponse"];
+                };
+            };
+        };
+    };
+    getUtilization: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ResourceUtilizationResponse"][];
                 };
             };
         };

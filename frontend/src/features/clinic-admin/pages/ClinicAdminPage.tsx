@@ -10,6 +10,8 @@ import {
 import { apiClient } from '@/shared/api/client'
 import { CreateClinicForm } from '../components/CreateClinicForm'
 import { InviteDoctorForm } from '../components/InviteDoctorForm'
+import { ClinicResourceForm } from '../components/ClinicResourceForm'
+import { ClinicResourceList } from '../components/ClinicResourceList'
 
 const STATUS_STYLES: Record<string, string> = {
   PENDING: 'bg-amber-100 text-amber-800',
@@ -137,6 +139,21 @@ export function ClinicAdminPage() {
               <p className="text-sm text-muted-foreground">{t('clinicAdmin.invitations.empty')}</p>
             )}
             <InviteDoctorForm clinicId={clinicQuery.data.id!} />
+          </CardContent>
+        </Card>
+      )}
+
+      {clinicQuery.data && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg" role="heading" aria-level={2}>
+              {t('clinicAdmin.resources.title')}
+            </CardTitle>
+            <CardDescription>{t('clinicAdmin.resources.description')}</CardDescription>
+          </CardHeader>
+          <CardContent className="grid gap-6">
+            <ClinicResourceList clinicId={clinicQuery.data.id!} />
+            <ClinicResourceForm clinicId={clinicQuery.data.id!} />
           </CardContent>
         </Card>
       )}

@@ -159,6 +159,25 @@
       "bookingVolumeLabel": "المواعيد المحجوزة",
       "revenueLabel": "الإيرادات (درهم)"
     },
+    "resources": {
+      "title": "الموارد المشتركة",
+      "description": "الغرف والمعدات التي يمكن لأطبائك حجزها للاستشارات الحضورية.",
+      "typeLabel": "النوع",
+      "types": {
+        "room": "غرفة",
+        "equipment": "معدة"
+      },
+      "nameLabel": "الاسم",
+      "submit": "إضافة المورد",
+      "submitting": "جارٍ الإضافة…",
+      "empty": "لا توجد موارد بعد.",
+      "statusActive": "نشطة",
+      "statusInactive": "معطّلة",
+      "deactivate": "تعطيل",
+      "validation": {
+        "nameRequired": "اسم المورد مطلوب."
+      }
+    },
     "errors": {
       "alreadyInvited": "يوجد بالفعل دعوة قيد الانتظار لهذا البريد الإلكتروني.",
       "generic": "حدث خطأ ما. يرجى المحاولة مرة أخرى."

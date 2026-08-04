@@ -159,6 +159,25 @@
       "bookingVolumeLabel": "Rendez-vous réservés",
       "revenueLabel": "Revenu (MAD)"
     },
+    "resources": {
+      "title": "Ressources partagées",
+      "description": "Salles et équipements que vos médecins peuvent réserver pour les consultations en présentiel.",
+      "typeLabel": "Type",
+      "types": {
+        "room": "Salle",
+        "equipment": "Équipement"
+      },
+      "nameLabel": "Nom",
+      "submit": "Ajouter la ressource",
+      "submitting": "Ajout en cours…",
+      "empty": "Aucune ressource pour le moment.",
+      "statusActive": "Active",
+      "statusInactive": "Désactivée",
+      "deactivate": "Désactiver",
+      "validation": {
+        "nameRequired": "Le nom de la ressource est requis."
+      }
+    },
     "errors": {
       "alreadyInvited": "Cette adresse e-mail a déjà une invitation en attente.",
       "generic": "Une erreur est survenue. Veuillez réessayer."

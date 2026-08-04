@@ -1,7 +1,12 @@
 import { describe, expect, it } from 'vitest'
 import { renderWithProviders, screen } from '@/test/renderWithProviders'
 import { loginAs } from '@/test/loginAs'
-import { seedClinic, seedClinicDashboard, seedClinicInvitation } from '@/test/clinicHandlers'
+import {
+  seedClinic,
+  seedClinicDashboard,
+  seedClinicInvitation,
+  seedClinicResource,
+} from '@/test/clinicHandlers'
 import { ClinicAdminPage } from './ClinicAdminPage'
 
 describe('ClinicAdminPage', () => {
@@ -52,5 +57,24 @@ describe('ClinicAdminPage', () => {
     expect(await screen.findByText('Tableau de bord')).toBeInTheDocument()
     expect(screen.getByText('3')).toBeInTheDocument()
     expect(screen.getByText('900')).toBeInTheDocument()
+  })
+
+  it('shows the resources card with the empty state and the add-resource form once a clinic exists', async () => {
+    loginAs({ email: 'ca@example.com', password: 'x', role: 'CLINIC_ADMIN', firstName: 'A', lastName: 'B' })
+    seedClinic({ adminUserId: '1', name: 'Clinique Al Amal', city: 'Rabat' })
+    renderWithProviders(<ClinicAdminPage />)
+
+    expect(await screen.findByText('Ressources partagées')).toBeInTheDocument()
+    expect(screen.getByText(/aucune ressource/i)).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /ajouter la ressource/i })).toBeInTheDocument()
+  })
+
+  it('lists an existing clinic resource', async () => {
+    loginAs({ email: 'ca@example.com', password: 'x', role: 'CLINIC_ADMIN', firstName: 'A', lastName: 'B' })
+    const clinic = seedClinic({ adminUserId: '1', name: 'Clinique Al Amal', city: 'Rabat' })
+    seedClinicResource({ clinicId: clinic.id, type: 'ROOM', name: 'Salle 1', active: true })
+    renderWithProviders(<ClinicAdminPage />)
+
+    expect(await screen.findByText('Salle 1')).toBeInTheDocument()
   })
 })
