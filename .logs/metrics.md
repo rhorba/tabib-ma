@@ -113,3 +113,9 @@ Instruction: 6958/7613 = 91.4% (655 missed) | Branch: 234/270 = 86.7% (36 missed
 Scope: whole backend (jacocoTestCoverageVerification, project-wide default).
 Gate: ≥ 80% combined — PASSED
 271 backend tests total (up from 263 at Batch 2 close): ResourceAllocationGuardTest (unit) + ResourceAllocationIntegrationTest (3 integration tests against the real DB — allocate-then-cancel-releases, cross-doctor same-resource overlap rejected with 409, and a real two-thread concurrency race on the same resource where exactly one allocation wins). ArchitectureTest green.
+
+## 2026-08-04 (continued) — Story 8.2 Batch 4 (admin resource-utilization endpoint) backend coverage
+Instruction: 7091/7746 = 91.5% (655 missed) | Branch: 236/272 = 86.8% (36 missed)
+Scope: whole backend (jacocoTestCoverageVerification, project-wide default).
+Gate: ≥ 80% combined — PASSED
+278 backend tests total (up from 271 at Batch 3 close): ResourceUtilizationServiceTest (4 unit tests: no-clinic 404, empty-resources, idle-resource-with-empty-allocations, multi-resource grouping) + ResourceUtilizationControllerIntegrationTest (3 integration tests against the real DB — no-clinic 404, idle resource with zero allocations, and a real booking showing up as an allocation then clearing on cancellation). ArchitectureTest green.
