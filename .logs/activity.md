@@ -403,3 +403,16 @@ Resume by: continue Epic 8 EXECUTE at Batch 4 — write one Playwright e2e smoke
 
 ## 2026-08-04 (continued) — Epic 8 PUSH + CI (rule 7/11), Story 8.1 CLOSED
 `git push origin main` (9 commits, 03698ea..36ef8c3). CI run 30877809843: GREEN (security 44s, backend-build-test 1m34s, first try). **Sprint ? Epic 8 (Clinic Admin Dashboard, Story 8.1) is now fully CLOSED** — backend + frontend + e2e (16/16, incl. the Batch 4 dashboard smoke test) + video v0.7.0 + coverage gates cleared (backend 90.38%/219 tests, frontend 82.6%/83.05%/141 tests) + pushed + CI green.
+
+## 2026-08-04 (continued) — Story 8.2 (shared clinic resources) BRAINSTORM/PLAN + Batch 1
+User picked Story 8.2 next. BRAINSTORM: user chose the full resource model (rooms + equipment as separate `ClinicResource` types, many-to-many requirement per availability rule, all-or-nothing conflict prevention at booking time, plus an admin utilization view) over the simpler "admin assigns after booking" or "auto-assign at booking time" options. 8-batch PLAN confirmed (comparable in size to Epic 6+7, bigger than the story's nominal Size-M because of the full-model choice).
+
+**Batch 1 (commit 15a38dd, local only)**: `ClinicResource` entity (ROOM/EQUIPMENT enum) + clinic-admin CRUD (create/list/deactivate), ownership-scoped the same way `ClinicOnboardingService` already scopes clinic invitations. Flyway V13. Deliberately placed in the `clinic` module, not `booking` — confirmed via import-direction grep that `booking` already depends on `clinic` and never the reverse, so this avoids the cycle Epic 9 had to fix retroactively; the allocation/conflict logic (Batch 3) will live in `booking` instead, since it needs to read resources but resources don't need to know about bookings. Unit tests (`ClinicResourceServiceTest`) + integration tests incl. an ownership/IDOR case (`ClinicResourceControllerIntegrationTest`, mirroring `ClinicInvitationControllerIntegrationTest`'s style).
+
+**Environment snag**: Docker Desktop was not running at session start — the first `./gradlew test` run failed 78 tests with `NoClassDefFoundError`/`ExceptionInInitializerError` from Testcontainers' `DockerClientProviderStrategy`, none of them in the new code. Started Docker Desktop, waited for the daemon, re-ran clean: 253 tests green, 91%/85% coverage (instruction/branch), `ArchitectureTest` clean.
+
+**NOT DONE**: Batches 2-8 (resource requirement on `AvailabilityRule`, the allocation/conflict guard + `BookingService`/`CancellationService` wiring, admin utilization endpoint, frontend CRUD UI + rule-form resource picker + utilization view, frontend tests, e2e + video v0.8.0, final coverage + push + CI).
+
+Local state: Docker Desktop running (backend/db/redis containers not started this session — tests use Testcontainers, not docker-compose). Working tree clean, Batch 1 committed but not pushed (mid-epic checkpoint, per established convention).
+
+Resume by: continue Story 8.2 EXECUTE at Batch 2 — `availability_rule_resources` join table (Flyway), extend `CreateAvailabilityRuleRequest`/`AvailabilityService` so a doctor can pick required resources (from their rule's clinic) when creating an IN_PERSON rule. BRAINSTORM/PLAN already settled, nothing to re-decide.
