@@ -2,6 +2,8 @@ package com.tabibma.booking;
 
 import com.tabibma.booking.dto.CreateAvailabilityExceptionRequest;
 import com.tabibma.booking.dto.CreateAvailabilityRuleRequest;
+import com.tabibma.clinic.ClinicResource;
+import com.tabibma.clinic.ClinicResourceRepository;
 import com.tabibma.clinic.DoctorProfile;
 import com.tabibma.clinic.DoctorProfileRepository;
 import com.tabibma.identity.Role;
@@ -35,15 +37,21 @@ public class AvailabilityService {
     private final AvailabilityRuleRepository availabilityRuleRepository;
     private final AvailabilityBlockedDateRepository availabilityBlockedDateRepository;
     private final AvailabilitySlotRepository availabilitySlotRepository;
+    private final ClinicResourceRepository clinicResourceRepository;
+    private final AvailabilityRuleResourceRepository availabilityRuleResourceRepository;
 
     public AvailabilityService(DoctorProfileRepository doctorProfileRepository,
                                 AvailabilityRuleRepository availabilityRuleRepository,
                                 AvailabilityBlockedDateRepository availabilityBlockedDateRepository,
-                                AvailabilitySlotRepository availabilitySlotRepository) {
+                                AvailabilitySlotRepository availabilitySlotRepository,
+                                ClinicResourceRepository clinicResourceRepository,
+                                AvailabilityRuleResourceRepository availabilityRuleResourceRepository) {
         this.doctorProfileRepository = doctorProfileRepository;
         this.availabilityRuleRepository = availabilityRuleRepository;
         this.availabilityBlockedDateRepository = availabilityBlockedDateRepository;
         this.availabilitySlotRepository = availabilitySlotRepository;
+        this.clinicResourceRepository = clinicResourceRepository;
+        this.availabilityRuleResourceRepository = availabilityRuleResourceRepository;
     }
 
     @Transactional
@@ -52,9 +60,38 @@ public class AvailabilityService {
         if (!request.endTime().isAfter(request.startTime())) {
             throw new ValidationException("endTime must be after startTime.");
         }
+        Set<UUID> resourceIds = request.resourceIds() != null ? request.resourceIds() : Set.of();
+        if (!resourceIds.isEmpty()) {
+            if (request.locationType() != LocationType.IN_PERSON) {
+                throw new ValidationException("Resources can only be required for IN_PERSON availability.");
+            }
+            if (request.clinicId() == null) {
+                throw new ValidationException("clinicId is required when specifying resources.");
+            }
+            for (UUID resourceId : resourceIds) {
+                ClinicResource resource = clinicResourceRepository.findById(resourceId)
+                        .orElseThrow(() -> new NotFoundException("Resource not found: " + resourceId));
+                if (!resource.getClinicId().equals(request.clinicId())) {
+                    throw new NotFoundException("Resource not found: " + resourceId);
+                }
+                if (!resource.isActive()) {
+                    throw new ValidationException("Resource is not active: " + resourceId);
+                }
+            }
+        }
         AvailabilityRule rule = new AvailabilityRule(profile.getId(), request.dayOfWeek(), request.startTime(),
                 request.endTime(), request.slotDurationMinutes(), request.locationType(), request.clinicId());
-        return availabilityRuleRepository.save(rule);
+        AvailabilityRule saved = availabilityRuleRepository.save(rule);
+        for (UUID resourceId : resourceIds) {
+            availabilityRuleResourceRepository.save(new AvailabilityRuleResource(saved.getId(), resourceId));
+        }
+        return saved;
+    }
+
+    public List<UUID> listResourceIdsForRule(UUID availabilityRuleId) {
+        return availabilityRuleResourceRepository.findAllByAvailabilityRuleId(availabilityRuleId).stream()
+                .map(AvailabilityRuleResource::getResourceId)
+                .toList();
     }
 
     public List<AvailabilityRule> listMyRules(UserContext principal) {

@@ -5,6 +5,7 @@ import com.tabibma.booking.LocationType;
 
 import java.time.DayOfWeek;
 import java.time.LocalTime;
+import java.util.List;
 import java.util.UUID;
 
 public record AvailabilityRuleResponse(
@@ -15,10 +16,11 @@ public record AvailabilityRuleResponse(
         int slotDurationMinutes,
         LocationType locationType,
         UUID clinicId,
-        boolean active
+        boolean active,
+        List<UUID> resourceIds
 ) {
-    public static AvailabilityRuleResponse from(AvailabilityRule rule) {
+    public static AvailabilityRuleResponse from(AvailabilityRule rule, List<UUID> resourceIds) {
         return new AvailabilityRuleResponse(rule.getId(), rule.getDayOfWeek(), rule.getStartTime(), rule.getEndTime(),
-                rule.getSlotDurationMinutes(), rule.getLocationType(), rule.getClinicId(), rule.isActive());
+                rule.getSlotDurationMinutes(), rule.getLocationType(), rule.getClinicId(), rule.isActive(), resourceIds);
     }
 }

@@ -2,8 +2,11 @@ package com.tabibma.booking;
 
 import com.tabibma.booking.dto.CreateAvailabilityExceptionRequest;
 import com.tabibma.booking.dto.CreateAvailabilityRuleRequest;
+import com.tabibma.clinic.ClinicResource;
+import com.tabibma.clinic.ClinicResourceRepository;
 import com.tabibma.clinic.DoctorProfile;
 import com.tabibma.clinic.DoctorProfileRepository;
+import com.tabibma.clinic.ResourceType;
 import com.tabibma.identity.Role;
 import com.tabibma.identity.UserContext;
 import com.tabibma.shared.exception.ConflictException;
@@ -28,6 +31,7 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -43,13 +47,18 @@ class AvailabilityServiceTest {
     private AvailabilityBlockedDateRepository availabilityBlockedDateRepository;
     @Mock
     private AvailabilitySlotRepository availabilitySlotRepository;
+    @Mock
+    private ClinicResourceRepository clinicResourceRepository;
+    @Mock
+    private AvailabilityRuleResourceRepository availabilityRuleResourceRepository;
 
     private AvailabilityService service;
 
     @BeforeEach
     void setUp() {
         service = new AvailabilityService(doctorProfileRepository, availabilityRuleRepository,
-                availabilityBlockedDateRepository, availabilitySlotRepository);
+                availabilityBlockedDateRepository, availabilitySlotRepository,
+                clinicResourceRepository, availabilityRuleResourceRepository);
     }
 
     private static DoctorProfile profile(UUID userId) {
@@ -98,6 +107,107 @@ class AvailabilityServiceTest {
 
         assertThat(saved.getDayOfWeek()).isEqualTo(DayOfWeek.MONDAY);
         assertThat(saved.isActive()).isTrue();
+    }
+
+    @Test
+    void createRule_rejectsResourcesForVideoLocation() {
+        UserContext doctor = new UserContext(UUID.randomUUID(), "d@example.com", Role.DOCTOR);
+        when(doctorProfileRepository.findByUserId(doctor.userId())).thenReturn(Optional.of(profile(doctor.userId())));
+        UUID clinicId = UUID.randomUUID();
+        CreateAvailabilityRuleRequest request = new CreateAvailabilityRuleRequest(
+                DayOfWeek.MONDAY, LocalTime.of(9, 0), LocalTime.of(12, 0), 30, LocationType.VIDEO, clinicId,
+                Set.of(UUID.randomUUID()));
+
+        assertThatThrownBy(() -> service.createRule(doctor, request)).isInstanceOf(ValidationException.class);
+        verify(availabilityRuleRepository, never()).save(any());
+    }
+
+    @Test
+    void createRule_rejectsResourcesWithoutClinicId() {
+        UserContext doctor = new UserContext(UUID.randomUUID(), "d@example.com", Role.DOCTOR);
+        when(doctorProfileRepository.findByUserId(doctor.userId())).thenReturn(Optional.of(profile(doctor.userId())));
+        CreateAvailabilityRuleRequest request = new CreateAvailabilityRuleRequest(
+                DayOfWeek.MONDAY, LocalTime.of(9, 0), LocalTime.of(12, 0), 30, LocationType.IN_PERSON, null,
+                Set.of(UUID.randomUUID()));
+
+        assertThatThrownBy(() -> service.createRule(doctor, request)).isInstanceOf(ValidationException.class);
+        verify(availabilityRuleRepository, never()).save(any());
+    }
+
+    @Test
+    void createRule_rejectsResourceNotFound() {
+        UserContext doctor = new UserContext(UUID.randomUUID(), "d@example.com", Role.DOCTOR);
+        when(doctorProfileRepository.findByUserId(doctor.userId())).thenReturn(Optional.of(profile(doctor.userId())));
+        UUID clinicId = UUID.randomUUID();
+        UUID resourceId = UUID.randomUUID();
+        when(clinicResourceRepository.findById(resourceId)).thenReturn(Optional.empty());
+        CreateAvailabilityRuleRequest request = new CreateAvailabilityRuleRequest(
+                DayOfWeek.MONDAY, LocalTime.of(9, 0), LocalTime.of(12, 0), 30, LocationType.IN_PERSON, clinicId,
+                Set.of(resourceId));
+
+        assertThatThrownBy(() -> service.createRule(doctor, request)).isInstanceOf(NotFoundException.class);
+        verify(availabilityRuleRepository, never()).save(any());
+    }
+
+    @Test
+    void createRule_rejectsResourceFromDifferentClinic() {
+        UserContext doctor = new UserContext(UUID.randomUUID(), "d@example.com", Role.DOCTOR);
+        when(doctorProfileRepository.findByUserId(doctor.userId())).thenReturn(Optional.of(profile(doctor.userId())));
+        UUID clinicId = UUID.randomUUID();
+        UUID resourceId = UUID.randomUUID();
+        ClinicResource resource = new ClinicResource(UUID.randomUUID(), ResourceType.ROOM, "Room 1");
+        when(clinicResourceRepository.findById(resourceId)).thenReturn(Optional.of(resource));
+        CreateAvailabilityRuleRequest request = new CreateAvailabilityRuleRequest(
+                DayOfWeek.MONDAY, LocalTime.of(9, 0), LocalTime.of(12, 0), 30, LocationType.IN_PERSON, clinicId,
+                Set.of(resourceId));
+
+        assertThatThrownBy(() -> service.createRule(doctor, request)).isInstanceOf(NotFoundException.class);
+        verify(availabilityRuleRepository, never()).save(any());
+    }
+
+    @Test
+    void createRule_rejectsInactiveResource() {
+        UserContext doctor = new UserContext(UUID.randomUUID(), "d@example.com", Role.DOCTOR);
+        when(doctorProfileRepository.findByUserId(doctor.userId())).thenReturn(Optional.of(profile(doctor.userId())));
+        UUID clinicId = UUID.randomUUID();
+        UUID resourceId = UUID.randomUUID();
+        ClinicResource resource = new ClinicResource(clinicId, ResourceType.ROOM, "Room 1");
+        resource.deactivate();
+        when(clinicResourceRepository.findById(resourceId)).thenReturn(Optional.of(resource));
+        CreateAvailabilityRuleRequest request = new CreateAvailabilityRuleRequest(
+                DayOfWeek.MONDAY, LocalTime.of(9, 0), LocalTime.of(12, 0), 30, LocationType.IN_PERSON, clinicId,
+                Set.of(resourceId));
+
+        assertThatThrownBy(() -> service.createRule(doctor, request)).isInstanceOf(ValidationException.class);
+        verify(availabilityRuleRepository, never()).save(any());
+    }
+
+    @Test
+    void createRule_savesResourceLinksForValidResources() {
+        UserContext doctor = new UserContext(UUID.randomUUID(), "d@example.com", Role.DOCTOR);
+        when(doctorProfileRepository.findByUserId(doctor.userId())).thenReturn(Optional.of(profile(doctor.userId())));
+        UUID clinicId = UUID.randomUUID();
+        UUID resourceId = UUID.randomUUID();
+        ClinicResource resource = new ClinicResource(clinicId, ResourceType.ROOM, "Room 1");
+        when(clinicResourceRepository.findById(resourceId)).thenReturn(Optional.of(resource));
+        when(availabilityRuleRepository.save(any(AvailabilityRule.class))).thenAnswer(inv -> inv.getArgument(0));
+        CreateAvailabilityRuleRequest request = new CreateAvailabilityRuleRequest(
+                DayOfWeek.MONDAY, LocalTime.of(9, 0), LocalTime.of(12, 0), 30, LocationType.IN_PERSON, clinicId,
+                Set.of(resourceId));
+
+        service.createRule(doctor, request);
+
+        verify(availabilityRuleResourceRepository).save(argThat(link -> link.getResourceId().equals(resourceId)));
+    }
+
+    @Test
+    void listResourceIdsForRule_delegatesToRepository() {
+        UUID ruleId = UUID.randomUUID();
+        UUID resourceId = UUID.randomUUID();
+        when(availabilityRuleResourceRepository.findAllByAvailabilityRuleId(ruleId))
+                .thenReturn(List.of(new AvailabilityRuleResource(ruleId, resourceId)));
+
+        assertThat(service.listResourceIdsForRule(ruleId)).containsExactly(resourceId);
     }
 
     @Test

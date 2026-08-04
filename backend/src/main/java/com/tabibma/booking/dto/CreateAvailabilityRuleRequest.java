@@ -6,6 +6,7 @@ import jakarta.validation.constraints.NotNull;
 
 import java.time.DayOfWeek;
 import java.time.LocalTime;
+import java.util.Set;
 import java.util.UUID;
 
 public record CreateAvailabilityRuleRequest(
@@ -14,6 +15,11 @@ public record CreateAvailabilityRuleRequest(
         @NotNull LocalTime endTime,
         @Min(5) int slotDurationMinutes,
         @NotNull LocationType locationType,
-        UUID clinicId
+        UUID clinicId,
+        Set<UUID> resourceIds
 ) {
+    public CreateAvailabilityRuleRequest(DayOfWeek dayOfWeek, LocalTime startTime, LocalTime endTime,
+                                          int slotDurationMinutes, LocationType locationType, UUID clinicId) {
+        this(dayOfWeek, startTime, endTime, slotDurationMinutes, locationType, clinicId, null);
+    }
 }

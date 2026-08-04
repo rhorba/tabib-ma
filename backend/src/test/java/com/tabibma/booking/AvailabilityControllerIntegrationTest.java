@@ -1,10 +1,14 @@
 package com.tabibma.booking;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.tabibma.identity.Role;
+import com.tabibma.identity.User;
+import com.tabibma.identity.UserRepository;
 import com.tabibma.testsupport.AbstractIntegrationTest;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.DayOfWeek;
@@ -23,6 +27,76 @@ class AvailabilityControllerIntegrationTest extends AbstractIntegrationTest {
 
     @Autowired
     private ObjectMapper objectMapper;
+
+    @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
+    @Test
+    void createRule_acceptsValidResourceScopedToTheGivenClinic() throws Exception {
+        String adminToken = createClinicAdminAndLogin("availability-resource-admin1@example.com");
+        String clinicId = createClinic(adminToken, "Cabinet Ressources", "Rabat");
+        String resourceId = createResource(adminToken, clinicId, "ROOM", "Salle 1");
+
+        String doctorEmail = "availability-resource-doctor1@example.com";
+        registerAndLogin(doctorEmail, "DOCTOR");
+        String doctorToken = login(doctorEmail);
+        createProfile(doctorToken, "Cardiology", "Rabat");
+
+        mockMvc.perform(post("/api/v1/booking/availability/rules")
+                        .header("Authorization", "Bearer " + doctorToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"dayOfWeek":"MONDAY","startTime":"09:00:00","endTime":"12:00:00","slotDurationMinutes":30,"locationType":"IN_PERSON","clinicId":"%s","resourceIds":["%s"]}
+                                """.formatted(clinicId, resourceId)))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.resourceIds", org.hamcrest.Matchers.contains(resourceId)));
+    }
+
+    @Test
+    void createRule_rejectsResourceFromAnotherClinic() throws Exception {
+        String adminToken = createClinicAdminAndLogin("availability-resource-admin2@example.com");
+        String clinicId = createClinic(adminToken, "Cabinet Ressources", "Casablanca");
+
+        String otherAdminToken = createClinicAdminAndLogin("availability-resource-admin3@example.com");
+        String otherClinicId = createClinic(otherAdminToken, "Autre Cabinet", "Fes");
+        String otherResourceId = createResource(otherAdminToken, otherClinicId, "ROOM", "Salle Autre");
+
+        String doctorEmail = "availability-resource-doctor2@example.com";
+        registerAndLogin(doctorEmail, "DOCTOR");
+        String doctorToken = login(doctorEmail);
+        createProfile(doctorToken, "Cardiology", "Casablanca");
+
+        mockMvc.perform(post("/api/v1/booking/availability/rules")
+                        .header("Authorization", "Bearer " + doctorToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"dayOfWeek":"MONDAY","startTime":"09:00:00","endTime":"12:00:00","slotDurationMinutes":30,"locationType":"IN_PERSON","clinicId":"%s","resourceIds":["%s"]}
+                                """.formatted(clinicId, otherResourceId)))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void createRule_rejectsResourcesOnVideoLocation() throws Exception {
+        String adminToken = createClinicAdminAndLogin("availability-resource-admin4@example.com");
+        String clinicId = createClinic(adminToken, "Cabinet Ressources", "Marrakesh");
+        String resourceId = createResource(adminToken, clinicId, "EQUIPMENT", "Echographe");
+
+        String doctorEmail = "availability-resource-doctor3@example.com";
+        registerAndLogin(doctorEmail, "DOCTOR");
+        String doctorToken = login(doctorEmail);
+        createProfile(doctorToken, "Cardiology", "Marrakesh");
+
+        mockMvc.perform(post("/api/v1/booking/availability/rules")
+                        .header("Authorization", "Bearer " + doctorToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"dayOfWeek":"MONDAY","startTime":"09:00:00","endTime":"12:00:00","slotDurationMinutes":30,"locationType":"VIDEO","clinicId":"%s","resourceIds":["%s"]}
+                                """.formatted(clinicId, resourceId)))
+                .andExpect(status().isBadRequest());
+    }
 
     @Test
     void createRule_rejectsPatientRole() throws Exception {
@@ -182,5 +256,33 @@ class AvailabilityControllerIntegrationTest extends AbstractIntegrationTest {
                 .as("createProfile response was not 201 Created; body=%s", body)
                 .isEqualTo(201);
         return objectMapper.readTree(body).get("id").asText();
+    }
+
+    private String createClinicAdminAndLogin(String email) throws Exception {
+        User admin = new User(email, passwordEncoder.encode("correcthorsebattery"), Role.CLINIC_ADMIN, "C", "A");
+        userRepository.save(admin);
+        return login(email);
+    }
+
+    private String createClinic(String token, String name, String city) throws Exception {
+        var result = mockMvc.perform(post("/api/v1/clinic/clinics")
+                        .header("Authorization", "Bearer " + token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"name":"%s","city":"%s"}
+                                """.formatted(name, city)))
+                .andReturn();
+        return objectMapper.readTree(result.getResponse().getContentAsString()).get("id").asText();
+    }
+
+    private String createResource(String token, String clinicId, String type, String name) throws Exception {
+        var result = mockMvc.perform(post("/api/v1/clinic/clinics/" + clinicId + "/resources")
+                        .header("Authorization", "Bearer " + token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"type":"%s","name":"%s"}
+                                """.formatted(type, name)))
+                .andReturn();
+        return objectMapper.readTree(result.getResponse().getContentAsString()).get("id").asText();
     }
 }

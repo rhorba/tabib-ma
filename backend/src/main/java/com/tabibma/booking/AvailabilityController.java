@@ -38,12 +38,15 @@ public class AvailabilityController {
     public ResponseEntity<AvailabilityRuleResponse> createRule(@AuthenticationPrincipal UserContext principal,
                                                                  @Valid @RequestBody CreateAvailabilityRuleRequest request) {
         AvailabilityRule rule = availabilityService.createRule(principal, request);
-        return ResponseEntity.status(HttpStatus.CREATED).body(AvailabilityRuleResponse.from(rule));
+        List<UUID> resourceIds = availabilityService.listResourceIdsForRule(rule.getId());
+        return ResponseEntity.status(HttpStatus.CREATED).body(AvailabilityRuleResponse.from(rule, resourceIds));
     }
 
     @GetMapping("/rules")
     public List<AvailabilityRuleResponse> listMyRules(@AuthenticationPrincipal UserContext principal) {
-        return availabilityService.listMyRules(principal).stream().map(AvailabilityRuleResponse::from).toList();
+        return availabilityService.listMyRules(principal).stream()
+                .map(rule -> AvailabilityRuleResponse.from(rule, availabilityService.listResourceIdsForRule(rule.getId())))
+                .toList();
     }
 
     @PostMapping("/exceptions")
