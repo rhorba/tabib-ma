@@ -101,3 +101,9 @@ Statements: 82.6% (717/868) | Branches: 72.1% (442/613) | Functions: 86.52% (244
 Scope: src/features/**+src/shared/** (same exclusions as prior batches).
 Gate: ≥ 80% combined — PASSED
 141 tests total: adds 2 new ClinicAdminPage tests (dashboard zero-state, dashboard with bookings) + a seedClinicDashboard test helper/GET .../dashboard MSW fake in clinicHandlers.ts. tsc -b and oxlint both clean.
+
+## 2026-08-04 (continued) — Story 8.2 Batch 2 (availability_rule_resources) backend coverage
+Instructions: 91% | Branches: 86%
+Scope: whole backend (jacocoTestCoverageVerification, project-wide default).
+Gate: ≥ 80% combined — PASSED
+263 backend tests total (up from 253 at Batch 1 close): 6 new AvailabilityServiceTest unit tests (video-location rejection, missing-clinicId rejection, resource-not-found, wrong-clinic resource, inactive resource, valid-resource persistence + listResourceIdsForRule) + 3 new AvailabilityControllerIntegrationTest cases (valid cross-module resource scoping happy path, cross-clinic resource rejection, VIDEO-location rejection) against the real backend/DB. ArchitectureTest green (no new module-boundary violations).
