@@ -377,3 +377,14 @@ Done this session (commits 169f258, a7129c5, both local, **not pushed**):
 Local state: Docker Desktop was started fresh this session (was stopped at session start); docker containers (db/redis/backend) and the frontend dev server (port 5173) are still running. New e2e test data was created in the dev DB by this session's run (unique doctor/patient emails, timestamped — same convention as all prior e2e-generating sessions, harmless). Working tree clean, nothing uncommitted.
 
 Resume by: this is essentially a one-step resume — `git push origin main`, then monitor CI per rule 11 until green. No further code changes should be needed; if CI is red, diagnose per rule 11 before considering Epic 8 closed. Once green: **Sprint ? Epic 8 (Clinic Admin Dashboard, Story 8.1) is fully CLOSED** — confirm with the user, then follow the usual UNDERSTAND → BRAINSTORM → PLAN gate sequence for the next priority (Epic 10, or a fast-follow).
+
+## 2026-08-04 (continued) — Epic 8 CLOSED (push + CI confirmed)
+Resumed from the one-step carried-forward blocker above. Ran `git push origin main` (9 commits, 03698ea..36ef8c3) and monitored CI per rule 11: run 30877809843 GREEN on the first try (security 44s, backend-build-test 1m34s).
+
+**Sprint ? Epic 8 (Clinic Admin Dashboard, Story 8.1) is now fully CLOSED** — backend + frontend + e2e (16/16) + video v0.7.0 + coverage gates cleared (backend 90.38%/219 tests, frontend 82.6%/83.05%/141 tests) + pushed to origin/main + CI green.
+
+Local state: unchanged from the prior entry — docker containers (db/redis/backend) and frontend dev server (port 5173) still running; no code changes made this turn, push/CI-monitor only.
+
+Carried-forward open items (unchanged): CNDP/Loi 09-08 filing (legal, blocks production launch), frontend bundle code-splitting, Trivy Gradle-lockfile gap, seeded PLATFORM_ADMIN/CLINIC_ADMIN need rotation/removal before production, Story 3.1's k6 load test, Redis's missing host port mapping, booking's missing doctor-verification check, no cancellation-confirmation notification, the UX doc's unbuilt "skip prescription" branch, Story 8.2 (shared-resource conflicts, deferred at Epic 8's BRAINSTORM gate).
+
+Resume by: confirm next priority with the user — Epic 10 (Platform Admin — Disputes & Health), Story 8.2, or one of the fast-follows above. Follow the same UNDERSTAND -> BRAINSTORM -> PLAN gate sequence as every epic so far.

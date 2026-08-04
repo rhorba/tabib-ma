@@ -400,3 +400,6 @@ Extended `clinicHandlers.ts` with a `GET /api/v1/clinic/clinics/dashboard` MSW f
 **NOT DONE**: Batch 4 (Playwright e2e smoke test, video v0.7.0, final backend+frontend coverage re-confirmation, commit, push, CI monitor).
 
 Resume by: continue Epic 8 EXECUTE at Batch 4 — write one Playwright e2e smoke test (clinic admin sees a real booking reflected in the dashboard), record video v0.7.0, re-confirm backend+frontend coverage, commit, push origin main, monitor CI per rule 11.
+
+## 2026-08-04 (continued) — Epic 8 PUSH + CI (rule 7/11), Story 8.1 CLOSED
+`git push origin main` (9 commits, 03698ea..36ef8c3). CI run 30877809843: GREEN (security 44s, backend-build-test 1m34s, first try). **Sprint ? Epic 8 (Clinic Admin Dashboard, Story 8.1) is now fully CLOSED** — backend + frontend + e2e (16/16, incl. the Batch 4 dashboard smoke test) + video v0.7.0 + coverage gates cleared (backend 90.38%/219 tests, frontend 82.6%/83.05%/141 tests) + pushed + CI green.
