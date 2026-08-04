@@ -35,12 +35,15 @@ class CancellationServiceTest {
     private AvailabilitySlotRepository availabilitySlotRepository;
     @Mock
     private PaymentRepository paymentRepository;
+    @Mock
+    private ResourceAllocationGuard resourceAllocationGuard;
 
     private CancellationService service;
 
     @BeforeEach
     void setUp() {
-        service = new CancellationService(appointmentRepository, availabilitySlotRepository, paymentRepository);
+        service = new CancellationService(appointmentRepository, availabilitySlotRepository, paymentRepository,
+                resourceAllocationGuard);
     }
 
     @Test
@@ -102,6 +105,7 @@ class CancellationServiceTest {
         assertThat(payment.getStatus()).isEqualTo(PaymentStatus.REFUNDED);
         verify(availabilitySlotRepository).save(slot);
         verify(paymentRepository).save(payment);
+        verify(resourceAllocationGuard).releaseForAppointment(appointmentId);
     }
 
     @Test

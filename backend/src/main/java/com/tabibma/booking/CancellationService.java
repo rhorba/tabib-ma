@@ -19,13 +19,16 @@ public class CancellationService {
     private final AppointmentRepository appointmentRepository;
     private final AvailabilitySlotRepository availabilitySlotRepository;
     private final PaymentRepository paymentRepository;
+    private final ResourceAllocationGuard resourceAllocationGuard;
 
     public CancellationService(AppointmentRepository appointmentRepository,
                                 AvailabilitySlotRepository availabilitySlotRepository,
-                                PaymentRepository paymentRepository) {
+                                PaymentRepository paymentRepository,
+                                ResourceAllocationGuard resourceAllocationGuard) {
         this.appointmentRepository = appointmentRepository;
         this.availabilitySlotRepository = availabilitySlotRepository;
         this.paymentRepository = paymentRepository;
+        this.resourceAllocationGuard = resourceAllocationGuard;
     }
 
     @Transactional
@@ -46,6 +49,7 @@ public class CancellationService {
             slot.release();
             availabilitySlotRepository.save(slot);
         });
+        resourceAllocationGuard.releaseForAppointment(appointmentId);
 
         if (refundEligible) {
             paymentRepository.findByAppointmentId(appointmentId)

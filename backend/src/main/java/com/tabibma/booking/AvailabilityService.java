@@ -22,8 +22,10 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
@@ -39,19 +41,22 @@ public class AvailabilityService {
     private final AvailabilitySlotRepository availabilitySlotRepository;
     private final ClinicResourceRepository clinicResourceRepository;
     private final AvailabilityRuleResourceRepository availabilityRuleResourceRepository;
+    private final AvailabilitySlotResourceRepository availabilitySlotResourceRepository;
 
     public AvailabilityService(DoctorProfileRepository doctorProfileRepository,
                                 AvailabilityRuleRepository availabilityRuleRepository,
                                 AvailabilityBlockedDateRepository availabilityBlockedDateRepository,
                                 AvailabilitySlotRepository availabilitySlotRepository,
                                 ClinicResourceRepository clinicResourceRepository,
-                                AvailabilityRuleResourceRepository availabilityRuleResourceRepository) {
+                                AvailabilityRuleResourceRepository availabilityRuleResourceRepository,
+                                AvailabilitySlotResourceRepository availabilitySlotResourceRepository) {
         this.doctorProfileRepository = doctorProfileRepository;
         this.availabilityRuleRepository = availabilityRuleRepository;
         this.availabilityBlockedDateRepository = availabilityBlockedDateRepository;
         this.availabilitySlotRepository = availabilitySlotRepository;
         this.clinicResourceRepository = clinicResourceRepository;
         this.availabilityRuleResourceRepository = availabilityRuleResourceRepository;
+        this.availabilitySlotResourceRepository = availabilitySlotResourceRepository;
     }
 
     @Transactional
@@ -148,6 +153,7 @@ public class AvailabilityService {
                 availabilitySlotRepository.findStartTimesBetween(profile.getId(), fromInstant, toInstant));
 
         List<AvailabilitySlot> generated = new ArrayList<>();
+        List<UUID> ruleIdPerGeneratedSlot = new ArrayList<>();
         for (LocalDate date = from; date.isBefore(to); date = date.plusDays(1)) {
             if (blockedDates.contains(date)) {
                 continue;
@@ -164,12 +170,30 @@ public class AvailabilityService {
                     if (existingStarts.add(startsAt)) {
                         generated.add(new AvailabilitySlot(profile.getId(), startsAt, endsAt,
                                 rule.getLocationType(), rule.getClinicId()));
+                        ruleIdPerGeneratedSlot.add(rule.getId());
                     }
                     cursor = slotEnd;
                 }
             }
         }
-        return availabilitySlotRepository.saveAll(generated);
+        List<AvailabilitySlot> saved = availabilitySlotRepository.saveAll(generated);
+        copyRequiredResourcesOntoGeneratedSlots(saved, ruleIdPerGeneratedSlot);
+        return saved;
+    }
+
+    /** Denormalizes each generating rule's required resources onto its slots (Story 8.2 Batch 3),
+     * the same way {@code locationType}/{@code clinicId} are already copied at generation time —
+     * so booking-time conflict checks never need to look the originating rule back up. */
+    private void copyRequiredResourcesOntoGeneratedSlots(List<AvailabilitySlot> savedSlots, List<UUID> ruleIdPerSlot) {
+        Map<UUID, List<UUID>> resourceIdsByRule = new HashMap<>();
+        for (int i = 0; i < savedSlots.size(); i++) {
+            UUID ruleId = ruleIdPerSlot.get(i);
+            List<UUID> resourceIds = resourceIdsByRule.computeIfAbsent(ruleId, this::listResourceIdsForRule);
+            for (UUID resourceId : resourceIds) {
+                availabilitySlotResourceRepository.save(
+                        new AvailabilitySlotResource(savedSlots.get(i).getId(), resourceId));
+            }
+        }
     }
 
     public List<AvailabilitySlot> listOpenSlots(UUID doctorProfileId, Instant from, Instant to) {

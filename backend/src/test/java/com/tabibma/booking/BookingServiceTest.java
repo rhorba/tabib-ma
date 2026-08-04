@@ -34,6 +34,8 @@ class BookingServiceTest {
     @Mock
     private DoubleBookingGuard doubleBookingGuard;
     @Mock
+    private ResourceAllocationGuard resourceAllocationGuard;
+    @Mock
     private AvailabilitySlotRepository availabilitySlotRepository;
     @Mock
     private AppointmentRepository appointmentRepository;
@@ -48,8 +50,8 @@ class BookingServiceTest {
 
     @BeforeEach
     void setUp() {
-        service = new BookingService(doubleBookingGuard, availabilitySlotRepository, appointmentRepository,
-                doctorProfileRepository, paymentService, eventPublisher);
+        service = new BookingService(doubleBookingGuard, resourceAllocationGuard, availabilitySlotRepository,
+                appointmentRepository, doctorProfileRepository, paymentService, eventPublisher);
     }
 
     private static Appointment pendingAppointment(UUID doctorProfileId, UUID slotId) {
@@ -87,6 +89,9 @@ class BookingServiceTest {
         assertThat(result.getStatus()).isEqualTo(AppointmentStatus.CONFIRMED);
         verify(eventPublisher).publishEvent(new BookingConfirmedEvent(appointment.getId()));
         verify(availabilitySlotRepository, never()).save(any());
+        verify(resourceAllocationGuard).allocateForSlot(appointment.getId(), slotId,
+                appointment.getStartsAt(), appointment.getEndsAt());
+        verify(resourceAllocationGuard, never()).releaseForAppointment(any());
     }
 
     @Test
@@ -115,6 +120,24 @@ class BookingServiceTest {
         assertThat(slot.isBooked()).isFalse();
         verify(availabilitySlotRepository).save(slot);
         verify(eventPublisher, never()).publishEvent(any());
+        verify(resourceAllocationGuard).releaseForAppointment(appointment.getId());
+    }
+
+    @Test
+    void bookAndPay_propagatesResourceConflictWithoutCapturingPayment() {
+        UserContext patient = new UserContext(UUID.randomUUID(), "p@example.com", Role.PATIENT);
+        UUID slotId = UUID.randomUUID();
+        UUID doctorProfileId = UUID.randomUUID();
+        Appointment appointment = pendingAppointment(doctorProfileId, slotId);
+
+        when(doubleBookingGuard.reserveSlot(patient.userId(), slotId)).thenReturn(appointment);
+        org.mockito.Mockito.doThrow(new com.tabibma.shared.exception.ConflictException("conflict"))
+                .when(resourceAllocationGuard)
+                .allocateForSlot(appointment.getId(), slotId, appointment.getStartsAt(), appointment.getEndsAt());
+
+        assertThatThrownBy(() -> service.bookAndPay(patient, slotId))
+                .isInstanceOf(com.tabibma.shared.exception.ConflictException.class);
+        verify(paymentService, never()).capturePayment(any(), any(), any());
     }
 
     @Test

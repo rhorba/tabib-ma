@@ -107,3 +107,9 @@ Instructions: 91% | Branches: 86%
 Scope: whole backend (jacocoTestCoverageVerification, project-wide default).
 Gate: ≥ 80% combined — PASSED
 263 backend tests total (up from 253 at Batch 1 close): 6 new AvailabilityServiceTest unit tests (video-location rejection, missing-clinicId rejection, resource-not-found, wrong-clinic resource, inactive resource, valid-resource persistence + listResourceIdsForRule) + 3 new AvailabilityControllerIntegrationTest cases (valid cross-module resource scoping happy path, cross-clinic resource rejection, VIDEO-location rejection) against the real backend/DB. ArchitectureTest green (no new module-boundary violations).
+
+## 2026-08-04 (continued) — Story 8.2 Batch 3 (appointment_resource_allocations EXCLUDE guard) backend coverage
+Instruction: 6958/7613 = 91.4% (655 missed) | Branch: 234/270 = 86.7% (36 missed)
+Scope: whole backend (jacocoTestCoverageVerification, project-wide default).
+Gate: ≥ 80% combined — PASSED
+271 backend tests total (up from 263 at Batch 2 close): ResourceAllocationGuardTest (unit) + ResourceAllocationIntegrationTest (3 integration tests against the real DB — allocate-then-cancel-releases, cross-doctor same-resource overlap rejected with 409, and a real two-thread concurrency race on the same resource where exactly one allocation wins). ArchitectureTest green.

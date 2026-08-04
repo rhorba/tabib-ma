@@ -51,6 +51,8 @@ class AvailabilityServiceTest {
     private ClinicResourceRepository clinicResourceRepository;
     @Mock
     private AvailabilityRuleResourceRepository availabilityRuleResourceRepository;
+    @Mock
+    private AvailabilitySlotResourceRepository availabilitySlotResourceRepository;
 
     private AvailabilityService service;
 
@@ -58,7 +60,7 @@ class AvailabilityServiceTest {
     void setUp() {
         service = new AvailabilityService(doctorProfileRepository, availabilityRuleRepository,
                 availabilityBlockedDateRepository, availabilitySlotRepository,
-                clinicResourceRepository, availabilityRuleResourceRepository);
+                clinicResourceRepository, availabilityRuleResourceRepository, availabilitySlotResourceRepository);
     }
 
     private static DoctorProfile profile(UUID userId) {

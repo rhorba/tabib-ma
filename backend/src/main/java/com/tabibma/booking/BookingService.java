@@ -28,6 +28,7 @@ import java.util.UUID;
 public class BookingService {
 
     private final DoubleBookingGuard doubleBookingGuard;
+    private final ResourceAllocationGuard resourceAllocationGuard;
     private final AvailabilitySlotRepository availabilitySlotRepository;
     private final AppointmentRepository appointmentRepository;
     private final DoctorProfileRepository doctorProfileRepository;
@@ -35,12 +36,14 @@ public class BookingService {
     private final ApplicationEventPublisher eventPublisher;
 
     public BookingService(DoubleBookingGuard doubleBookingGuard,
+                           ResourceAllocationGuard resourceAllocationGuard,
                            AvailabilitySlotRepository availabilitySlotRepository,
                            AppointmentRepository appointmentRepository,
                            DoctorProfileRepository doctorProfileRepository,
                            PaymentService paymentService,
                            ApplicationEventPublisher eventPublisher) {
         this.doubleBookingGuard = doubleBookingGuard;
+        this.resourceAllocationGuard = resourceAllocationGuard;
         this.availabilitySlotRepository = availabilitySlotRepository;
         this.appointmentRepository = appointmentRepository;
         this.doctorProfileRepository = doctorProfileRepository;
@@ -55,6 +58,11 @@ public class BookingService {
         }
 
         Appointment appointment = doubleBookingGuard.reserveSlot(principal.userId(), availabilitySlotId);
+        // Checked before payment capture so a resource conflict never results in charging the
+        // patient for a booking that can't actually be honoured; any ConflictException here rolls
+        // back this whole transaction, including the appointment/slot rows reserveSlot just wrote.
+        resourceAllocationGuard.allocateForSlot(appointment.getId(), availabilitySlotId,
+                appointment.getStartsAt(), appointment.getEndsAt());
 
         DoctorProfile doctorProfile = doctorProfileRepository.findById(appointment.getDoctorProfileId())
                 .orElseThrow(() -> new NotFoundException("Doctor profile not found."));
@@ -71,6 +79,7 @@ public class BookingService {
             appointment.cancel();
             appointmentRepository.save(appointment);
             releaseSlot(availabilitySlotId);
+            resourceAllocationGuard.releaseForAppointment(appointment.getId());
         }
         return appointment;
     }
