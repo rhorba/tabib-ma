@@ -149,3 +149,9 @@ Frontend statements: 82.22% (777/945) | Branches: 70.54% (491/696) | Functions: 
 Scope: src/features/**+src/shared/** (same exclusions as prior batches).
 Gate: ≥ 80% combined — PASSED
 153 unit/component tests unchanged (the batch's only frontend code change was an accessibility fix — per-resource checkbox ids — with no new behavior to unit-test). e2e: 17/17 green (16 pre-existing + new `story-8.2-shared-resources.spec.ts`), video v0.8.0 (21 clips).
+
+## 2026-08-05 (continued) — Epic 10 Batch 1 (dispute queue backend) coverage
+Instruction: 7739/8402 = 92% (663 missed) | Branch: 251/290 = 86% (39 missed)
+Scope: whole backend (jacocoTestCoverageVerification, project-wide default).
+Gate: ≥ 80% combined — PASSED
+303 backend tests total (up from 286 at Story 8.2 close): new `admin` module — `DisputeServiceTest` (11 unit tests: NO_SHOW rejected on self-report, ownership checks for patient/doctor, admin manual creation allows NO_SHOW, system creation has no reporter, resolve + audit log, double-resolve rejected) + `DisputeControllerIntegrationTest` (7 integration tests against the real DB, including the admin queue showing enriched patient/doctor names and a resolved dispute dropping out of the open queue). `ArchitectureTest` green (confirms `admin`'s dependency-on-`booking`/`clinic` direction, decided proactively at this epic's PLAN, introduces no cycle).
