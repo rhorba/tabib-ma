@@ -483,3 +483,9 @@ Full e2e suite: **17/17 green** (16 pre-existing + 1 new), no regressions. Video
 Local state: docker-compose stack (db/redis/backend, backend rebuilt with all of Story 8.2's changes) and the frontend dev server (port 5173) left running. New e2e-run data (unique doctor/patient/specialty/resource names) accumulated in the persistent dev DB, harmless, same convention as every prior e2e-generating session.
 
 Resume by: confirm next priority with the user — Epic 10 (Platform Admin — Disputes & Health), or one of the carried-forward fast-follows (frontend bundle code-splitting, Trivy Gradle-lockfile gap, seeded admin rotation, Story 3.1's k6 load test, Redis host port mapping, booking's missing doctor-verification check, no cancellation-confirmation notification, the UX doc's unbuilt "skip prescription" branch). Follow the same UNDERSTAND -> BRAINSTORM -> PLAN gate sequence as every epic/story so far.
+
+PUSH (rule 7): `git push origin main` (d7deed7..45ee057, 9 commits). CI MONITORING (rule 11): run 30998669658 GREEN on the first try (backend-build-test 1m30s, security 41s).
+
+**Story 8.2 (shared clinic resource management) is now fully CLOSED end to end** — backend + frontend + e2e (17/17) + video v0.8.0 + coverage gates cleared + pushed to origin/main + CI green.
+
+Local state: docker-compose stack (db/redis/backend) and frontend dev server torn down at the end of this session. Working tree clean, nothing uncommitted.
