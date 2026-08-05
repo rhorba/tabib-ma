@@ -10,4 +10,6 @@ public interface ClinicStaffMembershipRepository extends JpaRepository<ClinicSta
     boolean existsByClinicIdAndDoctorProfileId(UUID clinicId, UUID doctorProfileId);
 
     List<ClinicStaffMembership> findAllByClinicId(UUID clinicId);
+
+    List<ClinicStaffMembership> findAllByDoctorProfileId(UUID doctorProfileId);
 }

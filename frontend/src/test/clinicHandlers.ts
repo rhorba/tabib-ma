@@ -49,6 +49,16 @@ type FakeResource = {
   name: string
   active: boolean
 }
+type FakeMembership = {
+  doctorProfileId: string
+  clinicId: string
+}
+type FakeAllocation = {
+  resourceId: string
+  appointmentId: string
+  startsAt: string
+  endsAt: string
+}
 
 let profiles: FakeDoctorProfile[] = []
 let documents: FakeDocument[] = []
@@ -56,6 +66,8 @@ let clinics: FakeClinic[] = []
 let invitations: FakeInvitation[] = []
 let dashboards: FakeDashboard[] = []
 let resources: FakeResource[] = []
+let memberships: FakeMembership[] = []
+let allocations: FakeAllocation[] = []
 let nextProfileId = 1
 let nextDocumentId = 1
 let nextClinicId = 1
@@ -69,6 +81,8 @@ export function resetClinicState() {
   invitations = []
   dashboards = []
   resources = []
+  memberships = []
+  allocations = []
   nextProfileId = 1
   nextDocumentId = 1
   nextClinicId = 1
@@ -408,10 +422,57 @@ export const clinicHandlers = [
     if (!clinic) {
       return errorResponse(404, 'NOT_FOUND', 'Clinic not found.')
     }
-    if (clinic.adminUserId !== user.id) {
-      return errorResponse(403, 'FORBIDDEN', 'You can only manage your own clinic.')
+    if (clinic.adminUserId === user.id) {
+      return HttpResponse.json(resources.filter((r) => r.clinicId === clinicId).map(toResourceResponse))
     }
-    return HttpResponse.json(resources.filter((r) => r.clinicId === clinicId).map(toResourceResponse))
+    // Mirrors ClinicResourceService.listResources: a clinic's own doctor-staff can also list
+    // resources, but only active ones — the admin still sees everything.
+    const profile = profiles.find((p) => p.userId === user.id)
+    const isStaffDoctor =
+      profile != null && memberships.some((m) => m.doctorProfileId === profile.id && m.clinicId === clinicId)
+    if (!isStaffDoctor) {
+      return errorResponse(403, 'FORBIDDEN', "You don't have access to this clinic's resources.")
+    }
+    return HttpResponse.json(
+      resources.filter((r) => r.clinicId === clinicId && r.active).map(toResourceResponse)
+    )
+  }),
+
+  http.get(/\/api\/v1\/clinic\/doctor-profiles\/me\/clinics$/, ({ request }) => {
+    const user = getAuthenticatedUser(request)
+    if (!user) {
+      return errorResponse(401, 'UNAUTHORIZED', 'Authentication is required.')
+    }
+    const profile = profiles.find((p) => p.userId === user.id)
+    if (!profile) {
+      return errorResponse(404, 'NOT_FOUND', "You don't have a doctor profile yet.")
+    }
+    const clinicIds = memberships.filter((m) => m.doctorProfileId === profile.id).map((m) => m.clinicId)
+    return HttpResponse.json(clinics.filter((c) => clinicIds.includes(c.id)).map(toClinicResponse))
+  }),
+
+  http.get(/\/api\/v1\/clinic\/clinics\/resources\/utilization$/, ({ request }) => {
+    const user = getAuthenticatedUser(request)
+    if (!user) {
+      return errorResponse(401, 'UNAUTHORIZED', 'Authentication is required.')
+    }
+    const clinic = clinics.find((c) => c.adminUserId === user.id)
+    if (!clinic) {
+      return errorResponse(404, 'NOT_FOUND', "You don't have a clinic yet.")
+    }
+    return HttpResponse.json(
+      resources
+        .filter((r) => r.clinicId === clinic.id)
+        .map((r) => ({
+          resourceId: r.id,
+          resourceName: r.name,
+          type: r.type,
+          active: r.active,
+          allocations: allocations
+            .filter((a) => a.resourceId === r.id)
+            .map(({ appointmentId, startsAt, endsAt }) => ({ appointmentId, startsAt, endsAt })),
+        }))
+    )
   }),
 
   http.patch(/\/api\/v1\/clinic\/clinics\/[^/]+\/resources\/[^/]+\/deactivate$/, ({ request }) => {
@@ -472,8 +533,14 @@ function decideInvitation(request: Request, status: 'ACCEPTED' | 'DECLINED') {
   if (invitation.status !== 'PENDING') {
     return errorResponse(409, 'CONFLICT', 'This invitation has already been decided.')
   }
-  if (status === 'ACCEPTED' && !profiles.some((p) => p.userId === user.id)) {
+  const acceptingProfile = profiles.find((p) => p.userId === user.id)
+  if (status === 'ACCEPTED' && !acceptingProfile) {
     return errorResponse(409, 'CONFLICT', 'You need to create your doctor profile before joining a clinic.')
+  }
+  if (status === 'ACCEPTED' && acceptingProfile) {
+    if (!memberships.some((m) => m.doctorProfileId === acceptingProfile.id && m.clinicId === invitation.clinicId)) {
+      memberships.push({ doctorProfileId: acceptingProfile.id, clinicId: invitation.clinicId })
+    }
   }
   invitation.status = status
   return HttpResponse.json(toInvitationResponse(invitation, clinics.find((c) => c.id === invitation.clinicId)?.name))
@@ -548,4 +615,19 @@ export function seedClinicResource(resource: Omit<FakeResource, 'id'>) {
   const fakeResource: FakeResource = { id: String(nextResourceId++), ...resource }
   resources.push(fakeResource)
   return fakeResource
+}
+
+// Test-only helper: lets tests seed a doctor's clinic-staff membership directly,
+// without going through the invitation-accept flow first (e.g. to test the
+// availability-rule form's resource picker in isolation).
+export function seedClinicStaffMembership(membership: FakeMembership) {
+  memberships.push(membership)
+  return membership
+}
+
+// Test-only helper: lets tests seed a resource allocation directly, without
+// seeding a real appointment/payment (e.g. to test ResourceUtilizationView).
+export function seedResourceAllocation(allocation: FakeAllocation) {
+  allocations.push(allocation)
+  return allocation
 }

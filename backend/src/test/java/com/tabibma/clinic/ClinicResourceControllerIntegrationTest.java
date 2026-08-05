@@ -121,6 +121,79 @@ class ClinicResourceControllerIntegrationTest extends AbstractIntegrationTest {
                 .andExpect(status().isNotFound());
     }
 
+    @Test
+    void listResources_staffDoctorSeesOnlyActiveResourcesForTheirOwnClinic() throws Exception {
+        String adminToken = createClinicAdminAndLogin("resource-admin7@example.com");
+        String clinicId = createClinic(adminToken, "Cabinet Test", "Oujda");
+        createResource(adminToken, clinicId, "ROOM", "Salle Active");
+        String inactiveResourceId = createResource(adminToken, clinicId, "ROOM", "Salle Inactive");
+        mockMvc.perform(patch("/api/v1/clinic/clinics/" + clinicId + "/resources/" + inactiveResourceId + "/deactivate")
+                        .header("Authorization", "Bearer " + adminToken))
+                .andExpect(status().isOk());
+
+        String doctorEmail = "resource-doctor1@example.com";
+        registerAndLogin(doctorEmail, "DOCTOR");
+        String doctorToken = login(doctorEmail);
+        createProfile(doctorToken, "Cardiology", "Oujda");
+
+        var inviteResult = mockMvc.perform(post("/api/v1/clinic/clinics/" + clinicId + "/invitations")
+                        .header("Authorization", "Bearer " + adminToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"email":"%s"}
+                                """.formatted(doctorEmail)))
+                .andReturn();
+        String invitationId = objectMapper.readTree(inviteResult.getResponse().getContentAsString()).get("id").asText();
+        mockMvc.perform(post("/api/v1/clinic/invitations/" + invitationId + "/accept")
+                        .header("Authorization", "Bearer " + doctorToken))
+                .andExpect(status().isOk());
+
+        mockMvc.perform(get("/api/v1/clinic/clinics/" + clinicId + "/resources")
+                        .header("Authorization", "Bearer " + doctorToken))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(1))
+                .andExpect(jsonPath("$[0].name").value("Salle Active"));
+    }
+
+    @Test
+    void listResources_rejectsDoctorWhoIsNotStaffAtTheClinic() throws Exception {
+        String adminToken = createClinicAdminAndLogin("resource-admin8@example.com");
+        String clinicId = createClinic(adminToken, "Cabinet Test", "Kenitra");
+
+        String doctorEmail = "resource-doctor2@example.com";
+        registerAndLogin(doctorEmail, "DOCTOR");
+        String doctorToken = login(doctorEmail);
+        createProfile(doctorToken, "Dermatology", "Kenitra");
+
+        mockMvc.perform(get("/api/v1/clinic/clinics/" + clinicId + "/resources")
+                        .header("Authorization", "Bearer " + doctorToken))
+                .andExpect(status().isForbidden());
+    }
+
+    private void registerAndLogin(String email, String role) throws Exception {
+        mockMvc.perform(post("/api/v1/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"email":"%s","password":"correcthorsebattery","role":"%s","firstName":"A","lastName":"B"}
+                                """.formatted(email, role)))
+                .andExpect(status().isCreated());
+    }
+
+    private String createProfile(String token, String specialty, String city) throws Exception {
+        var result = mockMvc.perform(post("/api/v1/clinic/doctor-profiles")
+                        .header("Authorization", "Bearer " + token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"specialty":"%s","bio":"bio","consultationFeeMad":150.00,"city":"%s"}
+                                """.formatted(specialty, city)))
+                .andReturn();
+        String body = result.getResponse().getContentAsString();
+        assertThat(result.getResponse().getStatus())
+                .as("createProfile response was not 201 Created; body=%s", body)
+                .isEqualTo(201);
+        return objectMapper.readTree(body).get("id").asText();
+    }
+
     private String login(String email) throws Exception {
         var result = mockMvc.perform(post("/api/v1/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)

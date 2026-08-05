@@ -18,6 +18,7 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -27,12 +28,17 @@ class ClinicResourceServiceTest {
     private ClinicRepository clinicRepository;
     @Mock
     private ClinicResourceRepository clinicResourceRepository;
+    @Mock
+    private DoctorProfileRepository doctorProfileRepository;
+    @Mock
+    private ClinicStaffMembershipRepository clinicStaffMembershipRepository;
 
     private ClinicResourceService service;
 
     @BeforeEach
     void setUp() {
-        service = new ClinicResourceService(clinicRepository, clinicResourceRepository);
+        service = new ClinicResourceService(clinicRepository, clinicResourceRepository,
+                doctorProfileRepository, clinicStaffMembershipRepository);
     }
 
     @Test
@@ -100,6 +106,36 @@ class ClinicResourceServiceTest {
         when(clinicResourceRepository.findAllByClinicId(clinicId)).thenReturn(List.of(resource));
 
         assertThat(service.listResources(admin, clinicId)).containsExactly(resource);
+    }
+
+    @Test
+    void listResources_returnsActiveResourcesOnlyForStaffDoctor() {
+        UUID ownerId = UUID.randomUUID();
+        UserContext doctor = new UserContext(UUID.randomUUID(), "d@example.com", Role.DOCTOR);
+        UUID clinicId = UUID.randomUUID();
+        Clinic clinic = new Clinic(ownerId, "Cabinet Test", "Rabat", null);
+        DoctorProfile profile = new DoctorProfile(doctor.userId(), "Cardiology", "bio", java.math.BigDecimal.TEN, "Rabat");
+        ClinicResource resource = new ClinicResource(clinicId, ResourceType.ROOM, "Salle 1");
+        when(clinicRepository.findById(clinicId)).thenReturn(Optional.of(clinic));
+        when(doctorProfileRepository.findByUserId(doctor.userId())).thenReturn(Optional.of(profile));
+        when(clinicStaffMembershipRepository.existsByClinicIdAndDoctorProfileId(eq(clinicId), any()))
+                .thenReturn(true);
+        when(clinicResourceRepository.findAllByClinicIdAndActiveTrue(clinicId)).thenReturn(List.of(resource));
+
+        assertThat(service.listResources(doctor, clinicId)).containsExactly(resource);
+    }
+
+    @Test
+    void listResources_rejectsDoctorWhoIsNotStaffAtTheClinic() {
+        UUID ownerId = UUID.randomUUID();
+        UserContext doctor = new UserContext(UUID.randomUUID(), "d@example.com", Role.DOCTOR);
+        UUID clinicId = UUID.randomUUID();
+        Clinic clinic = new Clinic(ownerId, "Cabinet Test", "Rabat", null);
+        when(clinicRepository.findById(clinicId)).thenReturn(Optional.of(clinic));
+        when(doctorProfileRepository.findByUserId(doctor.userId())).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> service.listResources(doctor, clinicId))
+                .isInstanceOf(ForbiddenException.class);
     }
 
     @Test

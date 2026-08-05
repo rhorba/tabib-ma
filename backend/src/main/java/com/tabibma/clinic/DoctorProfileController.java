@@ -1,5 +1,6 @@
 package com.tabibma.clinic;
 
+import com.tabibma.clinic.dto.ClinicResponse;
 import com.tabibma.clinic.dto.CreateDoctorProfileRequest;
 import com.tabibma.clinic.dto.DoctorProfileResponse;
 import com.tabibma.clinic.dto.DoctorSearchResponse;
@@ -62,6 +63,13 @@ public class DoctorProfileController {
     @GetMapping("/me")
     public DoctorProfileResponse getMyProfile(@AuthenticationPrincipal UserContext principal) {
         return DoctorProfileResponse.from(doctorOnboardingService.getMyProfile(principal));
+    }
+
+    @GetMapping("/me/clinics")
+    public List<ClinicResponse> listMyClinics(@AuthenticationPrincipal UserContext principal) {
+        return doctorOnboardingService.listMyClinics(principal).stream()
+                .map(ClinicResponse::from)
+                .toList();
     }
 
     @GetMapping("/{doctorProfileId}/documents")

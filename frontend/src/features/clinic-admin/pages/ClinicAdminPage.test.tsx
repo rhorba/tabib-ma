@@ -6,6 +6,7 @@ import {
   seedClinicDashboard,
   seedClinicInvitation,
   seedClinicResource,
+  seedResourceAllocation,
 } from '@/test/clinicHandlers'
 import { ClinicAdminPage } from './ClinicAdminPage'
 
@@ -75,6 +76,35 @@ describe('ClinicAdminPage', () => {
     seedClinicResource({ clinicId: clinic.id, type: 'ROOM', name: 'Salle 1', active: true })
     renderWithProviders(<ClinicAdminPage />)
 
-    expect(await screen.findByText('Salle 1')).toBeInTheDocument()
+    // "Salle 1" now legitimately appears twice — once in the resources list, once in the
+    // utilization card below it — so this asserts presence rather than a single match.
+    expect(await screen.findAllByText('Salle 1')).not.toHaveLength(0)
+  })
+
+  it('shows the utilization card with no upcoming bookings for an idle resource', async () => {
+    loginAs({ email: 'ca@example.com', password: 'x', role: 'CLINIC_ADMIN', firstName: 'A', lastName: 'B' })
+    const clinic = seedClinic({ adminUserId: '1', name: 'Clinique Al Amal', city: 'Rabat' })
+    seedClinicResource({ clinicId: clinic.id, type: 'ROOM', name: 'Salle 1', active: true })
+    renderWithProviders(<ClinicAdminPage />)
+
+    expect(await screen.findByText('Utilisation des ressources')).toBeInTheDocument()
+    expect(await screen.findByText(/aucune réservation à venir/i)).toBeInTheDocument()
+  })
+
+  it('shows an upcoming allocation window for a booked resource', async () => {
+    loginAs({ email: 'ca@example.com', password: 'x', role: 'CLINIC_ADMIN', firstName: 'A', lastName: 'B' })
+    const clinic = seedClinic({ adminUserId: '1', name: 'Clinique Al Amal', city: 'Rabat' })
+    const resource = seedClinicResource({ clinicId: clinic.id, type: 'ROOM', name: 'Salle 1', active: true })
+    seedResourceAllocation({
+      resourceId: resource.id,
+      appointmentId: 'appt-1',
+      startsAt: '2030-01-01T09:00:00Z',
+      endsAt: '2030-01-01T09:30:00Z',
+    })
+    renderWithProviders(<ClinicAdminPage />)
+
+    expect(await screen.findByText('Utilisation des ressources')).toBeInTheDocument()
+    expect(await screen.findByText(/→/)).toBeInTheDocument()
+    expect(screen.queryByText(/aucune réservation à venir/i)).not.toBeInTheDocument()
   })
 })

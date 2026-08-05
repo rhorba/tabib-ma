@@ -178,6 +178,12 @@
         "nameRequired": "Le nom de la ressource est requis."
       }
     },
+    "utilization": {
+      "title": "Utilisation des ressources",
+      "description": "Prochaines réservations pour chaque salle et équipement.",
+      "empty": "Rien à afficher : ajoutez une ressource ci-dessus.",
+      "noAllocations": "Aucune réservation à venir."
+    },
     "errors": {
       "alreadyInvited": "Cette adresse e-mail a déjà une invitation en attente.",
       "generic": "Une erreur est survenue. Veuillez réessayer."
@@ -235,6 +241,10 @@
         "endTimeLabel": "Heure de fin",
         "durationLabel": "Durée du créneau (minutes)",
         "locationTypeLabel": "Type de consultation",
+        "clinicLabel": "Clinique",
+        "noClinic": "Aucune clinique",
+        "resourcesLabel": "Ressources requises (optionnel)",
+        "resourcesEmpty": "Cette clinique n'a aucune ressource active.",
         "submit": "Ajouter ce créneau récurrent",
         "submitting": "Ajout en cours…"
       },
@@ -245,7 +255,9 @@
         "durationTooShort": "La durée doit être d'au moins 5 minutes.",
         "locationTypeRequired": "Veuillez choisir un type de consultation.",
         "endBeforeStart": "L'heure de fin doit être après l'heure de début.",
-        "dateRequired": "La date est requise."
+        "dateRequired": "La date est requise.",
+        "resourcesRequireInPerson": "Les ressources ne peuvent être choisies que pour les consultations en cabinet.",
+        "clinicRequiredForResources": "Veuillez choisir une clinique pour réserver des ressources."
       },
       "rules": {
         "title": "Créneaux récurrents",

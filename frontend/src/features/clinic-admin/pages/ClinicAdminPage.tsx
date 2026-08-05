@@ -12,6 +12,7 @@ import { CreateClinicForm } from '../components/CreateClinicForm'
 import { InviteDoctorForm } from '../components/InviteDoctorForm'
 import { ClinicResourceForm } from '../components/ClinicResourceForm'
 import { ClinicResourceList } from '../components/ClinicResourceList'
+import { ResourceUtilizationView } from '../components/ResourceUtilizationView'
 
 const STATUS_STYLES: Record<string, string> = {
   PENDING: 'bg-amber-100 text-amber-800',
@@ -154,6 +155,20 @@ export function ClinicAdminPage() {
           <CardContent className="grid gap-6">
             <ClinicResourceList clinicId={clinicQuery.data.id!} />
             <ClinicResourceForm clinicId={clinicQuery.data.id!} />
+          </CardContent>
+        </Card>
+      )}
+
+      {clinicQuery.data && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg" role="heading" aria-level={2}>
+              {t('clinicAdmin.utilization.title')}
+            </CardTitle>
+            <CardDescription>{t('clinicAdmin.utilization.description')}</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ResourceUtilizationView enabled={clinicQuery.data != null} />
           </CardContent>
         </Card>
       )}

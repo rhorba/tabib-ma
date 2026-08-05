@@ -16,11 +16,17 @@ public class ClinicResourceService {
 
     private final ClinicRepository clinicRepository;
     private final ClinicResourceRepository clinicResourceRepository;
+    private final DoctorProfileRepository doctorProfileRepository;
+    private final ClinicStaffMembershipRepository clinicStaffMembershipRepository;
 
     public ClinicResourceService(ClinicRepository clinicRepository,
-                                  ClinicResourceRepository clinicResourceRepository) {
+                                  ClinicResourceRepository clinicResourceRepository,
+                                  DoctorProfileRepository doctorProfileRepository,
+                                  ClinicStaffMembershipRepository clinicStaffMembershipRepository) {
         this.clinicRepository = clinicRepository;
         this.clinicResourceRepository = clinicResourceRepository;
+        this.doctorProfileRepository = doctorProfileRepository;
+        this.clinicStaffMembershipRepository = clinicStaffMembershipRepository;
     }
 
     @Transactional
@@ -30,9 +36,23 @@ public class ClinicResourceService {
         return clinicResourceRepository.save(resource);
     }
 
+    /** Story 8.2 Batch 6: a clinic's own doctor-staff can also list resources (active only), so
+     * they can pick required rooms/equipment when creating an IN_PERSON availability rule —
+     * mirrors {@code DoctorOnboardingService.listMyClinics}' "doctor needs read access to their
+     * own clinic's data" precedent. The clinic admin still sees every resource, active or not. */
     public List<ClinicResource> listResources(UserContext principal, UUID clinicId) {
-        getOwnedClinicOrThrow(principal, clinicId);
-        return clinicResourceRepository.findAllByClinicId(clinicId);
+        Clinic clinic = clinicRepository.findById(clinicId)
+                .orElseThrow(() -> new NotFoundException("Clinic not found."));
+        if (clinic.getAdminUserId().equals(principal.userId())) {
+            return clinicResourceRepository.findAllByClinicId(clinicId);
+        }
+        boolean isStaffDoctor = doctorProfileRepository.findByUserId(principal.userId())
+                .map(profile -> clinicStaffMembershipRepository.existsByClinicIdAndDoctorProfileId(clinicId, profile.getId()))
+                .orElse(false);
+        if (!isStaffDoctor) {
+            throw new ForbiddenException("You don't have access to this clinic's resources.");
+        }
+        return clinicResourceRepository.findAllByClinicIdAndActiveTrue(clinicId);
     }
 
     @Transactional

@@ -113,8 +113,17 @@ class ResourceUtilizationControllerIntegrationTest extends AbstractIntegrationTe
                                 """.formatted(dayOfWeek, clinicId, resourceId)))
                 .andExpect(status().isCreated());
 
-        LocalDate from = LocalDate.now(AvailabilityService.CLINIC_ZONE);
-        LocalDate targetDate = from.with(TemporalAdjusters.nextOrSame(dayOfWeek));
+        LocalDate today = LocalDate.now(AvailabilityService.CLINIC_ZONE);
+        // Strictly-future "next" (not "nextOrSame") — if today happens to be dayOfWeek but the
+        // fixed 09:00-09:30 window has already passed in clinic-local time by the moment this
+        // runs, nextOrSame would generate an already-past slot, which ResourceUtilizationService
+        // correctly excludes as a "no longer upcoming" allocation, failing the assertion below for
+        // reasons that have nothing to do with the feature under test (same class of bug fixed in
+        // the Epic 6/7 e2e suite on 2026-08-03). The generation window itself must start tomorrow,
+        // not today, so it doesn't also pick up today's (possibly already-past) occurrence when
+        // today happens to be dayOfWeek.
+        LocalDate from = today.plusDays(1);
+        LocalDate targetDate = today.with(TemporalAdjusters.next(dayOfWeek));
         LocalDate to = targetDate.plusDays(1);
 
         var generateResult = mockMvc.perform(post("/api/v1/booking/availability/generate")

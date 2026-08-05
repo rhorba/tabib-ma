@@ -42,13 +42,15 @@ class DoctorOnboardingServiceTest {
     private ClinicInvitationRepository clinicInvitationRepository;
     @Mock
     private ClinicStaffMembershipRepository clinicStaffMembershipRepository;
+    @Mock
+    private ClinicRepository clinicRepository;
 
     private DoctorOnboardingService service;
 
     @BeforeEach
     void setUp() {
         service = new DoctorOnboardingService(doctorProfileRepository, verificationDocumentRepository,
-                objectStorageClient, clinicInvitationRepository, clinicStaffMembershipRepository);
+                objectStorageClient, clinicInvitationRepository, clinicStaffMembershipRepository, clinicRepository);
     }
 
     @Test
@@ -271,6 +273,31 @@ class DoctorOnboardingServiceTest {
 
         assertThat(result.getStatus()).isEqualTo(InvitationStatus.ACCEPTED);
         verify(clinicStaffMembershipRepository, never()).save(any());
+    }
+
+    @Test
+    void listMyClinics_returnsClinicsFromStaffMemberships() {
+        UserContext doctor = new UserContext(UUID.randomUUID(), "d@example.com", Role.DOCTOR);
+        DoctorProfile profile = new DoctorProfile(doctor.userId(), "Cardiology", "bio", BigDecimal.TEN, "Rabat");
+        when(doctorProfileRepository.findByUserId(doctor.userId())).thenReturn(Optional.of(profile));
+        UUID clinicId = UUID.randomUUID();
+        when(clinicStaffMembershipRepository.findAllByDoctorProfileId(profile.getId()))
+                .thenReturn(List.of(new ClinicStaffMembership(clinicId, profile.getId())));
+        Clinic clinic = new Clinic(UUID.randomUUID(), "Cabinet Al Amal", "Rabat", null);
+        when(clinicRepository.findAllById(List.of(clinicId))).thenReturn(List.of(clinic));
+
+        assertThat(service.listMyClinics(doctor)).containsExactly(clinic);
+    }
+
+    @Test
+    void listMyClinics_returnsEmptyWhenTheDoctorHasNoMemberships() {
+        UserContext doctor = new UserContext(UUID.randomUUID(), "d@example.com", Role.DOCTOR);
+        DoctorProfile profile = new DoctorProfile(doctor.userId(), "Cardiology", "bio", BigDecimal.TEN, "Rabat");
+        when(doctorProfileRepository.findByUserId(doctor.userId())).thenReturn(Optional.of(profile));
+        when(clinicStaffMembershipRepository.findAllByDoctorProfileId(profile.getId())).thenReturn(List.of());
+        when(clinicRepository.findAllById(List.of())).thenReturn(List.of());
+
+        assertThat(service.listMyClinics(doctor)).isEmpty();
     }
 
     @Test

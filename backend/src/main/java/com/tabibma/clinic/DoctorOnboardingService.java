@@ -29,17 +29,20 @@ public class DoctorOnboardingService {
     private final ObjectStorageClient objectStorageClient;
     private final ClinicInvitationRepository clinicInvitationRepository;
     private final ClinicStaffMembershipRepository clinicStaffMembershipRepository;
+    private final ClinicRepository clinicRepository;
 
     public DoctorOnboardingService(DoctorProfileRepository doctorProfileRepository,
                                     VerificationDocumentRepository verificationDocumentRepository,
                                     ObjectStorageClient objectStorageClient,
                                     ClinicInvitationRepository clinicInvitationRepository,
-                                    ClinicStaffMembershipRepository clinicStaffMembershipRepository) {
+                                    ClinicStaffMembershipRepository clinicStaffMembershipRepository,
+                                    ClinicRepository clinicRepository) {
         this.doctorProfileRepository = doctorProfileRepository;
         this.verificationDocumentRepository = verificationDocumentRepository;
         this.objectStorageClient = objectStorageClient;
         this.clinicInvitationRepository = clinicInvitationRepository;
         this.clinicStaffMembershipRepository = clinicStaffMembershipRepository;
+        this.clinicRepository = clinicRepository;
     }
 
     @Transactional
@@ -101,6 +104,17 @@ public class DoctorOnboardingService {
 
     public List<ClinicInvitation> listMyPendingInvitations(UserContext principal) {
         return clinicInvitationRepository.findAllByInvitedEmailAndStatus(principal.email(), InvitationStatus.PENDING);
+    }
+
+    /** Story 8.2 Batch 6: lets a doctor discover which clinic(s) they can pick shared resources
+     * from when creating an IN_PERSON availability rule — a doctor has no other way to learn
+     * their own clinicId(s) via the API. */
+    public List<Clinic> listMyClinics(UserContext principal) {
+        DoctorProfile profile = getMyProfile(principal);
+        List<UUID> clinicIds = clinicStaffMembershipRepository.findAllByDoctorProfileId(profile.getId()).stream()
+                .map(ClinicStaffMembership::getClinicId)
+                .toList();
+        return clinicRepository.findAllById(clinicIds);
     }
 
     @Transactional

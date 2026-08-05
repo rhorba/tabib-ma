@@ -22,10 +22,23 @@ export function createAvailabilityRuleSchema(t: TFunction) {
       locationType: z.enum(['IN_PERSON', 'VIDEO'], {
         message: t('booking.availability.validation.locationTypeRequired'),
       }),
+      clinicId: z.string().optional(),
+      resourceIds: z.array(z.string()).optional(),
     })
     .refine((values) => values.endTime > values.startTime, {
       message: t('booking.availability.validation.endBeforeStart'),
       path: ['endTime'],
+    })
+    .refine(
+      (values) => !values.resourceIds?.length || values.locationType === 'IN_PERSON',
+      {
+        message: t('booking.availability.validation.resourcesRequireInPerson'),
+        path: ['resourceIds'],
+      },
+    )
+    .refine((values) => !values.resourceIds?.length || !!values.clinicId, {
+      message: t('booking.availability.validation.clinicRequiredForResources'),
+      path: ['clinicId'],
     })
 }
 

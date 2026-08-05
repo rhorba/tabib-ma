@@ -1,11 +1,15 @@
 package com.tabibma.clinic;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.tabibma.identity.Role;
+import com.tabibma.identity.User;
+import com.tabibma.identity.UserRepository;
 import com.tabibma.testsupport.AbstractIntegrationTest;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -22,6 +26,12 @@ class DoctorProfileControllerIntegrationTest extends AbstractIntegrationTest {
 
     @Autowired
     private ObjectMapper objectMapper;
+
+    @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     @Test
     void createProfile_rejectsPatientRole() throws Exception {
@@ -161,6 +171,68 @@ class DoctorProfileControllerIntegrationTest extends AbstractIntegrationTest {
         mockMvc.perform(get("/api/v1/clinic/doctor-profiles/" + profileId + "/documents")
                         .header("Authorization", "Bearer " + attackerToken))
                 .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void listMyClinics_returnsEmptyWhenTheDoctorHasNoMemberships() throws Exception {
+        String email = "doctor-onboarding11@example.com";
+        registerAndLogin(email, "DOCTOR");
+        String token = login(email);
+        createProfile(token, "Cardiology", "Rabat");
+
+        mockMvc.perform(get("/api/v1/clinic/doctor-profiles/me/clinics")
+                        .header("Authorization", "Bearer " + token))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(0));
+    }
+
+    @Test
+    void listMyClinics_returnsTheClinicOnceAnInvitationIsAccepted() throws Exception {
+        String adminEmail = "doctor-onboarding-admin1@example.com";
+        String adminToken = createClinicAdminAndLogin(adminEmail);
+        String clinicId = createClinic(adminToken, "Cabinet Al Amal", "Rabat");
+
+        String doctorEmail = "doctor-onboarding12@example.com";
+        registerAndLogin(doctorEmail, "DOCTOR");
+        String doctorToken = login(doctorEmail);
+        createProfile(doctorToken, "Cardiology", "Rabat");
+
+        var inviteResult = mockMvc.perform(post("/api/v1/clinic/clinics/" + clinicId + "/invitations")
+                        .header("Authorization", "Bearer " + adminToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"email":"%s"}
+                                """.formatted(doctorEmail)))
+                .andReturn();
+        String invitationId = objectMapper.readTree(inviteResult.getResponse().getContentAsString()).get("id").asText();
+
+        mockMvc.perform(post("/api/v1/clinic/invitations/" + invitationId + "/accept")
+                        .header("Authorization", "Bearer " + doctorToken))
+                .andExpect(status().isOk());
+
+        mockMvc.perform(get("/api/v1/clinic/doctor-profiles/me/clinics")
+                        .header("Authorization", "Bearer " + doctorToken))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(1))
+                .andExpect(jsonPath("$[0].id").value(clinicId))
+                .andExpect(jsonPath("$[0].name").value("Cabinet Al Amal"));
+    }
+
+    private String createClinicAdminAndLogin(String email) throws Exception {
+        User admin = new User(email, passwordEncoder.encode("correcthorsebattery"), Role.CLINIC_ADMIN, "C", "A");
+        userRepository.save(admin);
+        return login(email);
+    }
+
+    private String createClinic(String token, String name, String city) throws Exception {
+        var result = mockMvc.perform(post("/api/v1/clinic/clinics")
+                        .header("Authorization", "Bearer " + token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"name":"%s","city":"%s"}
+                                """.formatted(name, city)))
+                .andReturn();
+        return objectMapper.readTree(result.getResponse().getContentAsString()).get("id").asText();
     }
 
     private void registerAndLogin(String email, String role) throws Exception {

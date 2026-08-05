@@ -178,6 +178,12 @@
         "nameRequired": "اسم المورد مطلوب."
       }
     },
+    "utilization": {
+      "title": "استخدام الموارد",
+      "description": "الحجوزات القادمة لكل غرفة ومعدة.",
+      "empty": "لا يوجد شيء لعرضه: أضف موردًا أعلاه.",
+      "noAllocations": "لا توجد حجوزات قادمة."
+    },
     "errors": {
       "alreadyInvited": "يوجد بالفعل دعوة قيد الانتظار لهذا البريد الإلكتروني.",
       "generic": "حدث خطأ ما. يرجى المحاولة مرة أخرى."
@@ -235,6 +241,10 @@
         "endTimeLabel": "وقت الانتهاء",
         "durationLabel": "مدة الموعد (بالدقائق)",
         "locationTypeLabel": "نوع الاستشارة",
+        "clinicLabel": "العيادة",
+        "noClinic": "بدون عيادة",
+        "resourcesLabel": "الموارد المطلوبة (اختياري)",
+        "resourcesEmpty": "لا توجد موارد نشطة في هذه العيادة.",
         "submit": "إضافة هذا التوقيت المتكرر",
         "submitting": "جارٍ الإضافة…"
       },
@@ -245,7 +255,9 @@
         "durationTooShort": "يجب أن تكون المدة 5 دقائق على الأقل.",
         "locationTypeRequired": "يرجى اختيار نوع الاستشارة.",
         "endBeforeStart": "يجب أن يكون وقت الانتهاء بعد وقت البدء.",
-        "dateRequired": "التاريخ مطلوب."
+        "dateRequired": "التاريخ مطلوب.",
+        "resourcesRequireInPerson": "لا يمكن اختيار الموارد إلا للاستشارات الحضورية.",
+        "clinicRequiredForResources": "يرجى اختيار عيادة لحجز الموارد."
       },
       "rules": {
         "title": "الأوقات المتكررة",

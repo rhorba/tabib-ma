@@ -1,10 +1,11 @@
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { AlertCircleIcon } from 'lucide-react'
 import { Alert, AlertDescription } from '@/shared/components/ui/alert'
 import { Button } from '@/shared/components/ui/button'
+import { Checkbox } from '@/shared/components/ui/checkbox'
 import {
   Form,
   FormControl,
@@ -34,9 +35,41 @@ const DAYS_OF_WEEK = [
   'SUNDAY',
 ] as const
 
+const NO_CLINIC = '__none__'
+
+function useMyClinics() {
+  return useQuery({
+    queryKey: ['doctor-profile', 'me', 'clinics'],
+    queryFn: async () => {
+      const { data, error } = await apiClient.GET('/api/v1/clinic/doctor-profiles/me/clinics')
+      if (error) {
+        throw error
+      }
+      return data ?? []
+    },
+  })
+}
+
+function useClinicResources(clinicId: string | undefined) {
+  return useQuery({
+    queryKey: ['clinic', 'resources', clinicId],
+    queryFn: async () => {
+      const { data, error } = await apiClient.GET('/api/v1/clinic/clinics/{clinicId}/resources', {
+        params: { path: { clinicId: clinicId! } },
+      })
+      if (error) {
+        throw error
+      }
+      return data ?? []
+    },
+    enabled: clinicId !== undefined,
+  })
+}
+
 export function AvailabilityRuleForm() {
   const { t } = useTranslation()
   const queryClient = useQueryClient()
+  const clinicsQuery = useMyClinics()
 
   const form = useForm<AvailabilityRuleFormValues>({
     resolver: zodResolver(createAvailabilityRuleSchema(t)),
@@ -46,13 +79,27 @@ export function AvailabilityRuleForm() {
       endTime: '17:00',
       slotDurationMinutes: 30,
       locationType: 'IN_PERSON',
+      clinicId: undefined,
+      resourceIds: [],
     },
   })
+
+  const locationType = form.watch('locationType')
+  const clinicId = form.watch('clinicId')
+  const resourcesQuery = useClinicResources(
+    locationType === 'IN_PERSON' ? clinicId : undefined,
+  )
 
   const mutation = useMutation({
     mutationFn: async (values: AvailabilityRuleFormValues) => {
       const { data, error } = await apiClient.POST('/api/v1/booking/availability/rules', {
-        body: { ...values, startTime: `${values.startTime}:00`, endTime: `${values.endTime}:00` },
+        body: {
+          ...values,
+          startTime: `${values.startTime}:00`,
+          endTime: `${values.endTime}:00`,
+          clinicId: values.locationType === 'IN_PERSON' ? values.clinicId : undefined,
+          resourceIds: values.locationType === 'IN_PERSON' ? values.resourceIds : undefined,
+        },
       })
       if (error) {
         throw error
@@ -61,7 +108,15 @@ export function AvailabilityRuleForm() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['availability-rules', 'mine'] })
-      form.reset()
+      form.reset({
+        dayOfWeek: 'MONDAY',
+        startTime: '09:00',
+        endTime: '17:00',
+        slotDurationMinutes: 30,
+        locationType: 'IN_PERSON',
+        clinicId: undefined,
+        resourceIds: [],
+      })
     },
   })
 
@@ -172,6 +227,82 @@ export function AvailabilityRuleForm() {
             </FormItem>
           )}
         />
+        {locationType === 'IN_PERSON' && clinicsQuery.data && clinicsQuery.data.length > 0 && (
+          <FormField
+            control={form.control}
+            name="clinicId"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>{t('booking.availability.form.clinicLabel')}</FormLabel>
+                <Select
+                  value={field.value ?? NO_CLINIC}
+                  onValueChange={(value) => {
+                    field.onChange(value === NO_CLINIC ? undefined : value)
+                    form.setValue('resourceIds', [])
+                  }}
+                >
+                  <FormControl>
+                    <SelectTrigger className="w-full">
+                      <SelectValue />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value={NO_CLINIC}>
+                      {t('booking.availability.form.noClinic')}
+                    </SelectItem>
+                    {clinicsQuery.data.map((clinic) => (
+                      <SelectItem key={clinic.id} value={clinic.id!}>
+                        {clinic.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        )}
+        {locationType === 'IN_PERSON' && clinicId && (
+          <FormField
+            control={form.control}
+            name="resourceIds"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>{t('booking.availability.form.resourcesLabel')}</FormLabel>
+                {resourcesQuery.data && resourcesQuery.data.length > 0 ? (
+                  <div className="grid gap-2">
+                    {resourcesQuery.data.map((resource) => (
+                      <label
+                        key={resource.id}
+                        className="flex items-center gap-2 text-sm font-normal"
+                      >
+                        <FormControl>
+                          <Checkbox
+                            checked={field.value?.includes(resource.id!) ?? false}
+                            onCheckedChange={(checked) => {
+                              const current = field.value ?? []
+                              field.onChange(
+                                checked
+                                  ? [...current, resource.id!]
+                                  : current.filter((id) => id !== resource.id),
+                              )
+                            }}
+                          />
+                        </FormControl>
+                        {resource.name}
+                      </label>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-sm text-muted-foreground">
+                    {t('booking.availability.form.resourcesEmpty')}
+                  </p>
+                )}
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        )}
         <Button type="submit" disabled={mutation.isPending} className="mt-2">
           {mutation.isPending
             ? t('booking.availability.form.submitting')

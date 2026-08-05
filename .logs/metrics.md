@@ -125,3 +125,20 @@ Statements: 82.94% (749/903) | Branches: 72.3% (462/639) | Functions: 87.16% (25
 Scope: src/features/**+src/shared/** (same exclusions as prior batches).
 Gate: ≥ 80% combined — PASSED
 149 tests total (up from 141 at Epic 8 close): adds ClinicResourceForm.test.tsx (3 tests), ClinicResourceList.test.tsx (3 tests), 2 new ClinicAdminPage tests (resources card renders, lists an existing resource), plus create/list/deactivate resource MSW fakes + a seedClinicResource helper in clinicHandlers.ts. tsc -b, oxlint, and vite build all clean.
+
+## 2026-08-05 — Story 8.2 Batch 6 backend addendum (GET .../doctor-profiles/me/clinics) coverage
+Instruction: 7125/7777 = 91.6% (652 missed) | Branch: 236/272 = 86.8% (36 missed)
+Scope: whole backend (jacocoTestCoverageVerification, project-wide default).
+Gate: ≥ 80% combined — PASSED
+282 backend tests total (up from 278 at Batch 4 close): new `GET /api/v1/clinic/doctor-profiles/me/clinics` (a doctor had no way to discover their own clinicId via the API — needed before the frontend resource picker could work at all). 2 new DoctorOnboardingServiceTest unit tests + 2 new DoctorProfileControllerIntegrationTest integration tests (empty when no membership, real clinic returned after a real invitation-accept). ArchitectureTest green.
+
+## 2026-08-05 (continued) — Story 8.2 Batch 6 completion (frontend resource picker + admin utilization view) coverage
+Backend instruction: 7175/7832 = 91% (657 missed) | Branch: 240/276 = 86% (36 missed)
+Scope: whole backend (jacocoTestCoverageVerification, project-wide default).
+Gate: ≥ 80% combined — PASSED
+286 backend tests total (up from 282): `ClinicResourceService.listResources` now also allows a clinic's own doctor-staff (active resources only, admin still sees everything) — 2 new ClinicResourceServiceTest unit tests + 2 new ClinicResourceControllerIntegrationTest integration tests. ArchitectureTest green.
+
+Frontend statements: 82.3% (777/944) | Branches: 70.54% (491/696) | Functions: 86.03% (271/315) | Lines: 82.72% (766/926)
+Scope: src/features/**+src/shared/** (same exclusions as prior batches).
+Gate: ≥ 80% combined — PASSED
+153 tests total (up from 149): 2 new AvailabilityRuleForm tests (clinic picker shown/hidden based on clinic-staff membership) + 2 new ClinicAdminPage tests (utilization card idle vs. booked resource), plus me/clinics + resources/utilization MSW fakes and seedClinicStaffMembership/seedResourceAllocation helpers in clinicHandlers.ts. tsc -b, oxlint, and vite build all clean.
