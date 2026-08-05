@@ -466,3 +466,20 @@ Extended `clinicHandlers.ts` with `me/clinics` + `resources/utilization` MSW fak
 Local state: Docker Desktop was started fresh this session; no docker-compose stack or dev server was started (only Testcontainers via Gradle and Vitest's jsdom environment were used). Working tree has this session's changes uncommitted, nothing pushed.
 
 Resume by: commit this session's work (backend `ClinicResourceService` fix + `me/clinics` addendum from earlier this session + frontend resource picker/utilization view + tests), then continue Story 8.2 EXECUTE at Batch 8 — e2e conflict-scenario test, video v0.8.0, final coverage re-check, push, CI monitor. BRAINSTORM/PLAN already settled 2026-08-04, nothing to re-decide.
+
+## 2026-08-05 (continued) — Story 8.2 Batch 8 CLOSED, Story 8.2 fully CLOSED
+Continued straight from the Batch 6 commit (user chose to keep going rather than checkpoint). Wrote `e2e/story-8.2-shared-resources.spec.ts` — the AC's actual conflict scenario: two doctors on the *same* clinic both require the *same* shared room for an overlapping time window; the first patient's booking succeeds, the second is rejected even though the two doctors' `AvailabilitySlot` rows are entirely distinct (only `ResourceAllocationGuard`'s EXCLUDE constraint catches this, not `DoubleBookingGuard`).
+
+**Found and fixed a real accessibility bug while writing the test**: every resource checkbox in `AvailabilityRuleForm` shared the same `id` (all stamped by the enclosing `FormItem`/`FormControl`'s single `formItemId`, since it's a list of controls under one `FormField`, not a single control) — invalid duplicate DOM ids. Fixed with an explicit per-resource `id`/`htmlFor` pair.
+
+Two real test-authoring bugs caught and fixed while getting the new spec green (same rigor as every prior e2e batch):
+  - Clicking `getByRole('option').first()` on the clinic picker selected the "no clinic" sentinel (always the first `SelectItem`), not the real clinic — switched to `.last()`.
+  - The rule is *weekly recurring*, so "Générer les créneaux des 30 prochains jours" produces 5 slots (one per matching weekday in the 30-day window), not 1 — this session's earlier assumption from the backend fixture fix doesn't carry over 1:1, but `.first()` still resolves to the same calendar date for both doctors since both rules share the same dayOfWeek+time, so no scenario change was needed — only the overall test needed `test.setTimeout(120_000)` (two full doctor-onboarding + rule-setup flows plus two full booking flows sequentially exceeds Playwright's 30s default, same precedent as `epic-6-7-consultation.spec.ts`).
+
+Full e2e suite: **17/17 green** (16 pre-existing + 1 new), no regressions. Video recorded to `.recordings/v0.8.0-2026-08-05.webm` (21 clips). Final coverage re-confirmed: backend 286 tests/91%/86% (unchanged this batch, no backend code touched), frontend 153 tests/82.22%/82.63% (checkbox-id fix only, no test-affecting behavior change). Regenerated the OpenAPI client against the running backend — no diff, schema.d.ts was already accurate.
+
+**Sprint ? Story 8.2 (shared clinic resource management, full 🔴 resource model) is now fully CLOSED** — backend + frontend + e2e (17/17, including the actual resource-conflict AC) + video v0.8.0 + coverage gates cleared, pending this turn's commit + push + CI monitor.
+
+Local state: docker-compose stack (db/redis/backend, backend rebuilt with all of Story 8.2's changes) and the frontend dev server (port 5173) left running. New e2e-run data (unique doctor/patient/specialty/resource names) accumulated in the persistent dev DB, harmless, same convention as every prior e2e-generating session.
+
+Resume by: confirm next priority with the user — Epic 10 (Platform Admin — Disputes & Health), or one of the carried-forward fast-follows (frontend bundle code-splitting, Trivy Gradle-lockfile gap, seeded admin rotation, Story 3.1's k6 load test, Redis host port mapping, booking's missing doctor-verification check, no cancellation-confirmation notification, the UX doc's unbuilt "skip prescription" branch). Follow the same UNDERSTAND -> BRAINSTORM -> PLAN gate sequence as every epic/story so far.

@@ -271,13 +271,19 @@ export function AvailabilityRuleForm() {
                 <FormLabel>{t('booking.availability.form.resourcesLabel')}</FormLabel>
                 {resourcesQuery.data && resourcesQuery.data.length > 0 ? (
                   <div className="grid gap-2">
-                    {resourcesQuery.data.map((resource) => (
-                      <label
-                        key={resource.id}
-                        className="flex items-center gap-2 text-sm font-normal"
-                      >
-                        <FormControl>
+                    {resourcesQuery.data.map((resource) => {
+                      // Each checkbox needs its own id — FormControl would stamp the same
+                      // formItemId from the enclosing FormItem onto every one, producing
+                      // invalid duplicate DOM ids (this is a list of controls, not a single one).
+                      const checkboxId = `availability-rule-resource-${resource.id}`
+                      return (
+                        <label
+                          key={resource.id}
+                          htmlFor={checkboxId}
+                          className="flex items-center gap-2 text-sm font-normal"
+                        >
                           <Checkbox
+                            id={checkboxId}
                             checked={field.value?.includes(resource.id!) ?? false}
                             onCheckedChange={(checked) => {
                               const current = field.value ?? []
@@ -288,10 +294,10 @@ export function AvailabilityRuleForm() {
                               )
                             }}
                           />
-                        </FormControl>
-                        {resource.name}
-                      </label>
-                    ))}
+                          {resource.name}
+                        </label>
+                      )
+                    })}
                   </div>
                 ) : (
                   <p className="text-sm text-muted-foreground">

@@ -142,3 +142,10 @@ Frontend statements: 82.3% (777/944) | Branches: 70.54% (491/696) | Functions: 8
 Scope: src/features/**+src/shared/** (same exclusions as prior batches).
 Gate: ≥ 80% combined — PASSED
 153 tests total (up from 149): 2 new AvailabilityRuleForm tests (clinic picker shown/hidden based on clinic-staff membership) + 2 new ClinicAdminPage tests (utilization card idle vs. booked resource), plus me/clinics + resources/utilization MSW fakes and seedClinicStaffMembership/seedResourceAllocation helpers in clinicHandlers.ts. tsc -b, oxlint, and vite build all clean.
+
+## 2026-08-05 (continued) — Story 8.2 Batch 8 (e2e conflict scenario) final re-check
+Backend: unchanged this batch (286 tests, 91% instruction / 86% branch) — no backend code touched.
+Frontend statements: 82.22% (777/945) | Branches: 70.54% (491/696) | Functions: 86.03% (271/315) | Lines: 82.63% (766/927)
+Scope: src/features/**+src/shared/** (same exclusions as prior batches).
+Gate: ≥ 80% combined — PASSED
+153 unit/component tests unchanged (the batch's only frontend code change was an accessibility fix — per-resource checkbox ids — with no new behavior to unit-test). e2e: 17/17 green (16 pre-existing + new `story-8.2-shared-resources.spec.ts`), video v0.8.0 (21 clips).
