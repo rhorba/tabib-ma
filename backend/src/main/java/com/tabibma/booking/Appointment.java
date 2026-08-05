@@ -158,4 +158,11 @@ public class Appointment {
         }
         this.status = AppointmentStatus.COMPLETED;
     }
+
+    public void markNoShow() {
+        if (status != AppointmentStatus.CONFIRMED) {
+            throw new ConflictException("Only a CONFIRMED appointment can be marked as a no-show.");
+        }
+        this.status = AppointmentStatus.NO_SHOW;
+    }
 }

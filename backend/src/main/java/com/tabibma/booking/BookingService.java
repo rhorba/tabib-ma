@@ -80,6 +80,7 @@ public class BookingService {
             appointmentRepository.save(appointment);
             releaseSlot(availabilitySlotId);
             resourceAllocationGuard.releaseForAppointment(appointment.getId());
+            eventPublisher.publishEvent(new AppointmentPaymentFailedEvent(appointment.getId()));
         }
         return appointment;
     }

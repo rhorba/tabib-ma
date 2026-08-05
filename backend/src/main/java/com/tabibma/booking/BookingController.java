@@ -23,10 +23,13 @@ public class BookingController {
 
     private final BookingService bookingService;
     private final CancellationService cancellationService;
+    private final NoShowService noShowService;
 
-    public BookingController(BookingService bookingService, CancellationService cancellationService) {
+    public BookingController(BookingService bookingService, CancellationService cancellationService,
+                              NoShowService noShowService) {
         this.bookingService = bookingService;
         this.cancellationService = cancellationService;
+        this.noShowService = noShowService;
     }
 
     @PostMapping
@@ -45,5 +48,11 @@ public class BookingController {
     public AppointmentResponse cancel(@AuthenticationPrincipal UserContext principal,
                                        @PathVariable UUID appointmentId) {
         return AppointmentResponse.from(cancellationService.cancel(principal, appointmentId));
+    }
+
+    @PostMapping("/{appointmentId}/no-show")
+    public AppointmentResponse markNoShow(@AuthenticationPrincipal UserContext principal,
+                                           @PathVariable UUID appointmentId) {
+        return AppointmentResponse.from(noShowService.markNoShow(principal, appointmentId));
     }
 }

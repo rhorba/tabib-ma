@@ -119,7 +119,7 @@ class BookingServiceTest {
         assertThat(result.getStatus()).isEqualTo(AppointmentStatus.CANCELLED);
         assertThat(slot.isBooked()).isFalse();
         verify(availabilitySlotRepository).save(slot);
-        verify(eventPublisher, never()).publishEvent(any());
+        verify(eventPublisher).publishEvent(new AppointmentPaymentFailedEvent(appointment.getId()));
         verify(resourceAllocationGuard).releaseForAppointment(appointment.getId());
     }
 

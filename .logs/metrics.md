@@ -155,3 +155,9 @@ Instruction: 7739/8402 = 92% (663 missed) | Branch: 251/290 = 86% (39 missed)
 Scope: whole backend (jacocoTestCoverageVerification, project-wide default).
 Gate: ≥ 80% combined — PASSED
 303 backend tests total (up from 286 at Story 8.2 close): new `admin` module — `DisputeServiceTest` (11 unit tests: NO_SHOW rejected on self-report, ownership checks for patient/doctor, admin manual creation allows NO_SHOW, system creation has no reporter, resolve + audit log, double-resolve rejected) + `DisputeControllerIntegrationTest` (7 integration tests against the real DB, including the admin queue showing enriched patient/doctor names and a resolved dispute dropping out of the open queue). `ArchitectureTest` green (confirms `admin`'s dependency-on-`booking`/`clinic` direction, decided proactively at this epic's PLAN, introduces no cycle).
+
+## 2026-08-05 (continued) — Epic 10 Batch 2 (no-show + auto-dispute events) coverage
+Instruction: 7896/8564 = 92.2% (668 missed) | Branch: 257/296 = 86.8% (39 missed)
+Scope: whole backend (jacocoTestCoverageVerification, project-wide default).
+Gate: ≥ 80% combined — PASSED
+313 backend tests total (up from 303 at Batch 1): `NoShowServiceTest` (6 unit tests, carried over from the paused session), `DisputeEventListenerTest` (4 unit tests mirroring `ConsultationBookingListenerTest`'s shape — happy path per event type + swallows-unexpected-failures per event type), `NoShowDisputeIntegrationTest` (1 integration test proving the real AFTER_COMMIT/REQUIRES_NEW round trip: book → force `startsAt` into the past via `ReflectionTestUtils` → call the no-show endpoint → confirm the auto-filed NO_SHOW dispute is visible via `GET /api/v1/admin/platform/disputes`). Also fixed `BookingServiceTest`'s stale `verify(eventPublisher, never()).publishEvent(any())` assertion (now asserts the real `AppointmentPaymentFailedEvent` publish).
