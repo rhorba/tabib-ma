@@ -173,3 +173,9 @@ Statements: 83.04% (813/979) | Branches: 70.5% (526/746) | Functions: 86.8% (283
 Scope: `src/features/**` + `src/shared/**` (vite.config.ts coverage.include), excluding `shared/components/ui/**` and the generated schema.
 Gate: ≥ 80% combined (statements/lines) — PASSED
 161 frontend tests total (up from 153 at Story 8.2 close). New `DisputeQueueItem`/`DisputeQueuePage` components + tests (8 tests: type/patient/doctor/appointment rendering, system-reported note, refund success + not-refundable conflict, force-cancel success, resolve removes from queue). New `src/test/adminHandlers.ts` MSW fake for the dispute-queue/appointment-action contract.
+
+## 2026-08-06 (continued) — Story 10.3 (platform health dashboard) backend coverage
+Instruction: 8118/8786 = 92.4% (668 missed) | Branch: 259/298 = 86.9% (39 missed)
+Scope: whole backend (jacocoTestCoverageVerification, project-wide default).
+Gate: ≥ 80% combined — PASSED
+331 backend tests total (up from 327 at Story 10.2 close). New `PlatformHealthServiceTest` (2 unit tests) and `AdminDashboardControllerIntegrationTest` (2 integration tests: rejects non-PLATFORM_ADMIN, a real booking's counts show up as a +1 delta — deltas not absolutes since `AbstractIntegrationTest`'s singleton Testcontainers DB is shared across the whole test run). `countByStatus` added to `AppointmentRepository`/`PaymentRepository`.

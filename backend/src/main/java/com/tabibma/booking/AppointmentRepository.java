@@ -20,4 +20,6 @@ public interface AppointmentRepository extends JpaRepository<Appointment, UUID> 
 
     List<Appointment> findAllByStatusAndStartsAtBetweenAndReminderSentAtIsNull(
             AppointmentStatus status, Instant from, Instant to);
+
+    long countByStatus(AppointmentStatus status);
 }

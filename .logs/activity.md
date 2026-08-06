@@ -566,3 +566,17 @@ Done this session (about to be committed):
 Local state: docker-compose stack (db/redis/backend, backend rebuilt this session) and the frontend dev server (port 5173) left running. Test data from this session's live check (`disp-doctor-*`/`disp-patient-*@example.com`) left in the dev DB, harmless, same convention as every prior e2e/live-verification session.
 
 Resume by: confirm next priority — Story 10.3 (health dashboard) is the only piece left on the 2026-08-05 8-batch plan, then Epic 10's final e2e/video/coverage-recheck/push/CI-monitor batch. Nothing needs re-deciding at BRAINSTORM/PLAN level.
+
+## 2026-08-06 (continued) — Story 10.3 backend (platform health dashboard)
+User picked Story 10.3 next. AC (docs/stories-tabib-ma.md): "bookings, payment failures, and video call quality" metrics displayed to a platform admin. Video call quality is omitted — nothing in the codebase records any such metric, and the 2026-08-05 PLAN already flagged it as stub/omit; fabricating a number would be worse than not showing one. Documented in `PlatformHealthResponse`'s javadoc rather than silently dropping it.
+
+Done this session (about to be committed):
+  - `PlatformHealthResponse` (9 fields: total/confirmed/cancelled/completed/no-show/pending-payment appointment counts, succeeded/failed/refunded payment counts), `PlatformHealthService` (plain per-status `count()` queries — no hand-rolled aggregate projection; this is an on-demand admin-only read with no polling requirement, so the extra round trips aren't worth the readability cost), `AdminDashboardController` (`GET /api/v1/admin/platform/health`, PLATFORM_ADMIN-gated by the existing `/api/v1/admin/platform/**` SecurityConfig rule). New `countByStatus` on `AppointmentRepository`/`PaymentRepository`.
+  - Tests: `PlatformHealthServiceTest` (2 unit) + `AdminDashboardControllerIntegrationTest` (2 integration: role rejection, a real booking's counts appear as a +1 delta — asserts deltas not absolutes since the singleton Testcontainers DB from the 2026-07-29 fix is shared across the whole test run, same pattern as the e2e suite's dashboard/queue assertions).
+  - 331 backend tests (up from 327), 92.4%/86.9% coverage, `./gradlew compileJava compileTestJava` and the full suite both clean. Semgrep (`p/owasp-top-ten` + `p/security-audit`) on the new/changed files: 0 findings.
+
+**Story 10.3 backend is CLOSED.** Frontend health dashboard UI, plus Epic 10's final e2e/video/coverage-recheck/push/CI-monitor batch, remain.
+
+Local state: Docker Desktop running, docker-compose stack (db/redis/backend) and frontend dev server (port 5173) still running from the prior batch. Working tree has this batch's backend changes about to be committed.
+
+Resume by: commit this backend batch, then build the frontend health dashboard UI — rebuild the backend image, regenerate `schema.d.ts` for the new `/api/v1/admin/platform/health` endpoint, and add a simple stat-grid page (mirroring `ClinicAdminPage`'s dashboard card pattern) under `/platform-admin/health` with a nav link. After that: Epic 10's closing batch (e2e for the dispute-queue-to-refund/force-cancel loop if not already covered, video, final coverage re-check both sides, push, CI monitor).
