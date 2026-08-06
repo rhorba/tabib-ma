@@ -3,6 +3,7 @@ import { LoginPage } from '@/features/auth/pages/LoginPage'
 import { RegisterPage } from '@/features/auth/pages/RegisterPage'
 import { DoctorOnboardingPage } from '@/features/doctor-onboarding/pages/DoctorOnboardingPage'
 import { VerificationQueuePage } from '@/features/platform-admin/pages/VerificationQueuePage'
+import { DisputeQueuePage } from '@/features/platform-admin/pages/DisputeQueuePage'
 import { ClinicAdminPage } from '@/features/clinic-admin/pages/ClinicAdminPage'
 import { SearchPage } from '@/features/search/pages/SearchPage'
 import { DoctorPublicProfilePage } from '@/features/search/pages/DoctorPublicProfilePage'
@@ -36,6 +37,7 @@ export const router = createBrowserRouter([
         element: <RequireRole roles={['PLATFORM_ADMIN']} />,
         children: [
           { path: 'platform-admin/verification-queue', element: <VerificationQueuePage /> },
+          { path: 'platform-admin/disputes', element: <DisputeQueuePage /> },
         ],
       },
       {

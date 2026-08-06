@@ -9,6 +9,7 @@
     "greeting": "مرحبًا، {{name}}",
     "doctorOnboarding": "ملفي الطبي",
     "verificationQueue": "قائمة التحقق",
+    "disputeQueue": "النزاعات",
     "clinicAdmin": "عيادتي",
     "search": "البحث عن طبيب",
     "availability": "أوقات تواجدي",
@@ -124,6 +125,33 @@
     "reject": "الرفض",
     "errors": {
       "alreadyReviewed": "تمت مراجعة هذا الملف بالفعل.",
+      "generic": "حدث خطأ ما. يرجى المحاولة مرة أخرى."
+    }
+  },
+  "disputeQueue": {
+    "title": "قائمة النزاعات",
+    "empty": "لا توجد نزاعات مفتوحة.",
+    "typeLabel": "النوع",
+    "types": {
+      "noShow": "غياب",
+      "paymentIssue": "مشكلة في الدفع",
+      "complaint": "شكوى"
+    },
+    "patientLabel": "المريض",
+    "doctorLabel": "الطبيب",
+    "appointmentLabel": "الموعد",
+    "reasonLabel": "السبب",
+    "reportedBySystem": "تم الإبلاغ تلقائيًا من طرف النظام",
+    "refund": "استرداد المبلغ",
+    "forceCancel": "إلغاء الموعد",
+    "resolve": "وضع علامة كمحلول",
+    "refundSuccess": "تم استرداد المبلغ.",
+    "forceCancelSuccess": "تم إلغاء الموعد.",
+    "errors": {
+      "alreadyResolved": "تم حل هذا النزاع بالفعل.",
+      "notRefundable": "لم يعد هذا المبلغ قابلاً للاسترداد.",
+      "alreadyCancelled": "تم إلغاء هذا الموعد بالفعل.",
+      "appointmentNotFound": "الموعد غير موجود.",
       "generic": "حدث خطأ ما. يرجى المحاولة مرة أخرى."
     }
   },

@@ -42,12 +42,20 @@ function AuthNav() {
           </>
         )}
         {user.role === 'PLATFORM_ADMIN' && (
-          <Link
-            to="/platform-admin/verification-queue"
-            className="text-sm font-medium text-foreground hover:text-primary"
-          >
-            {t('nav.verificationQueue')}
-          </Link>
+          <>
+            <Link
+              to="/platform-admin/verification-queue"
+              className="text-sm font-medium text-foreground hover:text-primary"
+            >
+              {t('nav.verificationQueue')}
+            </Link>
+            <Link
+              to="/platform-admin/disputes"
+              className="text-sm font-medium text-foreground hover:text-primary"
+            >
+              {t('nav.disputeQueue')}
+            </Link>
+          </>
         )}
         {user.role === 'CLINIC_ADMIN' && (
           <Link to="/clinic-admin" className="text-sm font-medium text-foreground hover:text-primary">

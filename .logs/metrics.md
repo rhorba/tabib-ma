@@ -167,3 +167,9 @@ Instruction: 8030/8698 = 92.3% (668 missed) | Branch: 259/298 = 86.9% (39 missed
 Scope: whole backend (jacocoTestCoverageVerification, project-wide default).
 Gate: ≥ 80% combined — PASSED
 327 backend tests total (up from 313 at Batch 2): `CancellationServiceTest` gained 3 `forceCancel` tests (not-found, already-cancelled conflict, releases slot/resource without ever touching payment). New `AdminAppointmentActionServiceTest` (6 unit tests: refund not-found/no-payment/not-SUCCEEDED-conflict/happy-path+audit-log, forceCancel propagates not-found + happy-path+audit-log) and `AdminAppointmentActionControllerIntegrationTest` (5 integration tests: both endpoints reject non-PLATFORM_ADMIN, refund marks a real Payment REFUNDED, a second refund on the same appointment 409s, force-cancel cancels an appointment the admin doesn't own). `ArchitectureTest` green (admin's dependency on booking/payment, no new cycle).
+
+## 2026-08-06 — Epic 10 frontend (dispute queue + Story 10.2 actions) coverage
+Statements: 83.04% (813/979) | Branches: 70.5% (526/746) | Functions: 86.8% (283/326) | Lines: 83.45% (802/961)
+Scope: `src/features/**` + `src/shared/**` (vite.config.ts coverage.include), excluding `shared/components/ui/**` and the generated schema.
+Gate: ≥ 80% combined (statements/lines) — PASSED
+161 frontend tests total (up from 153 at Story 8.2 close). New `DisputeQueueItem`/`DisputeQueuePage` components + tests (8 tests: type/patient/doctor/appointment rendering, system-reported note, refund success + not-refundable conflict, force-cancel success, resolve removes from queue). New `src/test/adminHandlers.ts` MSW fake for the dispute-queue/appointment-action contract.

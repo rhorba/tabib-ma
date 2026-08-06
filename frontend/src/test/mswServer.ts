@@ -5,6 +5,7 @@ import { bookingHandlers } from './bookingHandlers'
 import { consultationHandlers } from './consultationHandlers'
 import { prescriptionHandlers } from './prescriptionHandlers'
 import { reviewHandlers } from './reviewHandlers'
+import { adminHandlers } from './adminHandlers'
 
 export const server = setupServer(
   ...authHandlers,
@@ -12,5 +13,6 @@ export const server = setupServer(
   ...bookingHandlers,
   ...consultationHandlers,
   ...prescriptionHandlers,
-  ...reviewHandlers
+  ...reviewHandlers,
+  ...adminHandlers
 )

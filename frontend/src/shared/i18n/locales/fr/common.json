@@ -9,6 +9,7 @@
     "greeting": "Bonjour, {{name}}",
     "doctorOnboarding": "Mon profil médecin",
     "verificationQueue": "File de vérification",
+    "disputeQueue": "Litiges",
     "clinicAdmin": "Ma clinique",
     "search": "Rechercher un médecin",
     "availability": "Mes disponibilités",
@@ -124,6 +125,33 @@
     "reject": "Rejeter",
     "errors": {
       "alreadyReviewed": "Ce profil a déjà été examiné.",
+      "generic": "Une erreur est survenue. Veuillez réessayer."
+    }
+  },
+  "disputeQueue": {
+    "title": "File des litiges",
+    "empty": "Aucun litige ouvert.",
+    "typeLabel": "Type",
+    "types": {
+      "noShow": "Absence",
+      "paymentIssue": "Problème de paiement",
+      "complaint": "Réclamation"
+    },
+    "patientLabel": "Patient",
+    "doctorLabel": "Médecin",
+    "appointmentLabel": "Rendez-vous",
+    "reasonLabel": "Motif",
+    "reportedBySystem": "Signalé automatiquement par le système",
+    "refund": "Rembourser",
+    "forceCancel": "Annuler le rendez-vous",
+    "resolve": "Marquer comme résolu",
+    "refundSuccess": "Paiement remboursé.",
+    "forceCancelSuccess": "Rendez-vous annulé.",
+    "errors": {
+      "alreadyResolved": "Ce litige a déjà été résolu.",
+      "notRefundable": "Ce paiement n'est plus remboursable.",
+      "alreadyCancelled": "Ce rendez-vous est déjà annulé.",
+      "appointmentNotFound": "Rendez-vous introuvable.",
       "generic": "Une erreur est survenue. Veuillez réessayer."
     }
   },
