@@ -9,6 +9,7 @@ import { apiClient } from '@/shared/api/client'
 import { getApiErrorCode } from '@/shared/api/errors'
 import { useAuth } from '@/features/auth/AuthContext'
 import { ReviewForm } from '@/features/review/components/ReviewForm'
+import { DisputeReportForm } from '@/features/dispute/components/DisputeReportForm'
 
 const STATUS_STYLES: Record<string, string> = {
   PENDING_PAYMENT: 'bg-amber-100 text-amber-800',
@@ -21,6 +22,11 @@ const STATUS_STYLES: Record<string, string> = {
 // Only these statuses make sense to cancel or reschedule — mirrors
 // Appointment.cancel()'s own guard (CANCELLED/COMPLETED can't be re-cancelled).
 const CANCELLABLE_STATUSES = new Set(['PENDING_PAYMENT', 'CONFIRMED'])
+
+// Story 10.1: reporting a problem only makes sense once the appointment has actually
+// happened (or was meant to) — not while payment is still pending or after a plain
+// cancellation. DisputeService.report() itself has no status guard, this is UI-only.
+const DISPUTABLE_STATUSES = new Set(['CONFIRMED', 'COMPLETED', 'NO_SHOW'])
 
 function useMyAppointments() {
   return useQuery({
@@ -59,6 +65,8 @@ export function MyAppointmentsPage() {
   const appointmentsQuery = useMyAppointments()
   const reviewsQuery = useMyReviews()
   const [openReviewFor, setOpenReviewFor] = useState<string | null>(null)
+  const [openDisputeFor, setOpenDisputeFor] = useState<string | null>(null)
+  const [reportedDisputeIds, setReportedDisputeIds] = useState<Set<string>>(new Set())
   // CancellationService only ever authorizes the patient who booked the
   // appointment (backend 403s a doctor's cancel attempt) — a doctor's view
   // of their own appointments is read-only, plus the Join Video link below.
@@ -186,11 +194,34 @@ export function MyAppointmentsPage() {
                       </Button>
                     )
                   )}
+                  {DISPUTABLE_STATUSES.has(appointment.status ?? '') &&
+                    (reportedDisputeIds.has(appointment.id ?? '') ? (
+                      <span className="text-xs text-muted-foreground">{t('dispute.report.submitted')}</span>
+                    ) : (
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="outline"
+                        onClick={() => setOpenDisputeFor(openDisputeFor === appointment.id ? null : appointment.id!)}
+                      >
+                        {t('dispute.report.cta')}
+                      </Button>
+                    ))}
                 </div>
               </div>
 
               {openReviewFor === appointment.id && (
                 <ReviewForm appointmentId={appointment.id!} onSubmitted={() => setOpenReviewFor(null)} />
+              )}
+
+              {openDisputeFor === appointment.id && (
+                <DisputeReportForm
+                  appointmentId={appointment.id!}
+                  onSubmitted={() => {
+                    setOpenDisputeFor(null)
+                    setReportedDisputeIds((prev) => new Set(prev).add(appointment.id!))
+                  }}
+                />
               )}
             </li>
           ))}

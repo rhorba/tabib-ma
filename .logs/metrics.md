@@ -185,3 +185,9 @@ Statements: 83.11% (822/989) | Branches: 70.47% (530/752) | Functions: 86.89% (2
 Scope: `src/features/**` + `src/shared/**` (vite.config.ts coverage.include), excluding `shared/components/ui/**` and the generated schema.
 Gate: ≥ 80% combined (statements/lines) — PASSED
 163 frontend tests total (up from 161 at the dispute-queue batch). New `PlatformHealthPage` + 2 tests (zero-state, seeded metric values). `adminHandlers.ts` MSW fake extended with the `/api/v1/admin/platform/health` GET + `seedPlatformHealth`.
+
+## 2026-08-06 (continued) — self-report dispute UI (closing the Epic 10 e2e gap)
+Statements: 83.34% (841/1009) | Branches: 70.38% (542/770) | Functions: 87.24% (294/337) | Lines: 83.73% (829/990)
+Scope: `src/features/**` + `src/shared/**` (vite.config.ts coverage.include), excluding `shared/components/ui/**` and the generated schema.
+Gate: ≥ 80% combined (statements/lines) — PASSED
+167 frontend tests total (up from 163). New `features/dispute` (`DisputeReportForm` + schema, 2 tests) + 2 new `MyAppointmentsPage` tests (patient reports a problem, doctor sees the same action). `adminHandlers.ts` gained the `POST /api/v1/disputes` self-report fake.

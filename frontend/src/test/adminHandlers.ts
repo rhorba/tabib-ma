@@ -105,6 +105,35 @@ function pathSegment(request: Request, indexFromEnd: number) {
 }
 
 export const adminHandlers = [
+  http.post(/\/api\/v1\/disputes$/, async ({ request }) => {
+    const user = getAuthenticatedUser(request)
+    if (!user) {
+      return errorResponse(401, 'UNAUTHORIZED', 'Authentication is required.')
+    }
+    const body = (await request.json()) as { appointmentId: string; type: FakeDispute['type']; reason: string }
+    if (body.type === 'NO_SHOW') {
+      return errorResponse(400, 'VALIDATION_FAILED', 'NO_SHOW disputes are recorded automatically, not self-reported.')
+    }
+    const dispute: FakeDispute = {
+      id: String(nextDisputeId++),
+      appointmentId: body.appointmentId,
+      appointmentStartsAt: new Date(Date.now() + 3600_000).toISOString(),
+      locationType: 'IN_PERSON',
+      patientId: 'patient-1',
+      patientName: 'Amine Patient',
+      doctorProfileId: 'doctor-1',
+      doctorName: 'Dr. Sara Doctor',
+      type: body.type,
+      status: 'OPEN',
+      reason: body.reason,
+      reportedByUserId: user.id,
+      createdAt: new Date().toISOString(),
+    }
+    disputes.push(dispute)
+    appointmentPayments.set(body.appointmentId, appointmentPayments.get(body.appointmentId) ?? 'SUCCEEDED')
+    return HttpResponse.json(dispute, { status: 201 })
+  }),
+
   http.get(/\/api\/v1\/admin\/platform\/disputes$/, ({ request }) => {
     const user = getAuthenticatedUser(request)
     if (!user) {

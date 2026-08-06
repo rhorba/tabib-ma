@@ -129,6 +129,23 @@
       "generic": "Une erreur est survenue. Veuillez réessayer."
     }
   },
+  "dispute": {
+    "report": {
+      "cta": "Signaler un problème",
+      "submitted": "Problème signalé",
+      "typeLabel": "Type de problème",
+      "reasonLabel": "Description",
+      "submit": "Envoyer le signalement",
+      "submitting": "Envoi en cours…",
+      "validation": {
+        "typeRequired": "Veuillez choisir un type de problème.",
+        "reasonRequired": "Veuillez décrire le problème."
+      },
+      "errors": {
+        "generic": "Une erreur est survenue. Veuillez réessayer."
+      }
+    }
+  },
   "disputeQueue": {
     "title": "File des litiges",
     "empty": "Aucun litige ouvert.",

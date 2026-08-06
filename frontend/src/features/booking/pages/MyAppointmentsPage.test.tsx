@@ -222,4 +222,65 @@ describe('MyAppointmentsPage', () => {
     expect(await screen.findByText(/avis envoyé/i)).toBeInTheDocument()
     expect(screen.queryByRole('button', { name: /laisser un avis/i })).not.toBeInTheDocument()
   })
+
+  it('lets a patient report a problem on a CONFIRMED appointment', async () => {
+    loginAs({ email: 'p@example.com', password: 'x', role: 'PATIENT', firstName: 'A', lastName: 'B' })
+    const slot = seedAvailabilitySlot({
+      doctorProfileId: 'doc-1',
+      startsAt: '2026-08-03T09:00:00Z',
+      endsAt: '2026-08-03T09:30:00Z',
+      locationType: 'IN_PERSON',
+      booked: true,
+    })
+    seedAppointment({
+      patientId: '1',
+      doctorProfileId: 'doc-1',
+      availabilitySlotId: slot.id,
+      startsAt: slot.startsAt,
+      endsAt: slot.endsAt,
+      locationType: 'IN_PERSON',
+      status: 'CONFIRMED',
+      cancellationWindowHours: 24,
+    })
+    renderPage()
+    const user = userEvent.setup()
+
+    await user.click(await screen.findByRole('button', { name: /signaler un problème/i }))
+    await user.type(screen.getByLabelText(/description/i), "Le medecin n'est pas venu.")
+    await user.click(screen.getByRole('button', { name: /envoyer le signalement/i }))
+
+    expect(await screen.findByText(/problème signalé/i)).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /^signaler un problème$/i })).not.toBeInTheDocument()
+  })
+
+  it("offers a doctor the same 'report a problem' action on their own read-only view", async () => {
+    loginAs({ email: 'd@example.com', password: 'x', role: 'DOCTOR', firstName: 'A', lastName: 'B' })
+    const profile = seedDoctorProfile({
+      userId: '1',
+      specialty: 'Cardiologie',
+      consultationFeeMad: 300,
+      city: 'Rabat',
+      verificationStatus: 'APPROVED',
+    })
+    const slot = seedAvailabilitySlot({
+      doctorProfileId: profile.id,
+      startsAt: '2026-08-03T09:00:00Z',
+      endsAt: '2026-08-03T09:30:00Z',
+      locationType: 'IN_PERSON',
+      booked: true,
+    })
+    seedAppointment({
+      patientId: '2',
+      doctorProfileId: profile.id,
+      availabilitySlotId: slot.id,
+      startsAt: slot.startsAt,
+      endsAt: slot.endsAt,
+      locationType: 'IN_PERSON',
+      status: 'CONFIRMED',
+      cancellationWindowHours: 24,
+    })
+    renderPage()
+
+    expect(await screen.findByRole('button', { name: /signaler un problème/i })).toBeInTheDocument()
+  })
 })
