@@ -191,3 +191,8 @@ Statements: 83.34% (841/1009) | Branches: 70.38% (542/770) | Functions: 87.24% (
 Scope: `src/features/**` + `src/shared/**` (vite.config.ts coverage.include), excluding `shared/components/ui/**` and the generated schema.
 Gate: ≥ 80% combined (statements/lines) — PASSED
 167 frontend tests total (up from 163). New `features/dispute` (`DisputeReportForm` + schema, 2 tests) + 2 new `MyAppointmentsPage` tests (patient reports a problem, doctor sees the same action). `adminHandlers.ts` gained the `POST /api/v1/disputes` self-report fake.
+
+## 2026-08-06 (continued) — Epic 10 closing batch: e2e + video + final verification
+Backend: `./gradlew test jacocoTestCoverageVerification` — UP-TO-DATE/green, unchanged this batch (no backend code touched). 331 tests, 92.4%/86.9%.
+Frontend: `tsc -b`/`oxlint` clean, unchanged since the self-report batch (167 tests, 83.34%/83.73% — e2e specs don't count toward the Vitest number).
+e2e: **18/18 green** (17 pre-existing + 1 new `epic-10-disputes.spec.ts`) — see .logs/activity.md for the pre-existing-test-data-pollution fix found along the way. Video recorded to `.recordings/v0.9.0-2026-08-06.webm` (22 clips).
