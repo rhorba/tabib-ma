@@ -161,3 +161,9 @@ Instruction: 7896/8564 = 92.2% (668 missed) | Branch: 257/296 = 86.8% (39 missed
 Scope: whole backend (jacocoTestCoverageVerification, project-wide default).
 Gate: ≥ 80% combined — PASSED
 313 backend tests total (up from 303 at Batch 1): `NoShowServiceTest` (6 unit tests, carried over from the paused session), `DisputeEventListenerTest` (4 unit tests mirroring `ConsultationBookingListenerTest`'s shape — happy path per event type + swallows-unexpected-failures per event type), `NoShowDisputeIntegrationTest` (1 integration test proving the real AFTER_COMMIT/REQUIRES_NEW round trip: book → force `startsAt` into the past via `ReflectionTestUtils` → call the no-show endpoint → confirm the auto-filed NO_SHOW dispute is visible via `GET /api/v1/admin/platform/disputes`). Also fixed `BookingServiceTest`'s stale `verify(eventPublisher, never()).publishEvent(any())` assertion (now asserts the real `AppointmentPaymentFailedEvent` publish).
+
+## 2026-08-05 (continued) — Epic 10 Batch 3 (refund + force-cancel admin actions) coverage
+Instruction: 8030/8698 = 92.3% (668 missed) | Branch: 259/298 = 86.9% (39 missed)
+Scope: whole backend (jacocoTestCoverageVerification, project-wide default).
+Gate: ≥ 80% combined — PASSED
+327 backend tests total (up from 313 at Batch 2): `CancellationServiceTest` gained 3 `forceCancel` tests (not-found, already-cancelled conflict, releases slot/resource without ever touching payment). New `AdminAppointmentActionServiceTest` (6 unit tests: refund not-found/no-payment/not-SUCCEEDED-conflict/happy-path+audit-log, forceCancel propagates not-found + happy-path+audit-log) and `AdminAppointmentActionControllerIntegrationTest` (5 integration tests: both endpoints reject non-PLATFORM_ADMIN, refund marks a real Payment REFUNDED, a second refund on the same appointment 409s, force-cancel cancels an appointment the admin doesn't own). `ArchitectureTest` green (admin's dependency on booking/payment, no new cycle).

@@ -131,4 +131,48 @@ class CancellationServiceTest {
         verify(paymentRepository, never()).findByAppointmentId(any());
         verify(paymentRepository, never()).save(any());
     }
+
+    @Test
+    void forceCancel_rejectsWhenAppointmentNotFound() {
+        UUID appointmentId = UUID.randomUUID();
+        when(appointmentRepository.findById(appointmentId)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> service.forceCancel(appointmentId)).isInstanceOf(NotFoundException.class);
+    }
+
+    @Test
+    void forceCancel_rejectsWhenAlreadyCancelled() {
+        Appointment appointment = new Appointment(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(),
+                Instant.now().plusSeconds(3600), Instant.now().plusSeconds(5400), LocationType.IN_PERSON);
+        appointment.cancel();
+        UUID appointmentId = UUID.randomUUID();
+        when(appointmentRepository.findById(appointmentId)).thenReturn(Optional.of(appointment));
+
+        assertThatThrownBy(() -> service.forceCancel(appointmentId)).isInstanceOf(ConflictException.class);
+    }
+
+    @Test
+    void forceCancel_releasesSlotRegardlessOfWhoOwnsTheAppointmentAndNeverTouchesPayment() {
+        UUID slotId = UUID.randomUUID();
+        UUID doctorProfileId = UUID.randomUUID();
+        Instant start = Instant.now().plusSeconds(3600);
+        Appointment appointment = new Appointment(UUID.randomUUID(), doctorProfileId, slotId, start,
+                start.plusSeconds(1800), LocationType.IN_PERSON);
+        UUID appointmentId = UUID.randomUUID();
+        AvailabilitySlot slot = new AvailabilitySlot(doctorProfileId, start, start.plusSeconds(1800), LocationType.IN_PERSON, null);
+        slot.markBooked();
+
+        when(appointmentRepository.findById(appointmentId)).thenReturn(Optional.of(appointment));
+        when(appointmentRepository.save(any(Appointment.class))).thenAnswer(inv -> inv.getArgument(0));
+        when(availabilitySlotRepository.findById(slotId)).thenReturn(Optional.of(slot));
+
+        Appointment result = service.forceCancel(appointmentId);
+
+        assertThat(result.getStatus()).isEqualTo(AppointmentStatus.CANCELLED);
+        assertThat(slot.isBooked()).isFalse();
+        verify(availabilitySlotRepository).save(slot);
+        verify(resourceAllocationGuard).releaseForAppointment(appointmentId);
+        verify(paymentRepository, never()).findByAppointmentId(any());
+        verify(paymentRepository, never()).save(any());
+    }
 }

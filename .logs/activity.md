@@ -537,3 +537,16 @@ Resumed the paused session per its resume note. Fixed `BookingServiceTest`'s sta
 Local state: Docker Desktop running (started this session), no docker-compose stack or dev server running (only Testcontainers/Gradle used). Working tree has Batch 2's changes about to be committed.
 
 Resume by: continue Story 10.1 Batch 3 — refund + force-cancel admin actions (reusing `Payment.refund()`/`Appointment.cancel()`), per the PLAN settled 2026-08-05. BRAINSTORM/PLAN already settled, nothing to re-decide.
+
+## 2026-08-06 — Story 10.2 Batch 3 CLOSED (refund + force-cancel admin actions)
+Resumed with Batch 3 already written and sitting uncommitted in the working tree (`CancellationService.forceCancel`, `AdminAppointmentActionService`/`Controller`, tests, and `.logs/metrics.md`'s coverage entry already appended by whatever produced this state) — no new BRAINSTORM/PLAN needed, this batch was already scoped in the 2026-08-05 8-batch plan.
+
+VERIFY this turn: started Docker Desktop (was not running), ran `./gradlew test jacocoTestCoverageVerification` — `UP-TO-DATE`/green, confirming the 327 tests / 92.3%/86.9% coverage already logged in `.logs/metrics.md` are current, not stale. Ran the same Semgrep SAST scan CI uses (`p/owasp-top-ten` + `p/security-audit`) against the new/changed files — 0 findings. Deleted a stray `backend/bash.exe.stackdump` found during this session (same harmless recurring crash-artifact class flagged across 5+ prior sessions since 2026-07-22; gitignored, never committed).
+
+`AdminAppointmentActionService.refund`/`forceCancel` (PLATFORM_ADMIN-only, `/api/v1/admin/platform/appointments/{id}/refund|force-cancel`) reuse `Payment.refund()` and the new `CancellationService.forceCancel()` (bypasses the patient-ownership check `cancel()` enforces, no refund side-effect — refunding stays a separate explicit action). Both actions audit-logged via the existing `AuditLog` pattern.
+
+**Story 10.2 (refund + force-cancel admin actions) is now fully CLOSED** — backend only (frontend admin dispute-queue/actions UI is a later batch per the plan), pending this turn's commit. No frontend/e2e work in this batch.
+
+Local state: Docker Desktop running (started this session). Working tree has this batch's changes about to be committed.
+
+Resume by: continue Epic 10 EXECUTE — Story 10.3 (health dashboard) and the frontend admin UI (dispute queue + resolve/refund/force-cancel actions) remain per the 2026-08-05 8-batch plan, plus e2e + video + final push. Confirm with the user which to tackle next; nothing needs re-deciding at BRAINSTORM/PLAN level.

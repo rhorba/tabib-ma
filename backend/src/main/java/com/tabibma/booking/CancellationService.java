@@ -44,12 +44,7 @@ public class CancellationService {
 
         appointment.cancel();
         appointmentRepository.save(appointment);
-
-        availabilitySlotRepository.findById(appointment.getAvailabilitySlotId()).ifPresent(slot -> {
-            slot.release();
-            availabilitySlotRepository.save(slot);
-        });
-        resourceAllocationGuard.releaseForAppointment(appointmentId);
+        releaseSlotAndResource(appointment, appointmentId);
 
         if (refundEligible) {
             paymentRepository.findByAppointmentId(appointmentId)
@@ -61,5 +56,29 @@ public class CancellationService {
         }
 
         return appointment;
+    }
+
+    /** Story 10.2: a platform admin overriding the booking state (e.g. to resolve a dispute),
+     * bypassing the patient-ownership check {@link #cancel} enforces. No cancellation-window
+     * refund logic here — refunding is its own explicit admin action, kept independent so the two
+     * effects (booking-state override, payment refund) can be audited and reasoned about separately. */
+    @Transactional
+    public Appointment forceCancel(UUID appointmentId) {
+        Appointment appointment = appointmentRepository.findById(appointmentId)
+                .orElseThrow(() -> new NotFoundException("Appointment not found."));
+
+        appointment.cancel();
+        appointmentRepository.save(appointment);
+        releaseSlotAndResource(appointment, appointmentId);
+
+        return appointment;
+    }
+
+    private void releaseSlotAndResource(Appointment appointment, UUID appointmentId) {
+        availabilitySlotRepository.findById(appointment.getAvailabilitySlotId()).ifPresent(slot -> {
+            slot.release();
+            availabilitySlotRepository.save(slot);
+        });
+        resourceAllocationGuard.releaseForAppointment(appointmentId);
     }
 }
