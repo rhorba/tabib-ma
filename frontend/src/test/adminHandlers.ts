@@ -25,11 +25,36 @@ type FakeDispute = {
 
 type FakePaymentState = 'PENDING' | 'SUCCEEDED' | 'REFUNDED'
 
+type FakePlatformHealth = {
+  totalAppointments: number
+  confirmedAppointments: number
+  cancelledAppointments: number
+  completedAppointments: number
+  noShowAppointments: number
+  pendingPaymentAppointments: number
+  succeededPayments: number
+  failedPayments: number
+  refundedPayments: number
+}
+
+const ZERO_HEALTH: FakePlatformHealth = {
+  totalAppointments: 0,
+  confirmedAppointments: 0,
+  cancelledAppointments: 0,
+  completedAppointments: 0,
+  noShowAppointments: 0,
+  pendingPaymentAppointments: 0,
+  succeededPayments: 0,
+  failedPayments: 0,
+  refundedPayments: 0,
+}
+
 let disputes: FakeDispute[] = []
 let appointmentPayments = new Map<string, FakePaymentState>()
 let cancelledAppointments = new Set<string>()
 let nextDisputeId = 1
 let nextAppointmentId = 1
+let platformHealth: FakePlatformHealth = ZERO_HEALTH
 
 export function resetAdminState() {
   disputes = []
@@ -37,6 +62,12 @@ export function resetAdminState() {
   cancelledAppointments = new Set()
   nextDisputeId = 1
   nextAppointmentId = 1
+  platformHealth = ZERO_HEALTH
+}
+
+export function seedPlatformHealth(overrides: Partial<FakePlatformHealth>) {
+  platformHealth = { ...ZERO_HEALTH, ...overrides }
+  return platformHealth
 }
 
 export function seedDispute(
@@ -132,5 +163,13 @@ export const adminHandlers = [
     }
     cancelledAppointments.add(appointmentId)
     return new HttpResponse(null, { status: 200 })
+  }),
+
+  http.get(/\/api\/v1\/admin\/platform\/health$/, ({ request }) => {
+    const user = getAuthenticatedUser(request)
+    if (!user) {
+      return errorResponse(401, 'UNAUTHORIZED', 'Authentication is required.')
+    }
+    return HttpResponse.json(platformHealth)
   }),
 ]

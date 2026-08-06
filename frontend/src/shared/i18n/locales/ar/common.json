@@ -10,6 +10,7 @@
     "doctorOnboarding": "ملفي الطبي",
     "verificationQueue": "قائمة التحقق",
     "disputeQueue": "النزاعات",
+    "platformHealth": "الصحة",
     "clinicAdmin": "عيادتي",
     "search": "البحث عن طبيب",
     "availability": "أوقات تواجدي",
@@ -152,6 +153,28 @@
       "notRefundable": "لم يعد هذا المبلغ قابلاً للاسترداد.",
       "alreadyCancelled": "تم إلغاء هذا الموعد بالفعل.",
       "appointmentNotFound": "الموعد غير موجود.",
+      "generic": "حدث خطأ ما. يرجى المحاولة مرة أخرى."
+    }
+  },
+  "platformHealth": {
+    "title": "صحة المنصة",
+    "appointments": {
+      "title": "المواعيد",
+      "total": "الإجمالي",
+      "confirmed": "مؤكدة",
+      "cancelled": "ملغاة",
+      "completed": "منتهية",
+      "noShow": "غياب",
+      "pendingPayment": "الدفع قيد الانتظار"
+    },
+    "payments": {
+      "title": "المدفوعات",
+      "succeeded": "ناجحة",
+      "failed": "فاشلة",
+      "refunded": "مستردة"
+    },
+    "videoQualityNotTracked": "جودة مكالمات الفيديو: غير متتبَّعة بعد.",
+    "errors": {
       "generic": "حدث خطأ ما. يرجى المحاولة مرة أخرى."
     }
   },

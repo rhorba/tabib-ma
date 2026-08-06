@@ -10,6 +10,7 @@
     "doctorOnboarding": "Mon profil médecin",
     "verificationQueue": "File de vérification",
     "disputeQueue": "Litiges",
+    "platformHealth": "Santé",
     "clinicAdmin": "Ma clinique",
     "search": "Rechercher un médecin",
     "availability": "Mes disponibilités",
@@ -152,6 +153,28 @@
       "notRefundable": "Ce paiement n'est plus remboursable.",
       "alreadyCancelled": "Ce rendez-vous est déjà annulé.",
       "appointmentNotFound": "Rendez-vous introuvable.",
+      "generic": "Une erreur est survenue. Veuillez réessayer."
+    }
+  },
+  "platformHealth": {
+    "title": "Santé de la plateforme",
+    "appointments": {
+      "title": "Rendez-vous",
+      "total": "Total",
+      "confirmed": "Confirmés",
+      "cancelled": "Annulés",
+      "completed": "Terminés",
+      "noShow": "Absences",
+      "pendingPayment": "Paiement en attente"
+    },
+    "payments": {
+      "title": "Paiements",
+      "succeeded": "Réussis",
+      "failed": "Échoués",
+      "refunded": "Remboursés"
+    },
+    "videoQualityNotTracked": "Qualité des appels vidéo : pas encore suivie.",
+    "errors": {
       "generic": "Une erreur est survenue. Veuillez réessayer."
     }
   },

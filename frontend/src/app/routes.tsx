@@ -4,6 +4,7 @@ import { RegisterPage } from '@/features/auth/pages/RegisterPage'
 import { DoctorOnboardingPage } from '@/features/doctor-onboarding/pages/DoctorOnboardingPage'
 import { VerificationQueuePage } from '@/features/platform-admin/pages/VerificationQueuePage'
 import { DisputeQueuePage } from '@/features/platform-admin/pages/DisputeQueuePage'
+import { PlatformHealthPage } from '@/features/platform-admin/pages/PlatformHealthPage'
 import { ClinicAdminPage } from '@/features/clinic-admin/pages/ClinicAdminPage'
 import { SearchPage } from '@/features/search/pages/SearchPage'
 import { DoctorPublicProfilePage } from '@/features/search/pages/DoctorPublicProfilePage'
@@ -38,6 +39,7 @@ export const router = createBrowserRouter([
         children: [
           { path: 'platform-admin/verification-queue', element: <VerificationQueuePage /> },
           { path: 'platform-admin/disputes', element: <DisputeQueuePage /> },
+          { path: 'platform-admin/health', element: <PlatformHealthPage /> },
         ],
       },
       {

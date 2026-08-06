@@ -55,6 +55,12 @@ function AuthNav() {
             >
               {t('nav.disputeQueue')}
             </Link>
+            <Link
+              to="/platform-admin/health"
+              className="text-sm font-medium text-foreground hover:text-primary"
+            >
+              {t('nav.platformHealth')}
+            </Link>
           </>
         )}
         {user.role === 'CLINIC_ADMIN' && (

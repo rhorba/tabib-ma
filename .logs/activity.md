@@ -580,3 +580,19 @@ Done this session (about to be committed):
 Local state: Docker Desktop running, docker-compose stack (db/redis/backend) and frontend dev server (port 5173) still running from the prior batch. Working tree has this batch's backend changes about to be committed.
 
 Resume by: commit this backend batch, then build the frontend health dashboard UI — rebuild the backend image, regenerate `schema.d.ts` for the new `/api/v1/admin/platform/health` endpoint, and add a simple stat-grid page (mirroring `ClinicAdminPage`'s dashboard card pattern) under `/platform-admin/health` with a nav link. After that: Epic 10's closing batch (e2e for the dispute-queue-to-refund/force-cancel loop if not already covered, video, final coverage re-check both sides, push, CI monitor).
+
+## 2026-08-06 (continued) — Story 10.3 frontend (platform health dashboard UI)
+Backend committed (22fa83c). Built the frontend half straight after, following `ClinicAdminPage`'s `dl`/`dt`/`dd` stat-grid pattern rather than `DisputeQueuePage`'s list-of-cards pattern (this page has one fixed set of metrics, not a variable-length collection).
+
+Done this session (about to be committed):
+  - Rebuilt the backend docker image (`docker compose up -d --build backend`) and regenerated `schema.d.ts` against it for the new `/api/v1/admin/platform/health` endpoint.
+  - New `PlatformHealthPage.tsx` at `/platform-admin/health`: one Card, two `dl` stat grids (Appointments: total/confirmed/cancelled/completed/no-show/pending-payment; Payments: succeeded/failed/refunded), plus a muted note that video-call quality isn't tracked yet — chosen over silently omitting all mention of the AC's third metric, consistent with the app's existing "state the gap" convention (e.g. Epic 3's pre-Epic-9 "no rating yet" stub). New "Santé"/"الصحة" nav link for `PLATFORM_ADMIN`.
+  - `adminHandlers.ts` MSW fake extended with the health GET + `seedPlatformHealth`/zero-default state, reset in `resetAdminState()` (no new setup.ts wiring needed, already registered from the dispute-queue batch). 2 new tests (zero-state including the video-quality note, seeded values).
+  - 163 frontend tests (up from 161), 83.11%/83.52% coverage. `tsc -b`/`oxlint` clean.
+  - **Live-verified against the real backend in Chrome**: the page rendered this session's actual accumulated dev-DB totals (51 appointments — 37 confirmed/10 cancelled/4 completed, 44 succeeded/7 refunded payments, matching the refund activity from this session's earlier dispute-queue live check), video-quality note rendered, no console errors.
+
+**Story 10.3 (platform health dashboard) is now fully CLOSED** — backend + frontend, live-verified. **This closes all 8 batches of the 2026-08-05 Epic 10 plan except the final one**: e2e coverage, video recording, a final combined coverage re-check, and the sprint-end push/CI-monitor.
+
+Local state: docker-compose stack (db/redis/backend, backend rebuilt this session) and frontend dev server (port 5173) still running. Working tree has this batch's frontend changes about to be committed. 7 local commits since origin's last push (Epic 8's close) — nothing from Epic 10 has been pushed yet, per the established mid-epic-checkpoint convention.
+
+Resume by: Epic 10's final batch — decide with the user what e2e coverage this closing batch needs (a dispute-queue-to-resolution loop, and/or a no-show-to-auto-dispute loop, mirroring how every prior epic's closing e2e batch covers its story's core AC), record video (next version label would be v0.9.0), re-run both sides' full coverage verification, commit, `git push origin main`, and monitor CI per rule 11 until green.

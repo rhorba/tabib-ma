@@ -740,6 +740,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/admin/platform/health": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getHealth"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/admin/clinic/me": {
         parameters: {
             query?: never;
@@ -1101,6 +1117,26 @@ export interface components {
             /** Format: int64 */
             bookingVolume?: number;
             revenueMad?: number;
+        };
+        PlatformHealthResponse: {
+            /** Format: int64 */
+            totalAppointments?: number;
+            /** Format: int64 */
+            confirmedAppointments?: number;
+            /** Format: int64 */
+            cancelledAppointments?: number;
+            /** Format: int64 */
+            completedAppointments?: number;
+            /** Format: int64 */
+            noShowAppointments?: number;
+            /** Format: int64 */
+            pendingPaymentAppointments?: number;
+            /** Format: int64 */
+            succeededPayments?: number;
+            /** Format: int64 */
+            failedPayments?: number;
+            /** Format: int64 */
+            refundedPayments?: number;
         };
         DisputeResponse: {
             /** Format: uuid */
@@ -2317,6 +2353,26 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["UserSummaryResponse"];
+                };
+            };
+        };
+    };
+    getHealth: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["PlatformHealthResponse"];
                 };
             };
         };

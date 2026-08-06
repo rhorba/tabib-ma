@@ -179,3 +179,9 @@ Instruction: 8118/8786 = 92.4% (668 missed) | Branch: 259/298 = 86.9% (39 missed
 Scope: whole backend (jacocoTestCoverageVerification, project-wide default).
 Gate: ≥ 80% combined — PASSED
 331 backend tests total (up from 327 at Story 10.2 close). New `PlatformHealthServiceTest` (2 unit tests) and `AdminDashboardControllerIntegrationTest` (2 integration tests: rejects non-PLATFORM_ADMIN, a real booking's counts show up as a +1 delta — deltas not absolutes since `AbstractIntegrationTest`'s singleton Testcontainers DB is shared across the whole test run). `countByStatus` added to `AppointmentRepository`/`PaymentRepository`.
+
+## 2026-08-06 (continued) — Story 10.3 frontend (platform health dashboard UI) coverage
+Statements: 83.11% (822/989) | Branches: 70.47% (530/752) | Functions: 86.89% (285/328) | Lines: 83.52% (811/971)
+Scope: `src/features/**` + `src/shared/**` (vite.config.ts coverage.include), excluding `shared/components/ui/**` and the generated schema.
+Gate: ≥ 80% combined (statements/lines) — PASSED
+163 frontend tests total (up from 161 at the dispute-queue batch). New `PlatformHealthPage` + 2 tests (zero-state, seeded metric values). `adminHandlers.ts` MSW fake extended with the `/api/v1/admin/platform/health` GET + `seedPlatformHealth`.
