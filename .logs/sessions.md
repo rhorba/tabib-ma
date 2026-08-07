@@ -430,10 +430,12 @@ Done this session (all 8 batches, one combined commit pending):
   - **Batch 7**: `load-tests/` — k6 script + SQL seed for Story 3.1's p95<1.5s search target. Result: p95=13.94ms against a real 10k-doctor dataset, huge margin. Seeded/cleaned up data immediately after.
   - **Batch 8**: Full e2e regression found and fixed a real, pre-existing (not introduced this session) cache-invalidation bug — `CompleteConsultationForm` never invalidated `MyAppointmentsPage`'s query, so completed consultations kept showing CONFIRMED. Fixed. 19/19 e2e green (18 + 1 new skip-prescription case), video v0.10.0, backend 337 tests/coverage gate green, frontend 168 tests/83.36%/83.75%.
 
-**All 8 batches CLOSED** — pending this turn's commit, push, and CI monitor (rule 7/11).
+First push (5fa91bd) turned CI red — not a mistake, the expected consequence of Batch 4 actually working: Trivy's fs scan, now able to resolve Gradle dependencies for the first time, immediately found 36 real CVEs (31 HIGH, 5 CRITICAL) in transitive dependencies that had simply never been scanned before this session. Per rule 11, stopped and fixed rather than shipping past it: bumped Spring Boot 3.5.3 → 3.5.16 (last release before that line's OSS EOL), bcprov-jdk18on → 1.85, pinned postgresql driver to 42.7.13 and forced netty-codec/netty-handler to 4.1.136.Final (via `dependencyManagement`'s own override DSL — plain Gradle constraints and `resolutionStrategy.force` both lose to `io.spring.dependency-management`'s resolution rules, a real gotcha worth remembering next time a BOM-managed version needs overriding). Verified locally with the actual `trivy` CLI via Docker before re-pushing, rather than re-pushing and hoping. Second push (8cc5fbf) came back CI GREEN.
 
-Local state: docker-compose stack (db/redis/backend, backend rebuilt) and frontend dev server (port 5173) left running. Working tree has everything from this session staged for one commit.
+**All 8 batches CLOSED, pushed, CI green.**
+
+Local state: docker-compose stack (db/redis/backend, backend rebuilt) and frontend dev server (port 5173) left running. Working tree clean, both commits pushed.
 
 Carried-forward open items (unchanged): CNDP/Loi 09-08 filing (legal, blocks production launch), seeded PLATFORM_ADMIN/CLINIC_ADMIN credential rotation before production (an ops/production decision, not addressed this session).
 
-Resume by: confirm commit+push+CI succeeded this turn, then confirm next priority with the user — the fast-follow backlog is now fully cleared except the two items above. Follow the same UNDERSTAND -> BRAINSTORM -> PLAN gate sequence as every session so far.
+Resume by: confirm next priority with the user — the fast-follow backlog is now fully cleared except the two items above. Follow the same UNDERSTAND -> BRAINSTORM -> PLAN gate sequence as every session so far.

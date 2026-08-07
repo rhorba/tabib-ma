@@ -710,3 +710,8 @@ Regenerated `gradle.lockfile`. Full `./gradlew check` re-run: 337 tests still gr
 Also hit and resolved a local environment snag along the way: `./gradlew check` failed twice with "Unable to delete directory" errors mid-build — a stray `java.exe` process (likely a leftover Gradle daemon or Testcontainers Ryuk reaper) had files open in `backend/build/`, compounded by this repo living inside a OneDrive-synced folder occasionally holding transient locks during sync. Killed the process and manually removed `build/` once; builds ran clean afterward.
 
 Committing and re-pushing this fix now; CI monitor continues per rule 11.
+
+## 2026-08-07 (continued) — CI GREEN, fast-follows batch fully CLOSED
+Run 31209649236 GREEN on the second push: `backend-build-test` (2m14s) and `security` (38s, Trivy now genuinely passing with 0 vulnerabilities instead of silently scanning nothing) both succeeded.
+
+**Sprint ? Fast-follows batch (all 8 batches from the 2026-08-05... no, 2026-08-07 BRAINSTORM/PLAN) is now fully CLOSED** — every carried-forward item from Epic 10's close is resolved except the two explicitly out-of-scope ops/legal items (CNDP filing, admin credential rotation). Pushed to origin/main (two commits: 5fa91bd the batch itself, 8cc5fbf the CVE fix CI's first run caught), CI green.
