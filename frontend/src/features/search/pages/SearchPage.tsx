@@ -9,12 +9,18 @@ import { Label } from '@/shared/components/ui/label'
 import { apiClient } from '@/shared/api/client'
 import { DoctorResultCard } from '../components/DoctorResultCard'
 
-function useDoctorSearch(specialty: string, city: string) {
+function useDoctorSearch(specialty: string, city: string, maxFeeMad: string) {
   return useQuery({
-    queryKey: ['doctor-search', specialty, city],
+    queryKey: ['doctor-search', specialty, city, maxFeeMad],
     queryFn: async () => {
       const { data, error } = await apiClient.GET('/api/v1/clinic/doctor-profiles/search', {
-        params: { query: { specialty: specialty || undefined, city: city || undefined } },
+        params: {
+          query: {
+            specialty: specialty || undefined,
+            city: city || undefined,
+            maxFeeMad: maxFeeMad ? Number(maxFeeMad) : undefined,
+          },
+        },
       })
       if (error) {
         throw error
@@ -28,10 +34,12 @@ export function SearchPage() {
   const { t } = useTranslation()
   const [specialtyInput, setSpecialtyInput] = useState('')
   const [cityInput, setCityInput] = useState('')
+  const [maxFeeInput, setMaxFeeInput] = useState('')
   const [specialty, setSpecialty] = useState('')
   const [city, setCity] = useState('')
+  const [maxFeeMad, setMaxFeeMad] = useState('')
 
-  const searchQuery = useDoctorSearch(specialty, city)
+  const searchQuery = useDoctorSearch(specialty, city, maxFeeMad)
 
   return (
     <div className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-6 px-4 py-12">
@@ -44,6 +52,7 @@ export function SearchPage() {
           e.preventDefault()
           setSpecialty(specialtyInput)
           setCity(cityInput)
+          setMaxFeeMad(maxFeeInput)
         }}
       >
         <div className="grid gap-1.5">
@@ -57,6 +66,17 @@ export function SearchPage() {
         <div className="grid gap-1.5">
           <Label htmlFor="search-city">{t('search.filters.cityLabel')}</Label>
           <Input id="search-city" value={cityInput} onChange={(e) => setCityInput(e.target.value)} />
+        </div>
+        <div className="grid gap-1.5">
+          <Label htmlFor="search-max-fee">{t('search.filters.maxFeeLabel')}</Label>
+          <Input
+            id="search-max-fee"
+            type="number"
+            min="0"
+            inputMode="numeric"
+            value={maxFeeInput}
+            onChange={(e) => setMaxFeeInput(e.target.value)}
+          />
         </div>
         <Button type="submit">{t('search.filters.submit')}</Button>
       </form>

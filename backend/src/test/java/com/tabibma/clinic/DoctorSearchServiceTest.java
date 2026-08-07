@@ -44,10 +44,10 @@ class DoctorSearchServiceTest {
         UUID userId = UUID.randomUUID();
         DoctorProfile profile = new DoctorProfile(userId, "Cardiology", "bio", BigDecimal.valueOf(200), "Rabat");
         Page<DoctorProfile> page = new PageImpl<>(List.of(profile));
-        when(doctorProfileRepository.search(isNull(), isNull(), any(Pageable.class))).thenReturn(page);
+        when(doctorProfileRepository.search(isNull(), isNull(), isNull(), any(Pageable.class))).thenReturn(page);
         when(userRepository.findAllById(List.of(userId))).thenReturn(List.of());
 
-        DoctorSearchResponse response = service().search("  ", "", 0, 20);
+        DoctorSearchResponse response = service().search("  ", "", null, 0, 20);
 
         assertThat(response.results()).hasSize(1);
         assertThat(response.results().get(0).specialty()).isEqualTo("Cardiology");
@@ -59,13 +59,13 @@ class DoctorSearchServiceTest {
         UUID userId = UUID.randomUUID();
         DoctorProfile profile = new DoctorProfile(userId, "Dermatology", "bio", BigDecimal.valueOf(150), "Fes");
         Page<DoctorProfile> page = new PageImpl<>(List.of(profile));
-        when(doctorProfileRepository.search(eq("Dermatology"), eq("Fes"), any(Pageable.class))).thenReturn(page);
+        when(doctorProfileRepository.search(eq("Dermatology"), eq("Fes"), isNull(), any(Pageable.class))).thenReturn(page);
 
         User user = new User("d@example.com", "hash", Role.DOCTOR, "Amina", "Bennani");
         ReflectionTestUtils.setField(user, "id", userId);
         when(userRepository.findAllById(List.of(userId))).thenReturn(List.of(user));
 
-        DoctorSearchResponse response = service().search("Dermatology", "Fes", 0, 20);
+        DoctorSearchResponse response = service().search("Dermatology", "Fes", null, 0, 20);
 
         assertThat(response.results()).hasSize(1);
         assertThat(response.results().get(0).firstName()).isEqualTo("Amina");
@@ -77,10 +77,10 @@ class DoctorSearchServiceTest {
         UUID userId = UUID.randomUUID();
         DoctorProfile profile = new DoctorProfile(userId, "Urology", "bio", BigDecimal.valueOf(150), "Oujda");
         Page<DoctorProfile> page = new PageImpl<>(List.of(profile));
-        when(doctorProfileRepository.search(eq("Urology"), eq("Oujda"), any(Pageable.class))).thenReturn(page);
+        when(doctorProfileRepository.search(eq("Urology"), eq("Oujda"), isNull(), any(Pageable.class))).thenReturn(page);
         when(userRepository.findAllById(List.of(userId))).thenReturn(List.of());
 
-        DoctorSearchResponse response = service().search("Urology", "Oujda", 0, 20);
+        DoctorSearchResponse response = service().search("Urology", "Oujda", null, 0, 20);
 
         assertThat(response.results()).hasSize(1);
         assertThat(response.results().get(0).firstName()).isNull();
@@ -90,12 +90,27 @@ class DoctorSearchServiceTest {
     @Test
     void search_emptyResultsReturnsEmptyList() {
         Page<DoctorProfile> page = new PageImpl<>(List.of());
-        when(doctorProfileRepository.search(eq("Oncology"), isNull(), any(Pageable.class))).thenReturn(page);
+        when(doctorProfileRepository.search(eq("Oncology"), isNull(), isNull(), any(Pageable.class))).thenReturn(page);
 
-        DoctorSearchResponse response = service().search("Oncology", null, 0, 20);
+        DoctorSearchResponse response = service().search("Oncology", null, null, 0, 20);
 
         assertThat(response.results()).isEmpty();
         assertThat(response.totalElements()).isZero();
+    }
+
+    @Test
+    void search_passesMaxFeeMadThroughToTheRepository() {
+        UUID userId = UUID.randomUUID();
+        DoctorProfile profile = new DoctorProfile(userId, "Cardiology", "bio", BigDecimal.valueOf(150), "Rabat");
+        Page<DoctorProfile> page = new PageImpl<>(List.of(profile));
+        when(doctorProfileRepository.search(isNull(), isNull(), eq(BigDecimal.valueOf(200)), any(Pageable.class)))
+                .thenReturn(page);
+        when(userRepository.findAllById(List.of(userId))).thenReturn(List.of());
+
+        DoctorSearchResponse response = service().search(null, null, BigDecimal.valueOf(200), 0, 20);
+
+        assertThat(response.results()).hasSize(1);
+        assertThat(response.results().get(0).consultationFeeMad()).isEqualByComparingTo("150");
     }
 
     @Test

@@ -5,6 +5,7 @@ import { renderWithProviders, screen } from '@/test/renderWithProviders'
 import { loginAs } from '@/test/loginAs'
 import { seedDoctorProfile } from '@/test/clinicHandlers'
 import { seedAvailabilitySlot } from '@/test/bookingHandlers'
+import { expectNoA11yViolations, withArabic } from '@/test/a11y'
 import { BookAppointmentPage } from './BookAppointmentPage'
 
 function renderAt(path: string) {
@@ -80,5 +81,41 @@ describe('BookAppointmentPage', () => {
     await user.click(screen.getByRole('button', { name: /confirmer et payer/i }))
 
     expect(await screen.findByText(/vient d'être réservé/i)).toBeInTheDocument()
+  })
+
+  it('has no automated accessibility violations (NFR-6)', async () => {
+    loginAs({ email: 'p@example.com', password: 'x', role: 'PATIENT', firstName: 'A', lastName: 'B' })
+    const profile = seedDoctorProfile({
+      userId: '1',
+      specialty: 'Cardiologie',
+      consultationFeeMad: 300,
+      city: 'Rabat',
+      verificationStatus: 'APPROVED',
+    })
+    const soon = new Date(Date.now() + 3600 * 1000).toISOString()
+    seedAvailabilitySlot({ doctorProfileId: profile.id, startsAt: soon, endsAt: soon, locationType: 'IN_PERSON' })
+    const { container } = renderAt(`/doctors/${profile.id}/book`)
+    await screen.findByRole('button', { name: new Date(soon).toLocaleString() }, { timeout: 3000 })
+
+    await expectNoA11yViolations(container)
+  })
+
+  it('has no automated accessibility violations in Arabic (RTL, NFR-6)', async () => {
+    loginAs({ email: 'p@example.com', password: 'x', role: 'PATIENT', firstName: 'A', lastName: 'B' })
+    const profile = seedDoctorProfile({
+      userId: '1',
+      specialty: 'Cardiologie',
+      consultationFeeMad: 300,
+      city: 'Rabat',
+      verificationStatus: 'APPROVED',
+    })
+    const soon = new Date(Date.now() + 3600 * 1000).toISOString()
+    seedAvailabilitySlot({ doctorProfileId: profile.id, startsAt: soon, endsAt: soon, locationType: 'IN_PERSON' })
+
+    await withArabic(async () => {
+      const { container } = renderAt(`/doctors/${profile.id}/book`)
+      await screen.findByRole('button', { name: new Date(soon).toLocaleString() }, { timeout: 3000 })
+      await expectNoA11yViolations(container)
+    })
   })
 })

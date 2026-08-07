@@ -11,6 +11,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -27,10 +28,11 @@ public class DoctorSearchService {
         this.userRepository = userRepository;
     }
 
-    @Cacheable(value = "doctorSearch", key = "(#specialty ?: '') + ':' + (#city ?: '') + ':' + #page + ':' + #size")
-    public DoctorSearchResponse search(String specialty, String city, int page, int size) {
+    @Cacheable(value = "doctorSearch",
+            key = "(#specialty ?: '') + ':' + (#city ?: '') + ':' + (#maxFeeMad ?: '') + ':' + #page + ':' + #size")
+    public DoctorSearchResponse search(String specialty, String city, BigDecimal maxFeeMad, int page, int size) {
         Page<DoctorProfile> profiles = doctorProfileRepository.search(
-                blankToNull(specialty), blankToNull(city), PageRequest.of(page, size));
+                blankToNull(specialty), blankToNull(city), maxFeeMad, PageRequest.of(page, size));
 
         List<UUID> userIds = profiles.getContent().stream().map(DoctorProfile::getUserId).toList();
         Map<UUID, User> usersById = userRepository.findAllById(userIds).stream()

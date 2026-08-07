@@ -2151,6 +2151,7 @@ export interface operations {
             query?: {
                 specialty?: string;
                 city?: string;
+                maxFeeMad?: number;
                 page?: number;
                 size?: number;
             };

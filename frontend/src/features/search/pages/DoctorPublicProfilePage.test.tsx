@@ -4,6 +4,7 @@ import { renderWithProviders, screen } from '@/test/renderWithProviders'
 import { loginAs } from '@/test/loginAs'
 import { seedDoctorProfile } from '@/test/clinicHandlers'
 import { seedReview } from '@/test/reviewHandlers'
+import { expectNoA11yViolations, withArabic } from '@/test/a11y'
 import { DoctorPublicProfilePage } from './DoctorPublicProfilePage'
 
 function renderAt(path: string) {
@@ -78,5 +79,39 @@ describe('DoctorPublicProfilePage', () => {
     expect(screen.getByText('Excellent suivi')).toBeInTheDocument()
     expect(screen.getByText('5/5')).toBeInTheDocument()
     expect(screen.getByText('3/5')).toBeInTheDocument()
+  })
+
+  it('has no automated accessibility violations (NFR-6)', async () => {
+    loginAs({ email: 'p@example.com', password: 'x', role: 'PATIENT', firstName: 'A', lastName: 'B' })
+    const profile = seedDoctorProfile({
+      userId: '1',
+      specialty: 'Neurologie',
+      bio: 'Experienced neurologist',
+      consultationFeeMad: 250,
+      city: 'Meknes',
+      verificationStatus: 'APPROVED',
+    })
+    const { container } = renderAt(`/doctors/${profile.id}`)
+    await screen.findByText('Neurologie')
+
+    await expectNoA11yViolations(container)
+  })
+
+  it('has no automated accessibility violations in Arabic (RTL, NFR-6)', async () => {
+    loginAs({ email: 'p@example.com', password: 'x', role: 'PATIENT', firstName: 'A', lastName: 'B' })
+    const profile = seedDoctorProfile({
+      userId: '1',
+      specialty: 'Neurologie',
+      bio: 'Experienced neurologist',
+      consultationFeeMad: 250,
+      city: 'Meknes',
+      verificationStatus: 'APPROVED',
+    })
+
+    await withArabic(async () => {
+      const { container } = renderAt(`/doctors/${profile.id}`)
+      await screen.findByText('Neurologie')
+      await expectNoA11yViolations(container)
+    })
   })
 })

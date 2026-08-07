@@ -205,3 +205,8 @@ Result: p95 = 13.94ms, avg = 9.87ms, max = 973.82ms, 0% http_req_failed, 1200/12
 Backend: 337 tests, `jacocoTestCoverageVerification` PASSED (≥80% gate), unchanged since Batch 5 (Batches 6-8 touched no backend code).
 Frontend: 168 tests, statements 83.36% (842/1010), lines 83.75% (830/991), branches 70.07%, functions 87.27%. `tsc -b`/`oxlint` clean.
 e2e: 19/19 green (18 pre-existing + 1 new skip-prescription case). Video `v0.10.0-2026-08-07.webm` (25 clips).
+
+## 2026-08-07 (continued) — PRD gap batch: final coverage
+Backend: 339 tests (+2 from the fast-follows batch's 337), `jacocoTestCoverageVerification` PASSED.
+Frontend: 177 tests (+8 from 169), statements 83.44%, lines 83.83%, branches 70.15%, functions 87.31%. `tsc -b`/`oxlint`/`npm run build` clean. New vitest coverage `thresholds` (statements/lines 80%) now enforce this automatically in CI, not just manual reporting.
+e2e: 19/19 green, unchanged from the prior batch's close.

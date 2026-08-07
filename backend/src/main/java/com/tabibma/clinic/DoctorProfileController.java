@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
 
@@ -39,9 +40,10 @@ public class DoctorProfileController {
     @GetMapping("/search")
     public DoctorSearchResponse search(@RequestParam(required = false) String specialty,
                                         @RequestParam(required = false) String city,
+                                        @RequestParam(required = false) BigDecimal maxFeeMad,
                                         @RequestParam(defaultValue = "0") int page,
                                         @RequestParam(defaultValue = "20") int size) {
-        return doctorSearchService.search(specialty, city, page, size);
+        return doctorSearchService.search(specialty, city, maxFeeMad, page, size);
     }
 
     @PostMapping

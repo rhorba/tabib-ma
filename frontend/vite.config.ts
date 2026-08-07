@@ -23,6 +23,15 @@ export default defineConfig({
       reporter: ['text', 'html'],
       include: ['src/features/**', 'src/shared/**'],
       exclude: ['src/shared/components/ui/**', 'src/shared/api/schema.d.ts'],
+      // CLAUDE.md rule 6's 80% gate, enforced automatically (mirrors backend's
+      // jacocoTestCoverageVerification) rather than manually eyeballing the printed summary.
+      // Statements/lines only, matching how this gate has been tracked and reported throughout
+      // this project — branch coverage has consistently sat lower (~70%) without ever being the
+      // enforced metric, same asymmetry jacoco's own single "minimum" rule has on the backend side.
+      thresholds: {
+        statements: 80,
+        lines: 80,
+      },
     },
   },
 })

@@ -177,17 +177,23 @@ Then a ClinicStaffMembership is created linking the doctor to the clinic
 ## Epic 3: Doctor Search & Discovery
 Patients find doctors by specialty, city, availability, and price.
 
-### Story 3.1: Search doctors by specialty/city/availability
+### Story 3.1: Search doctors by specialty/city/availability/price
 **Priority**: Must | **Size**: M | **Specialist**: Backend Dev + Frontend Dev
 
-**Description**: As a patient, I want to search doctors by specialty, city, and availability, so I can find someone who can see me soon.
+**Description**: As a patient, I want to search doctors by specialty, city, availability, and consultation fee, so I can find someone who can see me soon within my budget.
+
+**Amended 2026-08-07** (fast-follow, `.logs/decisions.md`): PRD §5's in-scope list and this Epic's own header ("Patients find doctors by specialty, city, availability, and price") always included a price filter, but this story's AC never did — a gap between the PRD and the story as originally written, not a deliberate descope. Amending the AC to match.
 
 **Acceptance Criteria**:
 ```gherkin
-Given doctors exist with varying specialties, cities, and open slots
+Given doctors exist with varying specialties, cities, fees, and open slots
 When a patient searches with a specialty + city filter
 Then only matching, verified (APPROVED) doctors with open slots are returned
 And results return within 1.5s p95 for a 10,000-doctor catalog (PRD NFR-1)
+
+Given doctors exist with varying consultation fees
+When a patient searches with a maximum-fee filter
+Then only doctors with a consultationFeeMad at or below that ceiling are returned
 ```
 
 **Technical Notes**: Search hot path may need native `@Query` if JPQL underperforms (ADR-2). High-risk per Test Strategy (risk score 9) — needs k6 load test against seeded 10k dataset.

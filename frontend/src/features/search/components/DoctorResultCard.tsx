@@ -11,7 +11,7 @@ export function DoctorResultCard({ result }: { result: DoctorSearchResult }) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-lg" role="heading" aria-level={3}>
+        <CardTitle className="text-lg" role="heading" aria-level={2}>
           {result.firstName} {result.lastName}
         </CardTitle>
       </CardHeader>

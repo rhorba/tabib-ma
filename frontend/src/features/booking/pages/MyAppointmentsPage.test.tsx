@@ -6,6 +6,7 @@ import { loginAs } from '@/test/loginAs'
 import { seedAppointment, seedAvailabilitySlot } from '@/test/bookingHandlers'
 import { seedDoctorProfile } from '@/test/clinicHandlers'
 import { seedReview } from '@/test/reviewHandlers'
+import { expectNoA11yViolations, withArabic } from '@/test/a11y'
 import { MyAppointmentsPage } from './MyAppointmentsPage'
 
 function renderPage() {
@@ -282,5 +283,57 @@ describe('MyAppointmentsPage', () => {
     renderPage()
 
     expect(await screen.findByRole('button', { name: /signaler un problème/i })).toBeInTheDocument()
+  })
+
+  it('has no automated accessibility violations with a CONFIRMED appointment shown (NFR-6)', async () => {
+    loginAs({ email: 'p@example.com', password: 'x', role: 'PATIENT', firstName: 'A', lastName: 'B' })
+    const slot = seedAvailabilitySlot({
+      doctorProfileId: 'doc-1',
+      startsAt: '2026-08-03T09:00:00Z',
+      endsAt: '2026-08-03T09:30:00Z',
+      locationType: 'IN_PERSON',
+      booked: true,
+    })
+    seedAppointment({
+      patientId: '1',
+      doctorProfileId: 'doc-1',
+      availabilitySlotId: slot.id,
+      startsAt: slot.startsAt,
+      endsAt: slot.endsAt,
+      locationType: 'IN_PERSON',
+      status: 'CONFIRMED',
+      cancellationWindowHours: 24,
+    })
+    const { container } = renderPage()
+    await screen.findByText(/confirmé/i)
+
+    await expectNoA11yViolations(container)
+  })
+
+  it('has no automated accessibility violations in Arabic (RTL, NFR-6)', async () => {
+    loginAs({ email: 'p@example.com', password: 'x', role: 'PATIENT', firstName: 'A', lastName: 'B' })
+    const slot = seedAvailabilitySlot({
+      doctorProfileId: 'doc-1',
+      startsAt: '2026-08-03T09:00:00Z',
+      endsAt: '2026-08-03T09:30:00Z',
+      locationType: 'IN_PERSON',
+      booked: true,
+    })
+    seedAppointment({
+      patientId: '1',
+      doctorProfileId: 'doc-1',
+      availabilitySlotId: slot.id,
+      startsAt: slot.startsAt,
+      endsAt: slot.endsAt,
+      locationType: 'IN_PERSON',
+      status: 'CONFIRMED',
+      cancellationWindowHours: 24,
+    })
+
+    await withArabic(async () => {
+      const { container } = renderPage()
+      await screen.findByText(/مؤكد/i)
+      await expectNoA11yViolations(container)
+    })
   })
 })

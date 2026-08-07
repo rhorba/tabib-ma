@@ -92,6 +92,28 @@ class DoctorSearchControllerIntegrationTest extends AbstractIntegrationTest {
     }
 
     @Test
+    void search_maxFeeMadExcludesDoctorsAboveTheCeiling() throws Exception {
+        String specialty = "Endodontics";
+        String cheapDoctorEmail = "doctor-search-cheap@example.com";
+        registerAndLogin(cheapDoctorEmail, "DOCTOR");
+        String cheapDoctorToken = login(cheapDoctorEmail);
+        approve(createProfile(cheapDoctorToken, specialty, "Sale", "100.00"));
+
+        String pricyDoctorEmail = "doctor-search-pricy@example.com";
+        registerAndLogin(pricyDoctorEmail, "DOCTOR");
+        String pricyDoctorToken = login(pricyDoctorEmail);
+        approve(createProfile(pricyDoctorToken, specialty, "Sale", "400.00"));
+
+        mockMvc.perform(get("/api/v1/clinic/doctor-profiles/search")
+                        .param("specialty", specialty)
+                        .param("maxFeeMad", "200")
+                        .header("Authorization", "Bearer " + cheapDoctorToken))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.totalElements").value(1))
+                .andExpect(jsonPath("$.results[0].consultationFeeMad").value(100.00));
+    }
+
+    @Test
     void getPublicProfile_rejectsUnauthenticated() throws Exception {
         mockMvc.perform(get("/api/v1/clinic/doctor-profiles/" + UUID.randomUUID() + "/public"))
                 .andExpect(status().isUnauthorized());
@@ -165,12 +187,16 @@ class DoctorSearchControllerIntegrationTest extends AbstractIntegrationTest {
     }
 
     private String createProfile(String token, String specialty, String city) throws Exception {
+        return createProfile(token, specialty, city, "150.00");
+    }
+
+    private String createProfile(String token, String specialty, String city, String consultationFeeMad) throws Exception {
         var result = mockMvc.perform(post("/api/v1/clinic/doctor-profiles")
                         .header("Authorization", "Bearer " + token)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
-                                {"specialty":"%s","bio":"bio","consultationFeeMad":150.00,"city":"%s"}
-                                """.formatted(specialty, city)))
+                                {"specialty":"%s","bio":"bio","consultationFeeMad":%s,"city":"%s"}
+                                """.formatted(specialty, consultationFeeMad, city)))
                 .andReturn();
         String body = result.getResponse().getContentAsString();
         assertThat(result.getResponse().getStatus())

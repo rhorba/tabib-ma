@@ -201,10 +201,12 @@ export const clinicHandlers = [
     const url = new URL(request.url)
     const specialty = url.searchParams.get('specialty')
     const city = url.searchParams.get('city')
+    const maxFeeMad = url.searchParams.get('maxFeeMad')
     const results = profiles
       .filter((p) => p.verificationStatus === 'APPROVED')
       .filter((p) => !specialty || p.specialty.toLowerCase() === specialty.toLowerCase())
       .filter((p) => !city || p.city.toLowerCase() === city.toLowerCase())
+      .filter((p) => !maxFeeMad || p.consultationFeeMad <= Number(maxFeeMad))
       .map((p) => toSearchResultResponse(p))
     return HttpResponse.json({ results, page: 0, size: 20, totalElements: results.length, totalPages: 1 })
   }),

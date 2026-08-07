@@ -23,6 +23,32 @@ jobs:
           path: backend/build/reports/jacoco/test/html
           retention-days: 14
 
+  frontend-build-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        with: { node-version: '22', cache: 'npm', cache-dependency-path: frontend/package-lock.json }
+      - name: Install dependencies
+        working-directory: frontend
+        run: npm ci
+      - name: Lint
+        working-directory: frontend
+        run: npm run lint
+      - name: Typecheck & build
+        working-directory: frontend
+        run: npm run build
+      - name: Test (coverage gate enforced via vitest thresholds, vite.config.ts)
+        working-directory: frontend
+        run: npm run test:coverage
+      - name: Upload coverage report
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: frontend-coverage-report
+          path: frontend/coverage
+          retention-days: 14
+
   security:
     runs-on: ubuntu-latest
     permissions:
@@ -50,6 +76,6 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-# Not yet added — land alongside the piece of work that makes them meaningful:
-#   frontend-lint-test: once frontend/ exists (React + Vite + Tailwind, per docs/devops-tabib-ma.md)
-#   build-images:       once backend/Dockerfile and frontend/Dockerfile exist
+# Not yet added — land alongside the piece of work that makes it meaningful:
+#   build-images: once there's an actual deployment target consuming built images (docker-compose's
+#   local dev images are built on the fly, not via this CI).

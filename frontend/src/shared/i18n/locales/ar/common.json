@@ -263,6 +263,7 @@
     "filters": {
       "specialtyLabel": "التخصص",
       "cityLabel": "المدينة",
+      "maxFeeLabel": "الحد الأقصى للرسوم (درهم)",
       "submit": "بحث"
     },
     "results": {

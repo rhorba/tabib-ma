@@ -211,3 +211,26 @@ PLAN (8 batches, confirmed by user):
 6. Frontend bundle code-splitting — route-based `React.lazy` + `vite.config.ts` `manualChunks`.
 7. Story 3.1 k6 load test — script against a seeded 10k-doctor dataset, verify PRD NFR-1's p95 < 1.5s search target.
 8. Final verification/ship — full backend+frontend suites, coverage re-check, full e2e regression (incl. a new skip-prescription case), video recording (user-facing change, next version v0.10.0), commit, push, CI monitor per rule 11.
+
+## 2026-08-07 (continued) — PRD-vs-built gap audit: 3 items scoped
+Surveyed docs/prd-tabib-ma.md against all 32 stories in docs/stories-tabib-ma.md (all built, confirmed against code) and found 3 real gaps: PRD §5 lists a search "price filter" that Story 3.1's actual AC never included; NFR-6 (WCAG 2.1 AA) has zero accessibility tooling anywhere; NFR-7 (video latency <300ms) was explicitly deferred pending a managed WebRTC vendor that was never selected.
+
+User picked to tackle all 3. BRAINSTORM resolved two real constraints honestly rather than silently picking an approach:
+  - **Accessibility**: a true "manual screen-reader pass" (Test Strategy §7's own wording) requires a human with NVDA/JAWS/VoiceOver — not something achievable here. User picked automated axe-core scanning only; the manual pass stays an explicitly flagged open item, not silently dropped.
+  - **Video latency**: measuring this NFR meaningfully requires either a real commercial WebRTC vendor decision (cost/procurement, not an engineering call) or a production TURN deployment tested over real Morocco/EU network paths — testing locally would produce numbers that don't mean anything. User picked to defer rather than build a misleading local measurement or unilaterally pick a paid vendor.
+
+**Found during scoping**: NFR-6 says "automated axe-core scan in CI" — but `.github/workflows/ci.yml` currently has zero frontend jobs (only `backend-build-test` + `security`; a comment says frontend CI was deferred "once frontend/ exists", which it now does and has for a long time — stale doc-drift, not a deliberate decision). Adding a frontend CI job is therefore a necessary part of fulfilling the approved axe-core scope, not scope creep — folded into the same batch rather than re-asking.
+
+PLAN (4 batches, confirmed by user):
+1. Price filter — `maxFeeMad` param on `DoctorSearchService`/Controller/repository query + a `SearchPage` input. Story 3.1's AC amended to include it (docs-first, matching every prior story-AC amendment this session).
+2. New `frontend-build-test` CI job (tsc -b + oxlint + vitest --coverage) — the missing piece needed for "in CI" to mean anything.
+3. Accessibility: `vitest-axe` (or equivalent) assertions added to existing RTL-rendered component tests for the booking flow's key pages (search, doctor profile, book, my-appointments) in both fr and ar locales — runs inside the new CI job, no separate live-backend e2e infra needed.
+4. Verify + ship: full test suites both sides, coverage re-check, commit, push, CI monitor (now watching 3 jobs).
+
+Video-latency NFR-7: documented as deferred here, no code change — resume only once a managed WebRTC vendor is actually selected (a business decision, tracked as a carried-forward item alongside CNDP filing and admin credential rotation).
+
+## 2026-08-07 (continued) — PRD gap batch closed; two pre-existing bugs found and fixed along the way
+Found and fixed real problems that weren't part of the original scope but blocked it:
+  - `frontend/package.json` pinned `typescript: ~6.0.2`, but `openapi-typescript@7.13.0` (latest available) only supports `typescript@^5.x` — no version of it supports TS 6 yet. `npm ci`/`npm install` were both already broken before this session touched anything (confirmed via a plain `npm install` failing identically). Downgraded to `~5.9.3` (latest stable 5.x). This had presumably gone unnoticed because nothing ever ran a clean `npm ci` in CI before — exactly the kind of gap the new frontend CI job was meant to close.
+  - `SearchPage`'s `<h1>` was followed directly by `DoctorResultCard`'s `aria-level={3}` heading, skipping level 2 — a real WCAG 2.1 AA heading-order violation, caught immediately by the first axe-core scan run against real content. Fixed to `aria-level={2}` after confirming the component is only ever rendered there.
+Owner: found while wiring Batch 2 (frontend CI) and Batch 3 (axe-core) of the 2026-08-07 PRD-gap plan.

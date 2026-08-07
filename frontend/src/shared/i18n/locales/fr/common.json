@@ -263,6 +263,7 @@
     "filters": {
       "specialtyLabel": "Spécialité",
       "cityLabel": "Ville",
+      "maxFeeLabel": "Tarif maximum (MAD)",
       "submit": "Rechercher"
     },
     "results": {
