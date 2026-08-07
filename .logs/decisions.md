@@ -196,3 +196,18 @@ Story's own spec is thin — one Gherkin scenario, one line of technical notes (
 Architecture: `ClinicResource` (CRUD) stays in the `clinic` module; the allocation/conflict-guard logic (Batch 3) goes in `booking`, which already depends on `clinic` in the safe direction (confirmed via import-direction grep — `booking` imports `clinic` in 3 files, `clinic` imports `booking` in none). Same avoid-the-cycle lesson as Epic 9/Epic 8's own dashboard placement.
 Conflict prevention mirrors Story 4.3's `DoubleBookingGuard` pattern exactly: a new `appointment_resource_allocations` table gets its own `EXCLUDE USING gist (resource_id WITH =, tstzrange(...) WITH &&)` constraint, keyed on `resource_id` instead of `doctor_profile_id`. All-or-nothing allocation (if any required resource conflicts, the whole booking fails), matching the AC's "prevents" language over the looser "flags."
 User confirmed the 8-batch plan.
+
+## 2026-08-07 — Fast-follows batch scoping (post-Epic-10)
+With Story 8.2 and Epic 10 both closed, UNDERSTAND surveyed the 9 carried-forward fast-follow items and verified each was still actually outstanding (none had been fixed as a side effect of Epic 10). BRAINSTORM presented them grouped by size/risk; user picked all 4 groups: (1) 3 backend correctness/security gaps, (2) trivial dev-environment cleanup, (3) the UX doc's "skip prescription" branch, (4) the two larger infra/perf items (frontend code-splitting, Story 3.1's k6 load test).
+
+**Skip-prescription needed its own sub-decision**: `ConsultationService.complete()`'s own javadoc (added at Epic 6+7's close) states plainly "there is no 'complete without prescribing' path, matching the AC's 'in one session' requirement" — Story 6.3's binding Gherkin AC ("the doctor completes the consult and fills the prescription form... a Prescription is generated in the same flow") does not make prescription optional, only the UX doc's flow diagram does. Flagged this conflict to the user explicitly before including it in scope. User chose to amend Story 6.3's AC (a real story revision, not just a gap-fill) rather than drop the item — `docs/stories-tabib-ma.md` Story 6.3 to be updated to make the prescription step optional at doctor discretion.
+
+PLAN (8 batches, confirmed by user):
+1. Quick cleanup — Redis host port mapping in `docker-compose.yml`; purge ~27 stale PENDING verification-queue entries from the dev DB.
+2. Doctor-verification booking check — `BookingService.bookAndPay` must reject booking a doctor whose `DoctorProfile.verificationStatus != APPROVED`.
+3. Cancellation-confirmation notification — new `AppointmentCancelledEvent` published from `CancellationService`, consumed by a listener that notifies the other party (mirrors `BookingConfirmedEvent`'s existing notification wiring).
+4. Trivy Gradle-lockfile gap — generate `gradle.lockfile`, update `.github/workflows/ci.yml`'s Trivy step to actually scan Gradle deps, closing the documented `KNOWN GAP`.
+5. Skip-prescription — amend Story 6.3's AC in `docs/stories-tabib-ma.md`, then `ConsultationService.complete()` gets an optional-items path, `CompleteConsultationForm` gets a skip action, tests both sides.
+6. Frontend bundle code-splitting — route-based `React.lazy` + `vite.config.ts` `manualChunks`.
+7. Story 3.1 k6 load test — script against a seeded 10k-doctor dataset, verify PRD NFR-1's p95 < 1.5s search target.
+8. Final verification/ship — full backend+frontend suites, coverage re-check, full e2e regression (incl. a new skip-prescription case), video recording (user-facing change, next version v0.10.0), commit, push, CI monitor per rule 11.

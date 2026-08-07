@@ -236,7 +236,7 @@ class ResourceAllocationIntegrationTest extends AbstractIntegrationTest {
 
     private String createResourceScopedOpenSlot(String doctorToken, DayOfWeek dayOfWeek, String clinicId,
                                                   String resourceId) throws Exception {
-        createProfile(doctorToken, "Cardiology", "Rabat");
+        approve(createProfile(doctorToken, "Cardiology", "Rabat"));
 
         mockMvc.perform(post("/api/v1/booking/availability/rules")
                         .header("Authorization", "Bearer " + doctorToken)
@@ -284,7 +284,7 @@ class ResourceAllocationIntegrationTest extends AbstractIntegrationTest {
         return objectMapper.readTree(body).get("accessToken").asText();
     }
 
-    private void createProfile(String token, String specialty, String city) throws Exception {
+    private String createProfile(String token, String specialty, String city) throws Exception {
         var result = mockMvc.perform(post("/api/v1/clinic/doctor-profiles")
                         .header("Authorization", "Bearer " + token)
                         .contentType(MediaType.APPLICATION_JSON)
@@ -292,9 +292,22 @@ class ResourceAllocationIntegrationTest extends AbstractIntegrationTest {
                                 {"specialty":"%s","bio":"bio","consultationFeeMad":150.00,"city":"%s"}
                                 """.formatted(specialty, city)))
                 .andReturn();
+        String body = result.getResponse().getContentAsString();
         assertThat(result.getResponse().getStatus())
-                .as("createProfile response was not 201 Created; body=%s", result.getResponse().getContentAsString())
+                .as("createProfile response was not 201 Created; body=%s", body)
                 .isEqualTo(201);
+        return objectMapper.readTree(body).get("id").asText();
+    }
+
+    private void approve(String profileId) throws Exception {
+        String adminEmail = "platform-admin-resalloc-" + profileId + "@example.com";
+        User admin = new User(adminEmail, passwordEncoder.encode("correcthorsebattery"), Role.PLATFORM_ADMIN, "P", "A");
+        userRepository.save(admin);
+        String adminToken = login(adminEmail);
+
+        mockMvc.perform(post("/api/v1/admin/platform/verification-queue/" + profileId + "/approve")
+                        .header("Authorization", "Bearer " + adminToken))
+                .andExpect(status().isOk());
     }
 
     private String createClinicAdminAndLogin(String email) throws Exception {

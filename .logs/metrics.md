@@ -196,3 +196,12 @@ Gate: ≥ 80% combined (statements/lines) — PASSED
 Backend: `./gradlew test jacocoTestCoverageVerification` — UP-TO-DATE/green, unchanged this batch (no backend code touched). 331 tests, 92.4%/86.9%.
 Frontend: `tsc -b`/`oxlint` clean, unchanged since the self-report batch (167 tests, 83.34%/83.73% — e2e specs don't count toward the Vitest number).
 e2e: **18/18 green** (17 pre-existing + 1 new `epic-10-disputes.spec.ts`) — see .logs/activity.md for the pre-existing-test-data-pollution fix found along the way. Video recorded to `.recordings/v0.9.0-2026-08-06.webm` (22 clips).
+
+## 2026-08-07 — Story 3.1 k6 load test (doctor search)
+Target: p95 < 1.5s (PRD NFR-1), 20 RPS sustained (Test Strategy §7 SCALABILITY), against a seeded 10k-doctor dataset.
+Result: p95 = 13.94ms, avg = 9.87ms, max = 973.82ms, 0% http_req_failed, 1200/1200 checks passed, sustained the full 20 RPS for 1 minute. Both k6 thresholds PASSED with large margin.
+
+## 2026-08-07 (continued) — Fast-follows batch close: final coverage
+Backend: 337 tests, `jacocoTestCoverageVerification` PASSED (≥80% gate), unchanged since Batch 5 (Batches 6-8 touched no backend code).
+Frontend: 168 tests, statements 83.36% (842/1010), lines 83.75% (830/991), branches 70.07%, functions 87.27%. `tsc -b`/`oxlint` clean.
+e2e: 19/19 green (18 pre-existing + 1 new skip-prescription case). Video `v0.10.0-2026-08-07.webm` (25 clips).

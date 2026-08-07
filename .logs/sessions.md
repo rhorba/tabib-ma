@@ -401,3 +401,39 @@ Done this session (commit 15a38dd, local only, **not pushed** — deliberate mid
 Local state: Docker Desktop running, no stray containers (Testcontainers' Ryuk cleaned up after the test run; the dev docker-compose stack — db/redis/backend — was never started this session, only Testcontainers via Gradle). Working tree clean, Batch 1 committed but not pushed (1 commit, 15a38dd, ahead of origin's already-pushed Epic 8 close at d7deed7).
 
 Resume by: continue Story 8.2 EXECUTE at Batch 2 exactly where it left off — Flyway migration for `availability_rule_resources`, extend `CreateAvailabilityRuleRequest`/`AvailabilityService` so a doctor can pick required resources (scoped to their rule's clinic) when creating an IN_PERSON availability rule. Nothing needs to be re-decided — BRAINSTORM/PLAN are already settled (`.logs/decisions.md` 2026-08-04).
+
+## 2026-08-04/05/06 — Story 8.2 CLOSED, then Epic 10 (Platform Admin — Disputes & Health) CLOSED
+*(Backfilled summary — `.logs/activity.md` and `.logs/decisions.md` have the full per-batch detail for this span; this file's per-session entries lapsed during it.)*
+
+Story 8.2 (shared clinic resource management, full 🔴 resource model) ran Batches 2-8 to completion: `availability_rule_resources` join table + doctor-side resource selection, `appointment_resource_allocations` EXCLUDE-constraint conflict guard wired into booking/cancellation, admin resource-utilization endpoint, clinic-admin resource CRUD UI + doctor-side resource picker + admin utilization view, frontend tests, e2e (17/17, including the real resource-conflict AC) + video v0.8.0. Pushed (d7deed7..45ee057), CI green. **Story 8.2 fully CLOSED.**
+
+Epic 10 (Platform Admin — Disputes & Health, Stories 10.1-10.3) followed, BRAINSTORM picked the full 🔴 Comprehensive scope (self-report + admin-manual + system-generated disputes, refund/force-cancel actions, health dashboard) — 8-batch plan, decisions in `.logs/decisions.md` 2026-08-05. Ran to completion across 2026-08-05/06: dispute queue backend, no-show marking + system-generated auto-disputes (event-driven, `admin` module depends on `booking`/`clinic` and never the reverse, avoiding the Epic-9/Story-8.2 cycle lesson proactively), refund + force-cancel admin actions, platform health dashboard (backend + frontend; "video call quality" metric explicitly omitted as stubbed — nothing tracks it), frontend dispute-queue UI, and a self-report UI gap-fill (patients/doctors reporting a problem from `MyAppointmentsPage` — found missing while scoping the closing e2e batch). Closing batch: `e2e/epic-10-disputes.spec.ts` (full self-report → admin queue → refund → force-cancel → resolve loop), fixed one real e2e locator bug (`exact: true`) and one self-inflicted test-data collision (stray non-unique "Cardiologie" doctor profiles from manual live-verification curl calls — cleaned up, and a fast-follow was flagged to always use `unique(...)` even for manual setup). Full e2e suite 18/18 green, video `v0.9.0-2026-08-06.webm` (22 clips), backend 331 tests/92.4%/86.9%, frontend 167 tests/83.34%/83.73%, both gates cleared.
+
+**Sprint ? Story 8.2 and Epic 10 (Stories 10.1-10.3) are now fully CLOSED** — pushed to origin/main, CI green. `git status` confirms working tree clean, up to date with origin as of this backfill.
+
+Local state (as of this backfill): no verified running local state — Epic 10's closing session left docker-compose (db/redis/backend) and the frontend dev server (port 5173) running with accumulated e2e/live-check test data in the dev DB (harmless, matches every prior session's convention); confirm/restart as needed before resuming hands-on work. Working tree clean.
+
+Carried-forward open items (unchanged): CNDP/Loi 09-08 filing (legal, blocks production launch), frontend bundle code-splitting, Trivy Gradle-lockfile gap, seeded PLATFORM_ADMIN/CLINIC_ADMIN need rotation/removal before production, Story 3.1's k6 load test, Redis's missing host port mapping, booking's missing doctor-verification check, no cancellation-confirmation notification, the UX doc's unbuilt "skip prescription" branch, ~27 accumulated stale PENDING verification-queue entries in the dev DB (harmless, dev-only cleanup).
+
+Resume by: **Epic 10 was the last item in docs/stories-tabib-ma.md's original Sprint 7+ post-MVP list** (8.2, 10.1, 10.2, 10.3 all now closed). Confirm next priority with the user — likely one of the carried-forward fast-follows above, or a fresh look at docs/stories-tabib-ma.md / docs/prd-tabib-ma.md for anything post-MVP not yet covered. Follow the same UNDERSTAND -> BRAINSTORM -> PLAN gate sequence as every epic/story so far.
+
+## 2026-08-07 — Fast-follows batch (all 8) CLOSED
+Resumed from Epic 10's close (backfilled the prior sessions.md gap first). User picked "fast-follows cleanup" over other post-MVP options; verified all 9 carried-forward items were still real before scoping. BRAINSTORM/PLAN settled an 8-batch plan across all 4 groups the user picked, including a sub-decision to amend Story 6.3's AC (found its own javadoc explicitly ruled out a "complete without prescribing" path) rather than drop the skip-prescription item — full reasoning in `.logs/decisions.md`.
+
+Done this session (all 8 batches, one combined commit pending):
+  - **Batch 1**: Redis host port mapping in docker-compose.yml; purged 29 stale PENDING doctor-verification entries from the dev DB (rejected via SQL, not deleted).
+  - **Batch 2**: `BookingService.bookAndPay` now rejects booking an unverified doctor. Rippled into 13 integration test files whose setup booked appointments without approving the doctor first — fixed each (a first attempt to delegate this to a background fork failed silently, 0 tool uses, redone directly). Found and fixed one incidental pagination collision in an unrelated existing test.
+  - **Batch 3**: New `AppointmentCancelledEvent`, notifies both patient and doctor on cancellation (patient- or admin-initiated) — previously notified nobody.
+  - **Batch 4**: Gradle dependency locking enabled, `gradle.lockfile` checked in — closes Trivy's documented Gradle-scanning gap in CI.
+  - **Batch 5**: Story 6.3's AC amended (Gherkin), `ConsultationService.complete()` + `CompleteConsultationForm` support completing without a prescription ("Terminer sans ordonnance").
+  - **Batch 6**: All non-index routes lazy-loaded (`React.lazy` + one shared `Suspense` in `RootLayout`) — verified via `vite build` that pages now split into separate chunks.
+  - **Batch 7**: `load-tests/` — k6 script + SQL seed for Story 3.1's p95<1.5s search target. Result: p95=13.94ms against a real 10k-doctor dataset, huge margin. Seeded/cleaned up data immediately after.
+  - **Batch 8**: Full e2e regression found and fixed a real, pre-existing (not introduced this session) cache-invalidation bug — `CompleteConsultationForm` never invalidated `MyAppointmentsPage`'s query, so completed consultations kept showing CONFIRMED. Fixed. 19/19 e2e green (18 + 1 new skip-prescription case), video v0.10.0, backend 337 tests/coverage gate green, frontend 168 tests/83.36%/83.75%.
+
+**All 8 batches CLOSED** — pending this turn's commit, push, and CI monitor (rule 7/11).
+
+Local state: docker-compose stack (db/redis/backend, backend rebuilt) and frontend dev server (port 5173) left running. Working tree has everything from this session staged for one commit.
+
+Carried-forward open items (unchanged): CNDP/Loi 09-08 filing (legal, blocks production launch), seeded PLATFORM_ADMIN/CLINIC_ADMIN credential rotation before production (an ops/production decision, not addressed this session).
+
+Resume by: confirm commit+push+CI succeeded this turn, then confirm next priority with the user — the fast-follow backlog is now fully cleared except the two items above. Follow the same UNDERSTAND -> BRAINSTORM -> PLAN gate sequence as every session so far.

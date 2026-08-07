@@ -10,7 +10,8 @@ public record CompleteConsultationResponse(
         PrescriptionResponse prescription
 ) {
     public static CompleteConsultationResponse from(CompletionResult result) {
-        return new CompleteConsultationResponse(result.consultation().getId(),
-                PrescriptionResponse.from(result.prescription()));
+        PrescriptionResponse prescription = result.prescription() == null ? null
+                : PrescriptionResponse.from(result.prescription());
+        return new CompleteConsultationResponse(result.consultation().getId(), prescription);
     }
 }

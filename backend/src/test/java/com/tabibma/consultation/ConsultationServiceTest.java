@@ -8,6 +8,7 @@ import com.tabibma.clinic.DoctorProfileRepository;
 import com.tabibma.identity.Role;
 import com.tabibma.identity.UserContext;
 import com.tabibma.prescription.Prescription;
+import com.tabibma.prescription.PrescriptionItem;
 import com.tabibma.prescription.PrescriptionService;
 import com.tabibma.shared.exception.ForbiddenException;
 import com.tabibma.shared.exception.NotFoundException;
@@ -28,6 +29,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -190,11 +192,12 @@ class ConsultationServiceTest {
         when(consultationRepository.findById(consultationId)).thenReturn(Optional.of(consultation));
         when(appointmentRepository.findById(appointment.getId())).thenReturn(Optional.of(appointment));
         when(doctorProfileRepository.findById(doctorProfileId)).thenReturn(Optional.of(doctorProfile));
+        List<PrescriptionItem> items = List.of(new PrescriptionItem("Amoxicillin", "500mg", "3x/day"));
         Prescription prescription = mock(Prescription.class);
-        when(prescriptionService.issue(eq(consultationId), eq(doctorUserId), eq(patientId), any()))
+        when(prescriptionService.issue(eq(consultationId), eq(doctorUserId), eq(patientId), eq(items)))
                 .thenReturn(prescription);
 
-        ConsultationService.CompletionResult result = service.complete(doctorPrincipal(), consultationId, List.of());
+        ConsultationService.CompletionResult result = service.complete(doctorPrincipal(), consultationId, items);
 
         assertThat(result.consultation().getStatus()).isEqualTo(ConsultationStatus.COMPLETED);
         assertThat(result.prescription()).isSameAs(prescription);
@@ -204,6 +207,34 @@ class ConsultationServiceTest {
         // the Consultation record.
         assertThat(appointment.getStatus()).isEqualTo(com.tabibma.booking.AppointmentStatus.COMPLETED);
         verify(appointmentRepository).save(appointment);
+    }
+
+    @Test
+    void complete_withNoItemsMarksCompletedWithoutIssuingAPrescription() {
+        UUID consultationId = UUID.randomUUID();
+        when(consultationRepository.findById(consultationId)).thenReturn(Optional.of(consultation));
+        when(appointmentRepository.findById(appointment.getId())).thenReturn(Optional.of(appointment));
+        when(doctorProfileRepository.findById(doctorProfileId)).thenReturn(Optional.of(doctorProfile));
+
+        ConsultationService.CompletionResult result = service.complete(doctorPrincipal(), consultationId, List.of());
+
+        assertThat(result.consultation().getStatus()).isEqualTo(ConsultationStatus.COMPLETED);
+        assertThat(result.prescription()).isNull();
+        verify(prescriptionService, never()).issue(any(), any(), any(), any());
+        assertThat(appointment.getStatus()).isEqualTo(com.tabibma.booking.AppointmentStatus.COMPLETED);
+    }
+
+    @Test
+    void complete_withNullItemsMarksCompletedWithoutIssuingAPrescription() {
+        UUID consultationId = UUID.randomUUID();
+        when(consultationRepository.findById(consultationId)).thenReturn(Optional.of(consultation));
+        when(appointmentRepository.findById(appointment.getId())).thenReturn(Optional.of(appointment));
+        when(doctorProfileRepository.findById(doctorProfileId)).thenReturn(Optional.of(doctorProfile));
+
+        ConsultationService.CompletionResult result = service.complete(doctorPrincipal(), consultationId, null);
+
+        assertThat(result.prescription()).isNull();
+        verify(prescriptionService, never()).issue(any(), any(), any(), any());
     }
 
     @Test

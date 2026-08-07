@@ -20,6 +20,14 @@ ext {
     jjwtVersion = '0.12.6'
 }
 
+// Trivy's fs scanner (CI's security job) can't resolve Gradle dependencies without a lockfile —
+// this generates gradle.lockfile, checked in, so Trivy actually covers backend dependency CVEs
+// instead of silently finding 0 manifests. Regenerate with `./gradlew dependencies --write-locks`
+// whenever a dependency changes.
+dependencyLocking {
+    lockAllConfigurations()
+}
+
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-security'

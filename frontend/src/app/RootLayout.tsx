@@ -1,3 +1,4 @@
+import { Suspense } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, Outlet } from 'react-router'
 import { LanguageSwitcher } from '@/shared/components/LanguageSwitcher'
@@ -107,7 +108,9 @@ export function RootLayout() {
         </div>
       </header>
       <main className="flex flex-1 flex-col">
-        <Outlet />
+        <Suspense fallback={<p className="p-4 text-sm text-muted-foreground">{t('app.loadingPage')}</p>}>
+          <Outlet />
+        </Suspense>
       </main>
     </div>
   )

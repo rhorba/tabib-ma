@@ -81,8 +81,12 @@ class DoctorSearchControllerIntegrationTest extends AbstractIntegrationTest {
         String profileId = createProfile(doctorToken, "Rheumatology", "Safi");
         approve(profileId);
 
+        // size=500: the shared Testcontainers DB (AbstractIntegrationTest, .logs/decisions.md
+        // 2026-07-29) accumulates far more than the default page size (20) of APPROVED profiles
+        // across a full test run, so this doctor can fall off page 1 without a wide enough page.
         mockMvc.perform(get("/api/v1/clinic/doctor-profiles/search")
-                        .header("Authorization", "Bearer " + doctorToken))
+                        .header("Authorization", "Bearer " + doctorToken)
+                        .param("size", "500"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.results[?(@.specialty=='Rheumatology')]").exists());
     }

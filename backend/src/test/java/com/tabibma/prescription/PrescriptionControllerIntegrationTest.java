@@ -2,10 +2,14 @@ package com.tabibma.prescription;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.tabibma.identity.Role;
+import com.tabibma.identity.User;
+import com.tabibma.identity.UserRepository;
 import com.tabibma.testsupport.AbstractIntegrationTest;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.DayOfWeek;
@@ -20,7 +24,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-/** Story 6.3 (complete + prescribe in one session) and Story 7.1 (signed, immutable PDF). */
+/** Story 6.3 (complete + optionally prescribe in one session) and Story 7.1 (signed, immutable PDF). */
 class PrescriptionControllerIntegrationTest extends AbstractIntegrationTest {
 
     @Autowired
@@ -28,6 +32,12 @@ class PrescriptionControllerIntegrationTest extends AbstractIntegrationTest {
 
     @Autowired
     private ObjectMapper objectMapper;
+
+    @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     @Test
     void complete_issuesAPrescriptionAndMarksConsultationCompleted() throws Exception {
@@ -54,6 +64,23 @@ class PrescriptionControllerIntegrationTest extends AbstractIntegrationTest {
                         .header("Authorization", "Bearer " + fixture.patientToken))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.supersedesId").doesNotExist());
+    }
+
+    @Test
+    void complete_withNoItemsMarksCompletedWithoutIssuingAPrescription() throws Exception {
+        Fixture fixture = bookVideoAppointment(DayOfWeek.SATURDAY, "presc-doctor5@example.com", "presc-patient5@example.com");
+
+        mockMvc.perform(post("/api/v1/consultations/" + fixture.consultationId + "/complete")
+                        .header("Authorization", "Bearer " + fixture.doctorToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"items\":[]}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.prescription").doesNotExist());
+
+        mockMvc.perform(get("/api/v1/consultations/by-appointment/" + fixture.appointmentId)
+                        .header("Authorization", "Bearer " + fixture.doctorToken))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("COMPLETED"));
     }
 
     @Test
@@ -122,7 +149,7 @@ class PrescriptionControllerIntegrationTest extends AbstractIntegrationTest {
     private Fixture bookVideoAppointment(DayOfWeek dayOfWeek, String doctorEmail, String patientEmail) throws Exception {
         registerAndLogin(doctorEmail, "DOCTOR");
         String doctorToken = login(doctorEmail);
-        createProfile(doctorToken, "Cardiology", "Rabat");
+        approve(createProfile(doctorToken, "Cardiology", "Rabat"));
 
         mockMvc.perform(post("/api/v1/booking/availability/rules")
                         .header("Authorization", "Bearer " + doctorToken)
@@ -188,7 +215,7 @@ class PrescriptionControllerIntegrationTest extends AbstractIntegrationTest {
         return objectMapper.readTree(body).get("accessToken").asText();
     }
 
-    private void createProfile(String token, String specialty, String city) throws Exception {
+    private String createProfile(String token, String specialty, String city) throws Exception {
         var result = mockMvc.perform(post("/api/v1/clinic/doctor-profiles")
                         .header("Authorization", "Bearer " + token)
                         .contentType(MediaType.APPLICATION_JSON)
@@ -196,8 +223,21 @@ class PrescriptionControllerIntegrationTest extends AbstractIntegrationTest {
                                 {"specialty":"%s","bio":"bio","consultationFeeMad":150.00,"city":"%s"}
                                 """.formatted(specialty, city)))
                 .andReturn();
+        String body = result.getResponse().getContentAsString();
         assertThat(result.getResponse().getStatus())
-                .as("createProfile response was not 201 Created; body=%s", result.getResponse().getContentAsString())
+                .as("createProfile response was not 201 Created; body=%s", body)
                 .isEqualTo(201);
+        return objectMapper.readTree(body).get("id").asText();
+    }
+
+    private void approve(String profileId) throws Exception {
+        String adminEmail = "platform-admin-presc-" + profileId + "@example.com";
+        User admin = new User(adminEmail, passwordEncoder.encode("correcthorsebattery"), Role.PLATFORM_ADMIN, "P", "A");
+        userRepository.save(admin);
+        String adminToken = login(adminEmail);
+
+        mockMvc.perform(post("/api/v1/admin/platform/verification-queue/" + profileId + "/approve")
+                        .header("Authorization", "Bearer " + adminToken))
+                .andExpect(status().isOk());
     }
 }

@@ -94,9 +94,12 @@ public class ConsultationService {
     }
 
     /**
-     * Story 6.3: only the doctor can complete a consult, and doing so always issues a prescription
-     * in the same flow/transaction — there is no "complete without prescribing" path, matching the
-     * AC's "in one session" requirement.
+     * Story 6.3 (amended 2026-08-07, .logs/decisions.md): only the doctor can complete a consult.
+     * A prescription is issued in the same flow/transaction when items are provided, matching the
+     * AC's "in one session" requirement — but items is optional, since not every consult warrants
+     * one (docs/ux-tabib-ma.md Flow 3's "No -> Mark consultation complete without prescription"
+     * branch, left unbuilt at Epic 6+7's close because the AC as originally written left no room
+     * for it).
      */
     @Transactional
     public CompletionResult complete(UserContext principal, UUID consultationId, List<PrescriptionItem> items) {
@@ -110,8 +113,8 @@ public class ConsultationService {
             throw new ForbiddenException("Only the doctor can complete this consultation.");
         }
 
-        Prescription prescription = prescriptionService.issue(consultationId, principal.userId(),
-                appointment.getPatientId(), items);
+        Prescription prescription = (items == null || items.isEmpty()) ? null
+                : prescriptionService.issue(consultationId, principal.userId(), appointment.getPatientId(), items);
         consultation.complete();
         consultationRepository.save(consultation);
         // Completing the *consultation* didn't used to complete the underlying

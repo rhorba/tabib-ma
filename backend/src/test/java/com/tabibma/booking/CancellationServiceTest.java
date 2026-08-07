@@ -13,6 +13,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -37,13 +38,15 @@ class CancellationServiceTest {
     private PaymentRepository paymentRepository;
     @Mock
     private ResourceAllocationGuard resourceAllocationGuard;
+    @Mock
+    private ApplicationEventPublisher eventPublisher;
 
     private CancellationService service;
 
     @BeforeEach
     void setUp() {
         service = new CancellationService(appointmentRepository, availabilitySlotRepository, paymentRepository,
-                resourceAllocationGuard);
+                resourceAllocationGuard, eventPublisher);
     }
 
     @Test
@@ -106,6 +109,7 @@ class CancellationServiceTest {
         verify(availabilitySlotRepository).save(slot);
         verify(paymentRepository).save(payment);
         verify(resourceAllocationGuard).releaseForAppointment(appointmentId);
+        verify(eventPublisher).publishEvent(new AppointmentCancelledEvent(appointmentId));
     }
 
     @Test
@@ -130,6 +134,7 @@ class CancellationServiceTest {
         assertThat(slot.isBooked()).isFalse();
         verify(paymentRepository, never()).findByAppointmentId(any());
         verify(paymentRepository, never()).save(any());
+        verify(eventPublisher).publishEvent(new AppointmentCancelledEvent(appointmentId));
     }
 
     @Test
@@ -174,5 +179,6 @@ class CancellationServiceTest {
         verify(resourceAllocationGuard).releaseForAppointment(appointmentId);
         verify(paymentRepository, never()).findByAppointmentId(any());
         verify(paymentRepository, never()).save(any());
+        verify(eventPublisher).publishEvent(new AppointmentCancelledEvent(appointmentId));
     }
 }

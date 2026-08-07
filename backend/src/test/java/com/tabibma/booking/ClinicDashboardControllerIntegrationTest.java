@@ -70,7 +70,7 @@ class ClinicDashboardControllerIntegrationTest extends AbstractIntegrationTest {
         String clinicDoctorEmail = "dashboard-doctor2@example.com";
         registerAndLogin(clinicDoctorEmail, "DOCTOR");
         String clinicDoctorToken = login(clinicDoctorEmail);
-        createDoctorProfile(clinicDoctorToken, "Cardiology", "Casablanca");
+        approve(createDoctorProfile(clinicDoctorToken, "Cardiology", "Casablanca"));
         acceptInvitation(adminToken, clinicId, clinicDoctorEmail, clinicDoctorToken);
         String slotId = createSingleOpenSlot(clinicDoctorToken, DayOfWeek.MONDAY);
 
@@ -87,7 +87,7 @@ class ClinicDashboardControllerIntegrationTest extends AbstractIntegrationTest {
         String soloDoctorEmail = "dashboard-doctor3@example.com";
         registerAndLogin(soloDoctorEmail, "DOCTOR");
         String soloDoctorToken = login(soloDoctorEmail);
-        createDoctorProfile(soloDoctorToken, "Dermatology", "Fes");
+        approve(createDoctorProfile(soloDoctorToken, "Dermatology", "Fes"));
         String soloSlotId = createSingleOpenSlot(soloDoctorToken, DayOfWeek.TUESDAY);
         registerAndLogin("dashboard-patient2@example.com", "PATIENT");
         String patient2Token = login("dashboard-patient2@example.com");
@@ -144,14 +144,27 @@ class ClinicDashboardControllerIntegrationTest extends AbstractIntegrationTest {
         return objectMapper.readTree(result.getResponse().getContentAsString()).get("id").asText();
     }
 
-    private void createDoctorProfile(String token, String specialty, String city) throws Exception {
-        mockMvc.perform(post("/api/v1/clinic/doctor-profiles")
+    private String createDoctorProfile(String token, String specialty, String city) throws Exception {
+        var result = mockMvc.perform(post("/api/v1/clinic/doctor-profiles")
                         .header("Authorization", "Bearer " + token)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                                 {"specialty":"%s","bio":"bio","consultationFeeMad":150.00,"city":"%s"}
                                 """.formatted(specialty, city)))
-                .andExpect(status().isCreated());
+                .andExpect(status().isCreated())
+                .andReturn();
+        return objectMapper.readTree(result.getResponse().getContentAsString()).get("id").asText();
+    }
+
+    private void approve(String profileId) throws Exception {
+        String adminEmail = "platform-admin-cdb-" + profileId + "@example.com";
+        User admin = new User(adminEmail, passwordEncoder.encode("correcthorsebattery"), Role.PLATFORM_ADMIN, "P", "A");
+        userRepository.save(admin);
+        String adminToken = login(adminEmail);
+
+        mockMvc.perform(post("/api/v1/admin/platform/verification-queue/" + profileId + "/approve")
+                        .header("Authorization", "Bearer " + adminToken))
+                .andExpect(status().isOk());
     }
 
     private void acceptInvitation(String adminToken, String clinicId, String doctorEmail, String doctorToken)

@@ -35,11 +35,10 @@ jobs:
         run: |
           pip install semgrep
           semgrep --config p/owasp-top-ten --config p/security-audit --error .
-      # KNOWN GAP: Trivy's fs scanner does not resolve Gradle dependencies without a
-      # gradle.lockfile (verified locally — it found 0 manifests to check against
-      # backend/build.gradle). This currently only catches secrets/non-Gradle files.
-      # Fast-follow: enable Gradle dependency locking (or a CycloneDX SBOM) so this
-      # step actually covers backend dependency CVEs. Tracked in .logs/decisions.md.
+      # Gradle dependency locking is enabled (backend/build.gradle's dependencyLocking block,
+      # backend/gradle.lockfile checked in) so Trivy's fs scanner can actually resolve and check
+      # backend dependency CVEs here, closing the gap flagged in .logs/decisions.md. Regenerate
+      # the lockfile with `./gradlew dependencies --write-locks` whenever a dependency changes.
       - name: SCA (Trivy filesystem scan)
         uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
         with:

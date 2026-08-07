@@ -240,6 +240,62 @@ test.describe('Epic 6+7: video consultation + prescriptions', () => {
     await patientContext.close()
   })
 
+  test('doctor completes a video consultation without issuing a prescription (Story 6.3 amended 2026-08-07)', async ({
+    browser,
+  }, testInfo) => {
+    test.setTimeout(120_000)
+    const specialty = unique('Ostéopathie')
+    const recordVideo = { dir: testInfo.outputPath('video') }
+
+    const setupPage = await (await browser.newContext({ recordVideo })).newPage()
+    const doctorEmail = await registerDoctor(setupPage, specialty)
+    await addVideoRuleAndGenerate(setupPage, computeTodayVideoWindow())
+    await setupPage.getByRole('button', { name: 'Déconnexion' }).click()
+    await approveDoctor(setupPage, specialty)
+    await setupPage.close()
+
+    const doctorContext = await browser.newContext({ recordVideo })
+    const patientContext = await browser.newContext({ recordVideo })
+    const doctorPage = await doctorContext.newPage()
+    const patientPage = await patientContext.newPage()
+
+    await login(doctorPage, doctorEmail, PASSWORD)
+    await registerPatient(patientPage, 'Karim')
+    await bookFirstSlot(patientPage, specialty)
+
+    await doctorPage.getByRole('link', { name: 'Mes rendez-vous' }).click()
+    await doctorPage.getByRole('link', { name: 'Rejoindre la vidéo' }).click()
+    await doctorPage.getByRole('button', { name: 'Rejoindre la consultation vidéo' }).click()
+
+    await patientPage.getByRole('link', { name: 'Voir mes rendez-vous' }).click()
+    await patientPage.getByRole('link', { name: 'Rejoindre la vidéo' }).click()
+    await patientPage.getByRole('button', { name: 'Rejoindre la consultation vidéo' }).click()
+
+    await expect(doctorPage.getByText('Connexion en cours…')).toBeHidden({ timeout: 45_000 })
+    await expect(patientPage.getByText('Connexion en cours…')).toBeHidden({ timeout: 45_000 })
+
+    await expect(
+      doctorPage.getByRole('heading', { name: 'Terminer la consultation et prescrire' })
+    ).toBeVisible()
+
+    await doctorPage.getByRole('button', { name: 'Terminer sans ordonnance' }).click()
+    await expect(doctorPage.getByText('Consultation terminée sans ordonnance.')).toBeVisible()
+
+    // The appointment shows COMPLETED — proves the skip path still completes the
+    // underlying Appointment (Story 9.1's review gate), just without a Prescription
+    // record (backend-level absence already asserted at the API level in
+    // PrescriptionControllerIntegrationTest). This freshly-registered doctor has
+    // exactly one appointment, so the status badge is unambiguous without needing
+    // to scope to a specific list item.
+    // exact:true — the completed-consultation view's own "Retour à mes rendez-vous" link
+    // substring-matches "Mes rendez-vous" too (same collision fixed in epic-10-disputes.spec.ts).
+    await doctorPage.getByRole('link', { name: 'Mes rendez-vous', exact: true }).click()
+    await expect(doctorPage.getByText('Terminé')).toBeVisible()
+
+    await doctorContext.close()
+    await patientContext.close()
+  })
+
   test('a patient cannot join a video consultation before the join window opens', async ({ page }) => {
     const specialty = unique('Psychiatrie')
     await registerDoctor(page, specialty)

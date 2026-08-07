@@ -80,12 +80,15 @@ export const consultationHandlers = [
     if (!consultation) return errorResponse(404, 'NOT_FOUND', 'Consultation not found.')
     const body = (await request.json()) as { items: { medicationName: string; dosage: string; instructions?: string }[] }
     consultation.status = 'COMPLETED'
-    const prescription = seedPrescription({
-      consultationId: consultation.id,
-      doctorId: consultation.doctorId,
-      patientId: consultation.patientId,
-      items: body.items,
-    })
+    // Story 6.3 (amended 2026-08-07): empty items means the doctor skipped prescribing.
+    const prescription = body.items.length > 0
+      ? seedPrescription({
+          consultationId: consultation.id,
+          doctorId: consultation.doctorId,
+          patientId: consultation.patientId,
+          items: body.items,
+        })
+      : null
     return HttpResponse.json({ consultationId: consultation.id, prescription })
   }),
 ]

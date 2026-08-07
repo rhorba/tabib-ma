@@ -10,15 +10,15 @@ import { Input } from '@/shared/components/ui/input'
 import { apiClient } from '@/shared/api/client'
 import { createCompleteConsultationSchema, type CompleteConsultationFormValues } from '../schemas'
 
-/** Story 6.3: the doctor fills this in the same session as the call, completing the
- * consultation and issuing the prescription in one submit — there is no separate "just end
- * the call" action for the doctor. */
+/** Story 6.3 (amended 2026-08-07): the doctor fills this in the same session as the call,
+ * completing the consultation and issuing the prescription in one submit — or completes without
+ * one via the "skip prescription" action, for consults where none is medically warranted. */
 export function CompleteConsultationForm({
   consultationId,
   onCompleted,
 }: {
   consultationId: string
-  onCompleted: () => void
+  onCompleted: (prescribed: boolean) => void
 }) {
   const { t } = useTranslation()
   const queryClient = useQueryClient()
@@ -40,9 +40,12 @@ export function CompleteConsultationForm({
       }
       return data
     },
-    onSuccess: () => {
+    onSuccess: (_data, values) => {
       queryClient.invalidateQueries({ queryKey: ['consultation', consultationId] })
-      onCompleted()
+      // Completing marks the underlying Appointment COMPLETED too (Story 9.1) — without this,
+      // MyAppointmentsPage keeps showing CONFIRMED until an unrelated refetch happens to occur.
+      queryClient.invalidateQueries({ queryKey: ['appointments', 'mine'] })
+      onCompleted(values.items.length > 0)
     },
   })
 
@@ -60,12 +63,6 @@ export function CompleteConsultationForm({
           <Alert variant="destructive">
             <AlertCircleIcon />
             <AlertDescription>{t('consultation.complete.errors.generic')}</AlertDescription>
-          </Alert>
-        )}
-        {form.formState.errors.items?.root && (
-          <Alert variant="destructive">
-            <AlertCircleIcon />
-            <AlertDescription>{form.formState.errors.items.root.message}</AlertDescription>
           </Alert>
         )}
 
@@ -136,9 +133,19 @@ export function CompleteConsultationForm({
           <PlusIcon /> {t('consultation.complete.addItem')}
         </Button>
 
-        <Button type="submit" disabled={mutation.isPending} className="mt-2">
-          {mutation.isPending ? t('consultation.complete.submitting') : t('consultation.complete.submit')}
-        </Button>
+        <div className="mt-2 flex flex-wrap items-center gap-3">
+          <Button type="submit" disabled={mutation.isPending}>
+            {mutation.isPending ? t('consultation.complete.submitting') : t('consultation.complete.submit')}
+          </Button>
+          <Button
+            type="button"
+            variant="ghost"
+            disabled={mutation.isPending}
+            onClick={() => mutation.mutate({ items: [] })}
+          >
+            {t('consultation.complete.skipPrescription')}
+          </Button>
+        </div>
       </form>
     </Form>
   )

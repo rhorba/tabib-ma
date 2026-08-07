@@ -1,10 +1,13 @@
 package com.tabibma.notification;
 
 import com.tabibma.booking.Appointment;
+import com.tabibma.booking.AppointmentCancelledEvent;
 import com.tabibma.booking.AppointmentRepository;
 import com.tabibma.booking.BookingConfirmedEvent;
 import com.tabibma.booking.LocationType;
 import com.tabibma.booking.ReminderDueEvent;
+import com.tabibma.clinic.DoctorProfile;
+import com.tabibma.clinic.DoctorProfileRepository;
 import com.tabibma.identity.Role;
 import com.tabibma.identity.User;
 import com.tabibma.identity.UserRepository;
@@ -14,6 +17,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
@@ -32,6 +36,8 @@ class BookingNotificationListenerTest {
     @Mock
     private AppointmentRepository appointmentRepository;
     @Mock
+    private DoctorProfileRepository doctorProfileRepository;
+    @Mock
     private UserRepository userRepository;
     @Mock
     private SmsSender smsSender;
@@ -42,12 +48,17 @@ class BookingNotificationListenerTest {
 
     @BeforeEach
     void setUp() {
-        listener = new BookingNotificationListener(appointmentRepository, userRepository, smsSender, emailSender);
+        listener = new BookingNotificationListener(appointmentRepository, doctorProfileRepository, userRepository,
+                smsSender, emailSender);
     }
 
     private static Appointment appointment(UUID patientId) {
+        return appointment(patientId, UUID.randomUUID());
+    }
+
+    private static Appointment appointment(UUID patientId, UUID doctorProfileId) {
         Instant start = Instant.now().plusSeconds(3600);
-        return new Appointment(patientId, UUID.randomUUID(), UUID.randomUUID(), start, start.plusSeconds(1800), LocationType.IN_PERSON);
+        return new Appointment(patientId, doctorProfileId, UUID.randomUUID(), start, start.plusSeconds(1800), LocationType.IN_PERSON);
     }
 
     @Test
@@ -119,5 +130,43 @@ class BookingNotificationListenerTest {
         listener.onReminderDue(new ReminderDueEvent(appointmentId));
 
         verify(emailSender).send(eq("p@example.com"), anyString(), anyString());
+    }
+
+    @Test
+    void onAppointmentCancelled_notifiesBothThePatientAndTheDoctor() {
+        UUID patientId = UUID.randomUUID();
+        UUID doctorProfileId = UUID.randomUUID();
+        UUID doctorUserId = UUID.randomUUID();
+        Appointment appointment = appointment(patientId, doctorProfileId);
+        UUID appointmentId = UUID.randomUUID();
+        User patient = new User("p@example.com", "hash", Role.PATIENT, "A", "B");
+        DoctorProfile doctorProfile = new DoctorProfile(doctorUserId, "Cardiology", "bio", new BigDecimal("250.00"), "Rabat");
+        User doctor = new User("d@example.com", "hash", Role.DOCTOR, "C", "D");
+        when(appointmentRepository.findById(appointmentId)).thenReturn(Optional.of(appointment));
+        when(userRepository.findById(patientId)).thenReturn(Optional.of(patient));
+        when(doctorProfileRepository.findById(doctorProfileId)).thenReturn(Optional.of(doctorProfile));
+        when(userRepository.findById(doctorUserId)).thenReturn(Optional.of(doctor));
+
+        listener.onAppointmentCancelled(new AppointmentCancelledEvent(appointmentId));
+
+        verify(emailSender).send(eq("p@example.com"), anyString(), anyString());
+        verify(emailSender).send(eq("d@example.com"), anyString(), anyString());
+    }
+
+    @Test
+    void onAppointmentCancelled_stillNotifiesThePatientWhenTheDoctorProfileIsMissing() {
+        UUID patientId = UUID.randomUUID();
+        UUID doctorProfileId = UUID.randomUUID();
+        Appointment appointment = appointment(patientId, doctorProfileId);
+        UUID appointmentId = UUID.randomUUID();
+        User patient = new User("p@example.com", "hash", Role.PATIENT, "A", "B");
+        when(appointmentRepository.findById(appointmentId)).thenReturn(Optional.of(appointment));
+        when(userRepository.findById(patientId)).thenReturn(Optional.of(patient));
+        when(doctorProfileRepository.findById(doctorProfileId)).thenReturn(Optional.empty());
+
+        listener.onAppointmentCancelled(new AppointmentCancelledEvent(appointmentId));
+
+        verify(emailSender).send(eq("p@example.com"), anyString(), anyString());
+        verify(emailSender, never()).send(eq("d@example.com"), any(), any());
     }
 }

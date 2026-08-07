@@ -41,7 +41,7 @@ export function ConsultationPage() {
   const statusQuery = useConsultationStatus(appointmentId)
   const consultationId = statusQuery.data?.id
   const call = useConsultationCall(consultationId ?? '')
-  const [completed, setCompleted] = useState(false)
+  const [completed, setCompleted] = useState<'no' | 'prescribed' | 'skipped'>('no')
 
   return (
     <div className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-6 px-4 py-12">
@@ -57,13 +57,15 @@ export function ConsultationPage() {
         </Alert>
       )}
 
-      {completed && (
+      {completed !== 'no' && (
         <Alert role="status">
-          <AlertDescription>{t('consultation.complete.success')}</AlertDescription>
+          <AlertDescription>
+            {completed === 'prescribed' ? t('consultation.complete.success') : t('consultation.complete.successNoPrescription')}
+          </AlertDescription>
         </Alert>
       )}
 
-      {statusQuery.data && !completed && (
+      {statusQuery.data && completed === 'no' && (
         <>
           {!statusQuery.data.joinable && call.phase === 'idle' && (
             <Alert role="status">
@@ -83,7 +85,10 @@ export function ConsultationPage() {
           {call.phase !== 'idle' && <VideoConsultationRoom call={call} />}
 
           {user?.role === 'DOCTOR' && call.phase === 'connected' && statusQuery.data.status !== 'COMPLETED' && (
-            <CompleteConsultationForm consultationId={statusQuery.data.id!} onCompleted={() => setCompleted(true)} />
+            <CompleteConsultationForm
+              consultationId={statusQuery.data.id!}
+              onCompleted={(prescribed) => setCompleted(prescribed ? 'prescribed' : 'skipped')}
+            />
           )}
         </>
       )}

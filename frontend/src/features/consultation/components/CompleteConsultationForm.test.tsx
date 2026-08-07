@@ -46,7 +46,25 @@ describe('CompleteConsultationForm', () => {
     await user.type(screen.getByLabelText(/^posologie$/i), '500mg')
     await user.click(screen.getByRole('button', { name: /terminer et envoyer l'ordonnance/i }))
 
-    await waitFor(() => expect(onCompleted).toHaveBeenCalled())
+    await waitFor(() => expect(onCompleted).toHaveBeenCalledWith(true))
+  })
+
+  it('completes the consultation without a prescription when skip is clicked', async () => {
+    loginAs({ email: 'd@example.com', password: 'x', role: 'DOCTOR', firstName: 'A', lastName: 'B' })
+    const consultation = seedConsultation({
+      appointmentId: 'appt-2',
+      doctorId: '1',
+      patientId: '2',
+      status: 'IN_PROGRESS',
+      joinable: true,
+    })
+    const onCompleted = vi.fn()
+    renderWithProviders(<CompleteConsultationForm consultationId={consultation.id} onCompleted={onCompleted} />)
+    const user = userEvent.setup()
+
+    await user.click(screen.getByRole('button', { name: /terminer sans ordonnance/i }))
+
+    await waitFor(() => expect(onCompleted).toHaveBeenCalledWith(false))
   })
 
   it('shows a generic error when the request fails', async () => {

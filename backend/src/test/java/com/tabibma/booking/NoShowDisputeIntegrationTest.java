@@ -83,6 +83,17 @@ class NoShowDisputeIntegrationTest extends AbstractIntegrationTest {
         return login(email);
     }
 
+    private void approveProfile(String profileId) throws Exception {
+        String adminEmail = "platform-admin-noshow-" + profileId + "@example.com";
+        User admin = new User(adminEmail, passwordEncoder.encode("correcthorsebattery"), Role.PLATFORM_ADMIN, "P", "A");
+        userRepository.save(admin);
+        String adminToken = login(adminEmail);
+
+        mockMvc.perform(post("/api/v1/admin/platform/verification-queue/" + profileId + "/approve")
+                        .header("Authorization", "Bearer " + adminToken))
+                .andExpect(status().isOk());
+    }
+
     private String bookOnlyOpenSlot(String doctorToken, String patientToken) throws Exception {
         var slotsResult = mockMvc.perform(get("/api/v1/booking/availability/slots")
                         .header("Authorization", "Bearer " + doctorToken)
@@ -117,6 +128,7 @@ class NoShowDisputeIntegrationTest extends AbstractIntegrationTest {
                 .andExpect(status().isCreated())
                 .andReturn();
         doctorProfileId = objectMapper.readTree(profileResult.getResponse().getContentAsString()).get("id").asText();
+        approveProfile(doctorProfileId);
 
         mockMvc.perform(post("/api/v1/booking/availability/rules")
                         .header("Authorization", "Bearer " + doctorToken)

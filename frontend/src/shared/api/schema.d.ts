@@ -842,7 +842,7 @@ export interface components {
             iceServers?: components["schemas"]["IceServer"][];
         };
         CompleteConsultationRequest: {
-            items: components["schemas"]["PrescriptionItemRequest"][];
+            items?: components["schemas"]["PrescriptionItemRequest"][];
         };
         CompleteConsultationResponse: {
             /** Format: uuid */

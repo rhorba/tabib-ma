@@ -405,16 +405,22 @@ Scenario: Poor connection triggers audio-only suggestion
 
 ---
 
-### Story 6.3: Doctor conducts consult + issues prescription in one session
+### Story 6.3: Doctor conducts consult + optionally issues a prescription in one session
 **Priority**: Must | **Size**: M | **Specialist**: Backend Dev + Frontend Dev
 
-**Description**: As a doctor, I want to conduct a video consultation and issue an e-prescription in the same session, so my workflow isn't fragmented.
+**Description**: As a doctor, I want to conduct a video consultation and issue an e-prescription in the same session when one is medically warranted, so my workflow isn't fragmented — and complete the consult without one when it isn't, rather than being forced to fabricate a prescription just to close the record.
+
+**Amended 2026-08-07** (fast-follow, `.logs/decisions.md`): the original AC required a Prescription on every completion, matching `docs/ux-tabib-ma.md`'s Flow 3 only partially — that doc's own diagram always documented an optional "No → Mark consultation complete without prescription" branch (line 125) that was deliberately left unbuilt at Epic 6+7's close (2026-08-01) because this AC, as originally written, left no room for it. Amending the AC to match the UX doc's original intent rather than leaving the gap.
 
 **Acceptance Criteria**:
 ```gherkin
 Given a video consultation is in progress
 When the doctor completes the consult and fills the prescription form
 Then the consultation status becomes COMPLETED and a Prescription is generated in the same flow
+
+Given a video consultation is in progress
+When the doctor completes the consult without filling the prescription form
+Then the consultation status becomes COMPLETED and no Prescription is generated
 ```
 
 **Technical Notes**: Links `consultation` and `prescription` modules; see Epic 7.

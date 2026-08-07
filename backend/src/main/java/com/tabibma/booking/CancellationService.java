@@ -5,6 +5,7 @@ import com.tabibma.payment.PaymentRepository;
 import com.tabibma.payment.PaymentStatus;
 import com.tabibma.shared.exception.ForbiddenException;
 import com.tabibma.shared.exception.NotFoundException;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,15 +21,18 @@ public class CancellationService {
     private final AvailabilitySlotRepository availabilitySlotRepository;
     private final PaymentRepository paymentRepository;
     private final ResourceAllocationGuard resourceAllocationGuard;
+    private final ApplicationEventPublisher eventPublisher;
 
     public CancellationService(AppointmentRepository appointmentRepository,
                                 AvailabilitySlotRepository availabilitySlotRepository,
                                 PaymentRepository paymentRepository,
-                                ResourceAllocationGuard resourceAllocationGuard) {
+                                ResourceAllocationGuard resourceAllocationGuard,
+                                ApplicationEventPublisher eventPublisher) {
         this.appointmentRepository = appointmentRepository;
         this.availabilitySlotRepository = availabilitySlotRepository;
         this.paymentRepository = paymentRepository;
         this.resourceAllocationGuard = resourceAllocationGuard;
+        this.eventPublisher = eventPublisher;
     }
 
     @Transactional
@@ -55,6 +59,7 @@ public class CancellationService {
                     });
         }
 
+        eventPublisher.publishEvent(new AppointmentCancelledEvent(appointmentId));
         return appointment;
     }
 
@@ -71,6 +76,7 @@ public class CancellationService {
         appointmentRepository.save(appointment);
         releaseSlotAndResource(appointment, appointmentId);
 
+        eventPublisher.publishEvent(new AppointmentCancelledEvent(appointmentId));
         return appointment;
     }
 

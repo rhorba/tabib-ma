@@ -76,7 +76,6 @@ class ReviewControllerIntegrationTest extends AbstractIntegrationTest {
     @Test
     void submit_thenTheDoctorsPublicProfileReflectsTheRealRatingAndComment() throws Exception {
         String doctorToken = registerDoctorWithSlot("review-doctor7@example.com", DayOfWeek.SATURDAY);
-        approveProfile(doctorProfileId);
         String patientEmail = "review-patient7@example.com";
         registerAndLogin(patientEmail, "PATIENT");
         String patientToken = login(patientEmail);
@@ -170,9 +169,9 @@ class ReviewControllerIntegrationTest extends AbstractIntegrationTest {
                 .andExpect(status().isForbidden());
     }
 
-    /** Only submit_thenTheDoctorsPublicProfileReflectsTheRealRatingAndComment needs this — the
-     * /public endpoint 404s for a non-APPROVED profile, unlike booking/generation which don't
-     * care about verification status. Mirrors DoctorSearchControllerIntegrationTest's approve(). */
+    /** Called from registerDoctorWithSlot — BookingService.bookAndPay now rejects a non-APPROVED
+     * doctor, and the /public endpoint used by one test also 404s for a non-APPROVED profile.
+     * Mirrors DoctorSearchControllerIntegrationTest's approve(). */
     private void approveProfile(String profileId) throws Exception {
         String adminEmail = "review-admin-" + profileId + "@example.com";
         User admin = new User(adminEmail, passwordEncoder.encode("correcthorsebattery"), Role.PLATFORM_ADMIN, "P", "A");
@@ -230,6 +229,7 @@ class ReviewControllerIntegrationTest extends AbstractIntegrationTest {
                 .andExpect(status().isCreated())
                 .andReturn();
         doctorProfileId = objectMapper.readTree(profileResult.getResponse().getContentAsString()).get("id").asText();
+        approveProfile(doctorProfileId);
 
         mockMvc.perform(post("/api/v1/booking/availability/rules")
                         .header("Authorization", "Bearer " + doctorToken)

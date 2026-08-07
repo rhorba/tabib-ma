@@ -75,6 +75,7 @@ class BookingServiceTest {
         UUID doctorProfileId = UUID.randomUUID();
         Appointment appointment = pendingAppointment(doctorProfileId, slotId);
         DoctorProfile doctorProfile = new DoctorProfile(UUID.randomUUID(), "Cardiology", "bio", new BigDecimal("250.00"), "Rabat");
+        doctorProfile.approve();
         Payment succeededPayment = new Payment(appointment.getId(), new BigDecimal("250.00"), "key");
         succeededPayment.succeed("CMI-1");
 
@@ -101,6 +102,7 @@ class BookingServiceTest {
         UUID doctorProfileId = UUID.randomUUID();
         Appointment appointment = pendingAppointment(doctorProfileId, slotId);
         DoctorProfile doctorProfile = new DoctorProfile(UUID.randomUUID(), "Cardiology", "bio", new BigDecimal("250.00"), "Rabat");
+        doctorProfile.approve();
         Payment failedPayment = new Payment(appointment.getId(), new BigDecimal("250.00"), "key");
         failedPayment.fail();
         AvailabilitySlot slot = new AvailabilitySlot(doctorProfileId, appointment.getStartsAt(), appointment.getEndsAt(),
@@ -121,6 +123,23 @@ class BookingServiceTest {
         verify(availabilitySlotRepository).save(slot);
         verify(eventPublisher).publishEvent(new AppointmentPaymentFailedEvent(appointment.getId()));
         verify(resourceAllocationGuard).releaseForAppointment(appointment.getId());
+    }
+
+    @Test
+    void bookAndPay_rejectsBookingAnUnverifiedDoctor() {
+        UserContext patient = new UserContext(UUID.randomUUID(), "p@example.com", Role.PATIENT);
+        UUID slotId = UUID.randomUUID();
+        UUID doctorProfileId = UUID.randomUUID();
+        Appointment appointment = pendingAppointment(doctorProfileId, slotId);
+        DoctorProfile doctorProfile = new DoctorProfile(UUID.randomUUID(), "Cardiology", "bio", new BigDecimal("250.00"), "Rabat");
+        // left PENDING (default) — never approved
+
+        when(doubleBookingGuard.reserveSlot(patient.userId(), slotId)).thenReturn(appointment);
+        when(doctorProfileRepository.findById(doctorProfileId)).thenReturn(Optional.of(doctorProfile));
+
+        assertThatThrownBy(() -> service.bookAndPay(patient, slotId))
+                .isInstanceOf(ForbiddenException.class);
+        verify(paymentService, never()).capturePayment(any(), any(), any());
     }
 
     @Test

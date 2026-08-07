@@ -44,7 +44,7 @@ public class ConsultationController {
     public CompleteConsultationResponse complete(@AuthenticationPrincipal UserContext principal,
                                                   @PathVariable UUID consultationId,
                                                   @Valid @RequestBody CompleteConsultationRequest request) {
-        List<PrescriptionItem> items = request.items().stream()
+        List<PrescriptionItem> items = request.items() == null ? List.of() : request.items().stream()
                 .map(i -> new PrescriptionItem(i.medicationName(), i.dosage(), i.instructions()))
                 .toList();
         return CompleteConsultationResponse.from(consultationService.complete(principal, consultationId, items));

@@ -1,9 +1,12 @@
 package com.tabibma.notification;
 
 import com.tabibma.booking.Appointment;
+import com.tabibma.booking.AppointmentCancelledEvent;
 import com.tabibma.booking.AppointmentRepository;
 import com.tabibma.booking.BookingConfirmedEvent;
 import com.tabibma.booking.ReminderDueEvent;
+import com.tabibma.clinic.DoctorProfile;
+import com.tabibma.clinic.DoctorProfileRepository;
 import com.tabibma.identity.User;
 import com.tabibma.identity.UserRepository;
 import org.slf4j.Logger;
@@ -14,9 +17,11 @@ import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
 
 import java.util.Optional;
+import java.util.UUID;
 
 /**
- * Story 4.2's "patient receives a confirmation SMS and email" + Story 4.5's reminder delivery.
+ * Story 4.2's "patient receives a confirmation SMS and email" + Story 4.5's reminder delivery +
+ * a fast-follow closing the gap where cancelling an appointment notified nobody.
  * {@code @TransactionalEventListener(AFTER_COMMIT)} + {@code @Async} means this runs on a
  * separate thread only after the booking/reminder transaction already committed — a send failure
  * here structurally cannot roll back or block that transaction. The try/catch around each send is
@@ -29,13 +34,17 @@ public class BookingNotificationListener {
     private static final Logger log = LoggerFactory.getLogger(BookingNotificationListener.class);
 
     private final AppointmentRepository appointmentRepository;
+    private final DoctorProfileRepository doctorProfileRepository;
     private final UserRepository userRepository;
     private final SmsSender smsSender;
     private final EmailSender emailSender;
 
-    public BookingNotificationListener(AppointmentRepository appointmentRepository, UserRepository userRepository,
+    public BookingNotificationListener(AppointmentRepository appointmentRepository,
+                                        DoctorProfileRepository doctorProfileRepository,
+                                        UserRepository userRepository,
                                         SmsSender smsSender, EmailSender emailSender) {
         this.appointmentRepository = appointmentRepository;
+        this.doctorProfileRepository = doctorProfileRepository;
         this.userRepository = userRepository;
         this.smsSender = smsSender;
         this.emailSender = emailSender;
@@ -55,6 +64,23 @@ public class BookingNotificationListener {
                 "Appointment Reminder", "Reminder: you have an appointment on " + appointment.getStartsAt() + "."));
     }
 
+    /** Notifies both sides — the patient (confirming their own cancellation, or informing them of
+     * an admin's force-cancel) and the doctor (whose now-freed slot they otherwise wouldn't hear
+     * about), unlike onBookingConfirmed/onReminderDue which only ever concern the patient. */
+    @Async
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    public void onAppointmentCancelled(AppointmentCancelledEvent event) {
+        appointmentRepository.findById(event.appointmentId()).ifPresent(appointment -> {
+            String message = "Your appointment on " + appointment.getStartsAt() + " has been cancelled.";
+            notify(appointment, "Appointment Cancelled", message);
+
+            doctorProfileRepository.findById(appointment.getDoctorProfileId())
+                    .map(DoctorProfile::getUserId)
+                    .flatMap(userRepository::findById)
+                    .ifPresent(doctor -> sendTo(doctor, "Appointment Cancelled", message, appointment.getId()));
+        });
+    }
+
     private void notify(Appointment appointment, String subject, String message) {
         Optional<User> patient = userRepository.findById(appointment.getPatientId());
         if (patient.isEmpty()) {
@@ -62,19 +88,21 @@ public class BookingNotificationListener {
                     appointment.getPatientId(), appointment.getId());
             return;
         }
-        User user = patient.get();
+        sendTo(patient.get(), subject, message, appointment.getId());
+    }
 
+    private void sendTo(User user, String subject, String message, UUID appointmentId) {
         try {
             emailSender.send(user.getEmail(), subject, message);
         } catch (Exception e) {
-            log.warn("Email send failed for appointment {}", appointment.getId(), e);
+            log.warn("Email send failed for appointment {}", appointmentId, e);
         }
 
         if (user.getPhone() != null) {
             try {
                 smsSender.send(user.getPhone(), message);
             } catch (Exception e) {
-                log.warn("SMS send failed for appointment {}", appointment.getId(), e);
+                log.warn("SMS send failed for appointment {}", appointmentId, e);
             }
         }
     }

@@ -2,6 +2,7 @@ package com.tabibma.booking;
 
 import com.tabibma.clinic.DoctorProfile;
 import com.tabibma.clinic.DoctorProfileRepository;
+import com.tabibma.clinic.VerificationStatus;
 import com.tabibma.identity.Role;
 import com.tabibma.identity.UserContext;
 import com.tabibma.payment.Payment;
@@ -66,6 +67,13 @@ public class BookingService {
 
         DoctorProfile doctorProfile = doctorProfileRepository.findById(appointment.getDoctorProfileId())
                 .orElseThrow(() -> new NotFoundException("Doctor profile not found."));
+        // Search only ever surfaces APPROVED doctors (idx_doctor_profiles_approved_specialty_city),
+        // but that's not a guarantee at this endpoint — a slot id can be reached directly. Checked
+        // before payment capture, same reasoning as the resourceAllocationGuard check above: this
+        // throw rolls back the slot reservation and resource allocation together with it.
+        if (doctorProfile.getVerificationStatus() != VerificationStatus.APPROVED) {
+            throw new ForbiddenException("This doctor is not currently accepting bookings.");
+        }
         BigDecimal amountMad = doctorProfile.getConsultationFeeMad();
 
         String idempotencyKey = "appointment:" + appointment.getId();

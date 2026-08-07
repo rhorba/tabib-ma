@@ -1,6 +1,7 @@
 {
   "app": {
-    "name": "Tabib.ma"
+    "name": "Tabib.ma",
+    "loadingPage": "Chargement de la page…"
   },
   "nav": {
     "login": "Connexion",
@@ -443,7 +444,7 @@
     },
     "complete": {
       "title": "Terminer la consultation et prescrire",
-      "prompt": "Ajoutez au moins un médicament pour terminer la consultation.",
+      "prompt": "Ajoutez un ou plusieurs médicaments, ou terminez sans ordonnance si aucune n'est nécessaire.",
       "addItem": "Ajouter un médicament",
       "removeItem": "Retirer",
       "medicationLabel": "Médicament",
@@ -451,9 +452,10 @@
       "instructionsLabel": "Instructions (optionnel)",
       "submit": "Terminer et envoyer l'ordonnance",
       "submitting": "Envoi en cours…",
+      "skipPrescription": "Terminer sans ordonnance",
       "success": "Consultation terminée et ordonnance envoyée.",
+      "successNoPrescription": "Consultation terminée sans ordonnance.",
       "errors": {
-        "itemsRequired": "Ajoutez au moins un médicament.",
         "medicationRequired": "Le nom du médicament est requis.",
         "dosageRequired": "La posologie est requise.",
         "generic": "Une erreur est survenue. Veuillez réessayer."
