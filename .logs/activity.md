@@ -693,3 +693,20 @@ Full e2e suite run: found and fixed a real pre-existing-bug-turned-real-bug via 
 Local state: docker-compose stack (db/redis/backend, backend rebuilt this session) and frontend dev server (port 5173) left running. Working tree has all 8 batches' changes staged for one combined commit (following this session's own established mid-plan-checkpoint convention of not committing until the whole plan is done, since it was scoped and confirmed as one unit at the 2026-08-07 BRAINSTORM/PLAN gate).
 
 Resume by: this session is complete pending commit + push + CI monitor (rule 7/11) this turn. Once green: confirm next priority with the user — CNDP/Loi 09-08 filing (legal, still blocks production launch), seeded admin credential rotation (still open, flagged again as a carried-forward item, not addressed this session since it's more an ops/production decision than code), or docs/stories-tabib-ma.md / docs/prd-tabib-ma.md for anything else post-MVP.
+
+## 2026-08-07 (continued) — CI RED after push: Trivy found 36 real CVEs, fixed
+Per rule 11: pushed the fast-follows batch, CI's `security` job failed — the Trivy Gradle-lockfile fix (Batch 4) worked exactly as intended and immediately found 36 real vulnerabilities (31 HIGH, 5 CRITICAL) across transitive dependencies pulled in by Spring Boot 3.5.3's BOM, which had never been scanned before this session. This was expected risk of closing a scanning gap — the gap being closed *should* surface pre-existing findings.
+
+Pulled `aquasec/trivy:0.70.0` locally (matching CI's pinned action version) to iterate without repeated CI round-trips — found the actual `trivy` CLI syntax differs from the GitHub Action's input names (`--scan-ref` isn't a real flag; the target is a positional arg), and Git Bash's automatic path conversion mangles Docker volume mounts with a leading `/repo`-style bind path (needed `MSYS_NO_PATHCONV=1`).
+
+Fixed via three changes to `backend/build.gradle`:
+  - Spring Boot bumped 3.5.3 → 3.5.16 (the last 3.5.x release — that line reached OSS EOL 2026-06-30, so this is the newest available without a 4.0.x major jump, which was judged out of scope for a fast-follow session). This alone brought jackson-core/-databind, micrometer-core, tomcat-embed-core, spring-security-core/-web, spring-core/-expression/-webmvc, spring-data-commons, and spring-boot-starter-actuator to fixed versions.
+  - `bcprov-jdk18on` bumped 1.78.1 → 1.85 (fixes CVE-2025-14813).
+  - `postgresql` driver pinned explicitly to 42.7.13 (Spring Boot 3.5.16's BOM still only manages 42.7.11, which doesn't cover CVE-2026-54291 — a channel-binding downgrade that silently weakens SCRAM-SHA-256-PLUS to plain SCRAM).
+  - netty-codec/netty-handler needed a `dependencyManagement { dependencies { ... } }` override (not a plain Gradle `constraints` block, and not `resolutionStrategy.force` — both lose to `io.spring.dependency-management`'s own resolution rules; only that plugin's own override DSL actually wins) pinned to 4.1.136.Final, since the BOM's `strictly 4.1.135.Final` doesn't cover CVE-2026-59901/44891/55831/55833.
+
+Regenerated `gradle.lockfile`. Full `./gradlew check` re-run: 337 tests still green, coverage gate PASSED — no behavioral regressions from the version bumps. **Verified locally with the real `trivy fs` scan (not just hoping CI would pass this time): 0 vulnerabilities found** across `backend/gradle.lockfile` and `frontend/package-lock.json`.
+
+Also hit and resolved a local environment snag along the way: `./gradlew check` failed twice with "Unable to delete directory" errors mid-build — a stray `java.exe` process (likely a leftover Gradle daemon or Testcontainers Ryuk reaper) had files open in `backend/build/`, compounded by this repo living inside a OneDrive-synced folder occasionally holding transient locks during sync. Killed the process and manually removed `build/` once; builds ran clean afterward.
+
+Committing and re-pushing this fix now; CI monitor continues per rule 11.
