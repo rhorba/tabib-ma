@@ -439,3 +439,20 @@ Local state: docker-compose stack (db/redis/backend, backend rebuilt) and fronte
 Carried-forward open items (unchanged): CNDP/Loi 09-08 filing (legal, blocks production launch), seeded PLATFORM_ADMIN/CLINIC_ADMIN credential rotation before production (an ops/production decision, not addressed this session).
 
 Resume by: confirm next priority with the user — the fast-follow backlog is now fully cleared except the two items above. Follow the same UNDERSTAND -> BRAINSTORM -> PLAN gate sequence as every session so far.
+
+## SESSION_END — 2026-08-07 (continued, PRD-gap batch)
+User asked "what's left in docs/prd-tabib-ma.md for post-MVP" after the fast-follows batch closed. Audited all 32 stories against the PRD and code; found 3 real gaps (price filter never made it from PRD into Story 3.1's AC; NFR-6 accessibility had zero tooling; NFR-7 video latency was deferred pending a never-selected vendor) plus the PRD's own explicit out-of-scope list (not gaps). User picked to tackle all 3 — BRAINSTORM resolved two honestly rather than faking coverage: accessibility scoped to automated axe-core only (manual screen-reader pass needs a human, stays flagged), video latency scoped to defer (needs a real vendor decision, not an engineering call).
+
+Done this session (4 batches, pushed, CI green — full detail in `.logs/activity.md`):
+  - **Batch 1**: search gained a `maxFeeMad` filter (backend + frontend), Story 3.1's AC amended.
+  - **Batch 2**: first-ever frontend CI job (`frontend-build-test`: lint, typecheck+build, test+coverage). Found and fixed a real pre-existing break this immediately exposed: `npm ci` failed outright (TypeScript 6.0.2 vs `openapi-typescript`'s `^5.x` peer requirement, present before this session touched anything) — downgraded to 5.9.3, plus `npm audit fix` for 4 CVEs in dev tooling.
+  - **Batch 3**: `jest-axe` wired into Vitest for 4 key pages (search, doctor profile, book, my-appointments) in fr+ar. Caught a real WCAG heading-order bug on the first run (`SearchPage` h1→h3 skip) and fixed it.
+  - **Batch 4**: first CI push went red again — the new frontend job's very first clean-environment run exposed that the *entire* test suite silently depended on an untracked local `.env.local` for `VITE_API_BASE_URL` (every prior `vitest run`, by every session including this one, only ever "worked" by local accident). Fixed by setting it explicitly in `vite.config.ts`'s `test.env`. Verified by physically moving `.env`/`.env.local` out of the directory to actually simulate a clean checkout before re-pushing, not just re-pushing and hoping.
+
+**PRD-gap batch fully CLOSED** — backend 339 tests, frontend 177 tests (83.44%/83.83%), e2e 19/19, all 3 CI jobs green for the first time in this project's history (backend-build-test, frontend-build-test, security).
+
+Local state: docker-compose stack (db/redis/backend) and frontend dev server (port 5173) left running. Working tree clean, all commits pushed, CI confirmed green as of this session's end.
+
+Carried-forward open items (unchanged, all explicitly tracked — none silently dropped): CNDP/Loi 09-08 filing (legal, blocks production launch), seeded PLATFORM_ADMIN/CLINIC_ADMIN credential rotation before production, NFR-7 video-latency measurement (blocked on a managed WebRTC vendor decision — Twilio Video / Daily.co / Agora / other — that's the user's call, not an engineering one), and NFR-6's manual screen-reader pass (needs a human tester with NVDA/JAWS/VoiceOver before production).
+
+Resume by: confirm next priority with the user. With the fast-follows batch and the PRD-gap batch both closed, the codebase has no known open engineering gaps against docs/stories-tabib-ma.md or docs/prd-tabib-ma.md except the four carried-forward items above, all of which need a decision or a human, not more code. Follow the same UNDERSTAND -> BRAINSTORM -> PLAN gate sequence next session.
