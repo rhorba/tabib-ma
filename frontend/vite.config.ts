@@ -18,6 +18,15 @@ export default defineConfig({
     setupFiles: ['./src/test/setup.ts'],
     css: true,
     exclude: ['e2e/**', 'node_modules/**'],
+    // Tests never hit a real backend — MSW intercepts every request regardless of the URL — but
+    // apiClient.baseUrl still needs to resolve to *something* absolute, or the underlying fetch
+    // throws on a bare "/api/v1/..." path. Previously this only worked locally by accident, via
+    // each developer's own untracked .env.local providing VITE_API_BASE_URL; there was no fallback
+    // for a clean checkout (e.g. CI) without one. Set explicitly here so the test suite never
+    // depends on local environment files at all.
+    env: {
+      VITE_API_BASE_URL: 'http://localhost:3000',
+    },
     coverage: {
       provider: 'v8',
       reporter: ['text', 'html'],
