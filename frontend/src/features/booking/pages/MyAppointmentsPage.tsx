@@ -129,6 +129,9 @@ export function MyAppointmentsPage() {
             <li key={appointment.id} className="grid gap-3 rounded-md border border-border px-4 py-3 text-sm">
               <div className="flex items-center justify-between gap-3">
                 <div className="grid gap-1">
+                  {appointment.patientName && (
+                    <span className="font-medium">{appointment.patientName}</span>
+                  )}
                   <span>{appointment.startsAt && new Date(appointment.startsAt).toLocaleString()}</span>
                   {canManage && (
                     <Link

@@ -1005,6 +1005,7 @@ export interface components {
             cancellationWindowHours?: number;
             /** Format: date-time */
             createdAt?: string;
+            patientName?: string;
         };
         RegisterRequest: {
             email: string;

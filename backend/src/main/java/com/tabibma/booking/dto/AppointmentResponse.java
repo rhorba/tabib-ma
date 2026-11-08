@@ -16,12 +16,18 @@ public record AppointmentResponse(
         LocationType locationType,
         AppointmentStatus status,
         int cancellationWindowHours,
-        Instant createdAt
+        Instant createdAt,
+        String patientName
 ) {
     public static AppointmentResponse from(Appointment appointment) {
+        return from(appointment, null);
+    }
+
+    /** patientName is only filled for the doctor's own list; null everywhere else. */
+    public static AppointmentResponse from(Appointment appointment, String patientName) {
         return new AppointmentResponse(appointment.getId(), appointment.getDoctorProfileId(),
                 appointment.getAvailabilitySlotId(), appointment.getStartsAt(), appointment.getEndsAt(),
                 appointment.getLocationType(), appointment.getStatus(), appointment.getCancellationWindowHours(),
-                appointment.getCreatedAt());
+                appointment.getCreatedAt(), patientName);
     }
 }

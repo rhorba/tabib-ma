@@ -74,7 +74,9 @@ class BookingControllerIntegrationTest extends AbstractIntegrationTest {
                         .header("Authorization", "Bearer " + patientToken))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].id").value(appointmentId))
-                .andExpect(jsonPath("$[0].status").value("CONFIRMED"));
+                .andExpect(jsonPath("$[0].status").value("CONFIRMED"))
+                // Patients never receive a patientName (it's only for the doctor's own list).
+                .andExpect(jsonPath("$[0].patientName").doesNotExist());
     }
 
     @Test
@@ -125,7 +127,8 @@ class BookingControllerIntegrationTest extends AbstractIntegrationTest {
                         .header("Authorization", "Bearer " + doctorToken))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].id").value(appointmentId))
-                .andExpect(jsonPath("$[0].status").value("CONFIRMED"));
+                .andExpect(jsonPath("$[0].status").value("CONFIRMED"))
+                .andExpect(jsonPath("$[0].patientName").value("A B"));
 
         String otherDoctorEmail = "booking-doctor5@example.com";
         registerAndLogin(otherDoctorEmail, "DOCTOR");
