@@ -4,6 +4,7 @@
     "loadingPage": "Chargement de la page…"
   },
   "nav": {
+    "menu": "Menu",
     "login": "Connexion",
     "register": "Créer un compte",
     "logout": "Déconnexion",

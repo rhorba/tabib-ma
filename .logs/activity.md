@@ -755,3 +755,18 @@ Run 31219545470 GREEN on the second push: all 3 jobs passed — `security` (43s,
 Local state: docker-compose stack (db/redis/backend, rebuilt this session) and frontend dev server (port 5173) left running. Working tree clean once this log entry is committed.
 
 Carried-forward open items: CNDP/Loi 09-08 filing (legal), seeded admin credential rotation (ops), video-latency NFR-7 (needs a vendor decision), manual screen-reader pass (needs a human tester) — all explicitly tracked, none silently dropped.
+
+### [2026-11-18] [PLAN] — CVE remediation + demo-polish ship + Boot 4 migration plan (pending user confirmation)
+- Batch 1 (~45m): bump jackson 2.21.7, netty-handler/codec 4.1.137, tomcat 10.1.56 via dependencyManagement DSL; regen gradle.lockfile; npm update vite/source-map-js; .trivyignore for CVE-2026-47884 with expiry; local Trivy via Docker = 0 un-ignored HIGH/CRITICAL.
+- Batch 2 (~30m): VERIFY — backend ./gradlew check, frontend lint/build/test:coverage, e2e; push; CI green; open PR feat/demo-polish → main.
+- Batch 3 (~30m): Boot 4 migration planning only — breaking-change inventory, spike risk list, story file; no code.
+
+### [2026-11-18] [EXECUTE] — Batch 1 done: CVE patches
+- backend/build.gradle: netty 4.1.137.Final (DSL), ext jackson-bom.version 2.21.7, ext tomcat.version 10.1.62; gradle.lockfile regenerated.
+- frontend: npm audit fix → vite 8.3.8, source-map-js 1.2.2.
+- .trivyignore (new): CVE-2026-47884, CVE-2026-47890 (spring-webmvc, Boot 4 only), CVE-2026-112366 (picomatch, no fix, dev-only) — all exp 2027-01-17; ci.yml passes it explicitly.
+- Local Trivy 0.69.3 (fresh DB, Docker): 0 HIGH/CRITICAL in both lockfiles, exit 0.
+
+### [2026-11-18 09:12] [SHIP] — CVE patches pushed to feat/demo-polish
+- Summary: fix(deps) commit on feat/demo-polish (jackson 2.21.7, netty 4.1.137, tomcat 10.1.62, vite 8.3.8, source-map-js 1.2.2, .trivyignore x3 exp 2027-01-17). CI monitoring follows.
+- Status: complete (pending CI)

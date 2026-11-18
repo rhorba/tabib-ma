@@ -138,7 +138,11 @@ class ConsultationControllerIntegrationTest extends AbstractIntegrationTest {
                                 """.formatted(dayOfWeek)))
                 .andExpect(status().isCreated());
 
-        LocalDate from = LocalDate.now(ZoneId.of("Africa/Casablanca"));
+        // Start from tomorrow (same fix as ResourceUtilizationControllerIntegrationTest): with plain
+        // nextOrSame from today, running on the same weekday as dayOfWeek books *today's* 09:00 slot,
+        // which can fall inside the join window and break join_rejectedBeforeTheJoinWindowOpens
+        // (CI run 44272857482, Wednesday 2026-11-18).
+        LocalDate from = LocalDate.now(ZoneId.of("Africa/Casablanca")).plusDays(1);
         LocalDate targetDate = from.with(TemporalAdjusters.nextOrSame(dayOfWeek));
         LocalDate to = targetDate.plusDays(1);
 

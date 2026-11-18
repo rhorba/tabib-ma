@@ -2,6 +2,7 @@ package com.tabibma.booking;
 
 import com.tabibma.booking.dto.AppointmentResponse;
 import com.tabibma.booking.dto.BookAppointmentRequest;
+import com.tabibma.identity.Role;
 import com.tabibma.identity.UserContext;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @RestController
@@ -24,12 +26,14 @@ public class BookingController {
     private final BookingService bookingService;
     private final CancellationService cancellationService;
     private final NoShowService noShowService;
+    private final PatientNameLookup patientNameLookup;
 
     public BookingController(BookingService bookingService, CancellationService cancellationService,
-                              NoShowService noShowService) {
+                              NoShowService noShowService, PatientNameLookup patientNameLookup) {
         this.bookingService = bookingService;
         this.cancellationService = cancellationService;
         this.noShowService = noShowService;
+        this.patientNameLookup = patientNameLookup;
     }
 
     @PostMapping
@@ -41,7 +45,14 @@ public class BookingController {
 
     @GetMapping
     public List<AppointmentResponse> listMine(@AuthenticationPrincipal UserContext principal) {
-        return bookingService.listMyAppointments(principal).stream().map(AppointmentResponse::from).toList();
+        List<Appointment> appointments = bookingService.listMyAppointments(principal);
+        if (principal.role() != Role.DOCTOR) {
+            return appointments.stream().map(AppointmentResponse::from).toList();
+        }
+        Map<UUID, String> names = patientNameLookup.namesFor(appointments);
+        return appointments.stream()
+                .map(a -> AppointmentResponse.from(a, names.get(a.getPatientId())))
+                .toList();
     }
 
     @PostMapping("/{appointmentId}/cancel")

@@ -1,11 +1,12 @@
-import { Suspense } from 'react'
+import { Suspense, useState } from 'react'
+import { MenuIcon, XIcon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
-import { Link, Outlet } from 'react-router'
+import { Link, Outlet, useLocation } from 'react-router'
 import { LanguageSwitcher } from '@/shared/components/LanguageSwitcher'
 import { Button } from '@/shared/components/ui/button'
 import { useAuth } from '@/features/auth/AuthContext'
 
-function AuthNav() {
+function AuthNav({ vertical = false }: { vertical?: boolean }) {
   const { t } = useTranslation()
   const { status, user, logout } = useAuth()
 
@@ -15,7 +16,7 @@ function AuthNav() {
 
   if (status === 'authenticated' && user) {
     return (
-      <div className="flex items-center gap-3">
+      <div className={vertical ? 'flex flex-col items-start gap-3' : 'flex items-center gap-3'}>
         <Link to="/search" className="text-sm font-medium text-foreground hover:text-primary">
           {t('nav.search')}
         </Link>
@@ -80,7 +81,7 @@ function AuthNav() {
   }
 
   return (
-    <div className="flex items-center gap-3">
+    <div className={vertical ? 'flex flex-col items-start gap-3' : 'flex items-center gap-3'}>
       <Link to="/login" className="text-sm font-medium text-foreground hover:text-primary">
         {t('nav.login')}
       </Link>
@@ -93,6 +94,10 @@ function AuthNav() {
 
 export function RootLayout() {
   const { t } = useTranslation()
+  const location = useLocation()
+  // Remember which path the menu was opened on: navigating closes it without an effect.
+  const [menuOpenOn, setMenuOpenOn] = useState<string | null>(null)
+  const menuOpen = menuOpenOn === location.pathname
 
   return (
     <div className="flex min-h-svh flex-col">
@@ -101,11 +106,28 @@ export function RootLayout() {
           <Link to="/" className="text-lg font-semibold text-primary">
             {t('app.name')}
           </Link>
-          <div className="flex items-center gap-4">
+          <div className="hidden items-center gap-4 md:flex">
             <AuthNav />
             <LanguageSwitcher />
           </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="md:hidden"
+            aria-label={t('nav.menu')}
+            aria-expanded={menuOpen}
+            aria-controls="mobile-nav"
+            onClick={() => setMenuOpenOn(menuOpen ? null : location.pathname)}
+          >
+            {menuOpen ? <XIcon /> : <MenuIcon />}
+          </Button>
         </div>
+        {menuOpen && (
+          <nav id="mobile-nav" className="flex flex-col gap-4 border-t border-border px-4 py-4 md:hidden">
+            <AuthNav vertical />
+            <LanguageSwitcher />
+          </nav>
+        )}
       </header>
       <main className="flex flex-1 flex-col">
         <Suspense fallback={<p className="p-4 text-sm text-muted-foreground">{t('app.loadingPage')}</p>}>
