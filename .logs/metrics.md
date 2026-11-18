@@ -211,3 +211,4 @@ Backend: 339 tests (+2 from the fast-follows batch's 337), `jacocoTestCoverageVe
 Frontend: 177 tests (+8 from 169), statements 83.44%, lines 83.83%, branches 70.15%, functions 87.31%. `tsc -b`/`oxlint`/`npm run build` clean. New vitest coverage `thresholds` (statements/lines 80%) now enforce this automatically in CI, not just manual reporting.
 e2e: 19/19 green, unchanged from the prior batch's close.
 - [2026-11-18] Coverage: 84% (frontend lines 84.02%, statements 83.51%; backend lines 93.31%, instructions 92.53%)
+- [2026-11-18] Coverage: 93% (backend lines 93.31% after test fix; frontend unchanged 84.02%)
