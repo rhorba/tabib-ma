@@ -17,3 +17,8 @@
 - Tests: backend ./gradlew check 339/339 on a Wednesday (the failing condition), coverage gate passed; frontend unchanged since prior VERIFY (177/177).
 - Security: test-only change; Trivy unchanged (security job green on 44272857482).
 - Status: pass
+
+### [2026-11-18 10:40] [VERIFY] — Batch 3 docs (migration plan + Epic 11)
+- Tests: n/a — documentation only; versions in the doc checked against Maven Central (spring-boot-dependencies 4.1.2 POM); usage counts measured via grep on src/.
+- Security: no code change; plan reviewed for security-relevant ACs (authz tests unmodified, ADR-4 constraint, CVE ignore removal).
+- Status: pass

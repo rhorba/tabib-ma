@@ -591,6 +591,129 @@ Then current values for each metric are displayed
 
 ---
 
+## Epic 11: Platform — Spring Boot 4 Migration (security-driven)
+Plan, inventory and ADR-5: `docs/migration-spring-boot-4.md`. **Deadline 2027-01-17** (`.trivyignore` expiry for spring-webmvc CVE-2026-47884/47890).
+
+### Story 11.0: Remove weekday-dependent test helpers (prerequisite)
+**Priority**: Should | **Size**: S | **Specialist**: Tester
+
+**Description**: As a developer, I want the integration tests not to depend on what weekday it is, so migration regressions aren't confused with date flakes.
+
+**Acceptance Criteria**:
+```gherkin
+Given any test helper that generates availability for a dayOfWeek
+When the suite runs on that same weekday after the slot's start time
+Then the helper books a strictly-future slot and the test outcome is unchanged
+```
+
+**Technical Notes**: 9 helpers still use `nextOrSame` from today (list in `.logs/issues.md`, 2026-11-18); apply the "generate from tomorrow" pattern already used in `ResourceUtilizationControllerIntegrationTest` / `ConsultationControllerIntegrationTest`.
+
+**Dependencies**: none.
+
+---
+
+### Story 11.1: Migration spike (time-boxed 2h)
+**Priority**: Must | **Size**: S | **Specialist**: Tech Lead + Backend Dev
+
+**Description**: As the team, we want a throwaway branch on Boot 4.1.2 to measure the real breakage, so we can confirm ADR-5 option A or fall back to B.
+
+**Acceptance Criteria**:
+```gherkin
+Given a spike branch with Spring Boot 4.1.2 and the modular starters
+When it compiles and the full test suite runs
+Then the number and kind of failures is recorded in docs/migration-spring-boot-4.md
+And ADR-5 is updated to Accepted (A or B) with the evidence
+And springdoc 3.x compatibility with Boot 4.1 and the jjwt serializer choice are decided
+```
+
+**Technical Notes**: Not merged. Time-box hard at 2h; report findings even if incomplete.
+
+**Dependencies**: 11.0 (recommended).
+
+---
+
+### Story 11.2: Build & dependency upgrade
+**Priority**: Must | **Size**: M | **Specialist**: Backend Dev + DevOps
+
+**Description**: As the platform, I want to run on Spring Boot 4.1.2 / Spring Framework 7.0.10, so the spring-webmvc CVEs are fixed.
+
+**Acceptance Criteria**:
+```gherkin
+Given build.gradle on Spring Boot 4.1.2
+When the app starts against an empty Postgres
+Then Flyway applies all migrations (explicit spring-boot-starter-flyway) and the actuator health is UP
+And the netty dependencyManagement pins and the jackson/tomcat ext version overrides are removed
+And Testcontainers is on 2.x, springdoc on 3.x, ArchUnit on 1.5.x
+And gradle.lockfile is regenerated
+```
+
+**Technical Notes**: Check Boot 4's modular test auto-config (MockMvc) for `@AutoConfigureMockMvc`.
+
+**Dependencies**: 11.1.
+
+---
+
+### Story 11.3: Jackson 3 migration
+**Priority**: Must | **Size**: S | **Specialist**: Backend Dev
+
+**Description**: As a developer, I want the code on Jackson 3 (`tools.jackson`), so we don't depend on Boot 4's deprecated Jackson 2 compatibility module.
+
+**Acceptance Criteria**:
+```gherkin
+Given the 2 main and 21 test files importing com.fasterxml.jackson.databind
+When they are migrated to tools.jackson.databind
+Then no com.fasterxml.jackson.databind import remains in src/
+And 401/403 JSON error bodies (JsonAuthenticationEntryPoint, JsonAccessDeniedHandler) are byte-for-byte unchanged in their tests
+And JWT issue/verify works with the serializer chosen in 11.1
+```
+
+**Technical Notes**: Jackson 3 exceptions are unchecked. If ADR-5 falls back to B, this becomes its own PR after 11.2.
+
+**Dependencies**: 11.2.
+
+---
+
+### Story 11.4: Regression & framework-behaviour fixes
+**Priority**: Must | **Size**: M | **Specialist**: Backend Dev + Tester + Security Engineer
+
+**Description**: As a user, I want every existing flow to behave exactly as before the upgrade.
+
+**Acceptance Criteria**:
+```gherkin
+Given the upgraded backend
+When ./gradlew check, the frontend suite and the e2e suite run
+Then backend 339+ tests pass with coverage ≥ 80%, frontend tests pass, and e2e is 19/19
+And security rules are unchanged: every role/endpoint authorization test passes unmodified
+And the double-booking exclusion constraint tests (ADR-4) pass unmodified
+And the regenerated OpenAPI schema.d.ts diff is reviewed and has no unintended contract changes
+```
+
+**Technical Notes**: Fix Hibernate 7 / Security 7 issues query-by-query; flush the Redis dev cache after upgrading.
+
+**Dependencies**: 11.2, 11.3.
+
+---
+
+### Story 11.5: Release gate — remove CVE exceptions
+**Priority**: Must | **Size**: S | **Specialist**: DevSecOps + Deployment
+
+**Description**: As the platform owner, I want the time-boxed CVE exceptions removed, so the security scan reflects reality again.
+
+**Acceptance Criteria**:
+```gherkin
+Given the migration is merged to main
+When the spring-webmvc entries (CVE-2026-47884, CVE-2026-47890) are deleted from .trivyignore
+Then CI's Trivy scan is green with 0 HIGH/CRITICAL beyond any remaining, separately justified entries
+And the docker-compose backend image builds and starts on the new stack
+And an e2e video is recorded to .recordings/ (version bump)
+```
+
+**Technical Notes**: Must land before 2027-01-17.
+
+**Dependencies**: 11.4.
+
+---
+
 ## Sprint Allocation (estimate — refine at each Sprint Planning)
 
 | Sprint | Stories | Theme |

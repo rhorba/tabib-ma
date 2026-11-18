@@ -238,3 +238,6 @@ Owner: found while wiring Batch 2 (frontend CI) and Batch 3 (axe-core) of the 20
 ### [2026-11-18] [BRAINSTORM] — Trivy CVE remediation approach
 - Options: A) patch all but spring-webmvc, accept that one as time-boxed risk; B) A + plan Spring Boot 4 migration as its own sprint; C) other.
 - Chosen: B (user). Reason: spring-webmvc CVE-2026-47884 (CRITICAL) has no fix on the Spring 6.2 / Boot 3.5 OSS line — only 7.0.9 — so a real fix requires Boot 4.
+
+### [2026-11-18] [DECISION] — Spring Boot 4 migration plan approved
+- User approved docs/migration-spring-boot-4.md and Epic 11 (stories 11.0–11.5). ADR-5 option A (single migration branch to Boot 4.1.2 after a 2h spike; fallback B if >~10 failures). Deadline 2027-01-17.

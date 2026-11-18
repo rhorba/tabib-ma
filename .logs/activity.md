@@ -770,3 +770,13 @@ Carried-forward open items: CNDP/Loi 09-08 filing (legal), seeded admin credenti
 ### [2026-11-18 09:12] [SHIP] — CVE patches pushed to feat/demo-polish
 - Summary: fix(deps) commit on feat/demo-polish (jackson 2.21.7, netty 4.1.137, tomcat 10.1.62, vite 8.3.8, source-map-js 1.2.2, .trivyignore x3 exp 2027-01-17). CI monitoring follows.
 - Status: complete (pending CI)
+
+### [2026-11-18 09:50] [SHIP] — CI fix pushed (consultation test date dependency)
+- Summary: feat/demo-polish 9812c80 (fix(test)); CI being monitored.
+- Status: complete (pending CI)
+
+### [2026-11-18 09:58] [CI] — GREEN on 9812c80 (run 44276102707: backend, frontend, security all success). PR opened feat/demo-polish → main. Batch 2 CLOSED.
+
+### [2026-11-18 10:30] [EXECUTE] — Batch 3: Spring Boot 4 migration planning (docs only)
+- Tech Lead: docs/migration-spring-boot-4.md — target Boot 4.1.2 (Spring 7.0.10, Tomcat 11.0.27, Jackson 3.1.7, Hibernate 7.4.13), measured impact inventory (Jackson: 2 main + 21 test files, ObjectMapper/JsonNode only; 1 SecurityFilterChain; 3 Testcontainers files; no @MockBean/javax/RestTemplate), risks (Flyway starter split = silent-failure risk), ADR-5 Proposed (recommend A: single branch after 2h spike, fallback B).
+- Scrum Master: Epic 11 (stories 11.0–11.5) appended to docs/stories-tabib-ma.md. Pending user approval.

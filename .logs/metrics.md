@@ -212,3 +212,5 @@ Frontend: 177 tests (+8 from 169), statements 83.44%, lines 83.83%, branches 70.
 e2e: 19/19 green, unchanged from the prior batch's close.
 - [2026-11-18] Coverage: 84% (frontend lines 84.02%, statements 83.51%; backend lines 93.31%, instructions 92.53%)
 - [2026-11-18] Coverage: 93% (backend lines 93.31% after test fix; frontend unchanged 84.02%)
+- [2026-11-18] Coverage: n/a — Batch 3 is documentation only
+- [2026-11-18] Coverage: n/a — documentation only (migration plan + stories)
