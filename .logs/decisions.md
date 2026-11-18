@@ -234,3 +234,7 @@ Found and fixed real problems that weren't part of the original scope but blocke
   - `frontend/package.json` pinned `typescript: ~6.0.2`, but `openapi-typescript@7.13.0` (latest available) only supports `typescript@^5.x` — no version of it supports TS 6 yet. `npm ci`/`npm install` were both already broken before this session touched anything (confirmed via a plain `npm install` failing identically). Downgraded to `~5.9.3` (latest stable 5.x). This had presumably gone unnoticed because nothing ever ran a clean `npm ci` in CI before — exactly the kind of gap the new frontend CI job was meant to close.
   - `SearchPage`'s `<h1>` was followed directly by `DoctorResultCard`'s `aria-level={3}` heading, skipping level 2 — a real WCAG 2.1 AA heading-order violation, caught immediately by the first axe-core scan run against real content. Fixed to `aria-level={2}` after confirming the component is only ever rendered there.
 Owner: found while wiring Batch 2 (frontend CI) and Batch 3 (axe-core) of the 2026-08-07 PRD-gap plan.
+
+### [2026-11-18] [BRAINSTORM] — Trivy CVE remediation approach
+- Options: A) patch all but spring-webmvc, accept that one as time-boxed risk; B) A + plan Spring Boot 4 migration as its own sprint; C) other.
+- Chosen: B (user). Reason: spring-webmvc CVE-2026-47884 (CRITICAL) has no fix on the Spring 6.2 / Boot 3.5 OSS line — only 7.0.9 — so a real fix requires Boot 4.

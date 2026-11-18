@@ -1,0 +1,16 @@
+# Accepted, time-boxed Trivy findings. Every entry needs a reason, an owner decision log reference,
+# and an exp: date — Trivy stops ignoring it on that date, so CI goes red again if it's still open.
+
+# spring-webmvc CVE-2026-47884 (CRITICAL): fixed only in Spring Framework 7.0.9; no fix exists on the
+# Spring 6.2 / Spring Boot 3.5 OSS line this project runs. Real fix = Spring Boot 4 migration,
+# planned as its own sprint. Decision: .logs/decisions.md, 2026-11-18 [BRAINSTORM] — option B.
+CVE-2026-47884 exp:2027-01-17
+
+# spring-webmvc CVE-2026-47890 (CRITICAL): SSE stream corruption; same as above — fix only in Spring
+# 7.0.9. Not reachable here: backend has no SseEmitter / text/event-stream usage (checked 2026-11-18).
+CVE-2026-47890 exp:2027-01-17
+
+# picomatch CVE-2026-112366 (HIGH, ReDoS): no fixed version published anywhere yet. Dev/build-time
+# only (vite, vitest, @types/jest via jest-axe) — never in the shipped browser bundle. Re-check for a
+# fixed release before expiry.
+CVE-2026-112366 exp:2027-01-17

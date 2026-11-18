@@ -71,6 +71,7 @@ jobs:
           scan-type: fs
           severity: CRITICAL,HIGH
           exit-code: 1
+          trivyignores: .trivyignore  # time-boxed accepted risks, each with exp: date
       - name: Secrets scan (Gitleaks)
         uses: gitleaks/gitleaks-action@e0c47f4f8be36e29cdc102c57e68cb5cbf0e8d1e # v3
         env:
